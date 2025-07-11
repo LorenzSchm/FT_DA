@@ -1,8 +1,20 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# FT_DA Web Application
+
+## Overview
+This is a [Next.js](https://nextjs.org) web application for the FT_DA project. It provides the web-based interface for users to interact with the FT_DA platform.
+
+## Technology Stack
+- **Next.js** - React framework for web applications
+- **JavaScript** - Programming language
+- **PostCSS** - CSS processing tool
+
+## Project Structure
+- **`/src/app`** - Application pages and components
+- **`/public`** - Static assets like images and icons
 
 ## Getting Started
 
-First, run the development server:
+Run the development server:
 
 ```bash
 npm run dev
@@ -15,6 +27,8 @@ bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+For more detailed information about the web app structure and configuration, refer to the code comments and documentation.
 
 You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
 
