@@ -1,0 +1,21 @@
+# Build directories
+.next/
+dist/
+build/
+
+# Dependencies
+node_modules/
+
+# Generated files
+*.generated.*
+*.min.*
+
+# Lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Misc
+.DS_Store
+.env*
+!.env.example

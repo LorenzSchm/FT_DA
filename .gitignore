@@ -1,3 +1,4 @@
 .cadence
 .github
 /node_modules
+/.next
