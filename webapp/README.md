@@ -1,14 +1,17 @@
 # FT_DA Web Application
 
 ## Overview
+
 This is a [Next.js](https://nextjs.org) web application for the FT_DA project. It provides the web-based interface for users to interact with the FT_DA platform.
 
 ## Technology Stack
+
 - **Next.js** - React framework for web applications
 - **JavaScript** - Programming language
 - **PostCSS** - CSS processing tool
 
 ## Project Structure
+
 - **`/src/app`** - Application pages and components
 - **`/public`** - Static assets like images and icons
 
