@@ -5,6 +5,7 @@ build/
 
 # Dependencies
 node_modules/
+venv/
 
 # Generated files
 *.generated.*
