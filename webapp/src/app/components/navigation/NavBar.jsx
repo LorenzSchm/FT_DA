@@ -27,7 +27,6 @@ export default function NavBar() {
     setActiveTab(pathname);
   }, [pathname]);
 
-
   return (
     <div className="w-full bg-gradient-to-b from-[#B7B7B7] to-transparent flex flex-row justify-between items-center">
       <div className="p-4 flex flex-row items-center gap-2">
@@ -44,7 +43,9 @@ export default function NavBar() {
             ref={link.ref}
             href={link.path}
             className={`pl-3 pr-3 z-20 relative text-center transition-colors duration-300 ${
-              activeTab === link.path ? "text-white bg-white/10 rounded-3xl z-10 border border-white/30" : "text-white/90"
+              activeTab === link.path
+                ? "text-white bg-white/10 rounded-3xl z-10 border border-white/30"
+                : "text-white/90"
             }`}
             onClick={() => handleLinkClick(link.path)}
           >
