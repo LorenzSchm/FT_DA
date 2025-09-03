@@ -6,37 +6,37 @@ export default function NewYorkCard() {
       type: "Monthly Income",
       amount: "+$3,250.00",
       description: "Salary",
-      colorCode: "text-green-300"
+      colorCode: "text-green-300",
     },
     {
       type: "Monthly Subscription",
       amount: "-$59.99",
       description: "Internet",
-      colorCode: "text-red-300"
+      colorCode: "text-red-300",
     },
     {
       type: "Weekly Shopping",
       amount: "-$85.50",
       description: "Groceries",
-      colorCode: "text-red-300"
+      colorCode: "text-red-300",
     },
     {
       type: "Rental Income",
       amount: "+$850.00",
       description: "Property #2",
-      colorCode: "text-green-300"
+      colorCode: "text-green-300",
     },
     {
       type: "Monthly Payment",
       amount: "-$1,200.00",
       description: "Rent",
-      colorCode: "text-red-300"
+      colorCode: "text-red-300",
     },
     {
       type: "Dividend Payment",
       amount: "+$412.33",
       description: "Stocks",
-      colorCode: "text-green-300"
+      colorCode: "text-green-300",
     },
   ];
 
@@ -87,10 +87,16 @@ export default function NewYorkCard() {
               }
             >
               <div className={"flex flex-col items-start"}>
-                <span className={"font-swiss font-bold text-lg"}>{data.description}</span>
-                <span className={"font-swiss text-gray-300 text-sm"}>{data.type}</span>
+                <span className={"font-swiss font-bold text-lg"}>
+                  {data.description}
+                </span>
+                <span className={"font-swiss text-gray-300 text-sm"}>
+                  {data.type}
+                </span>
               </div>
-              <span className={data.colorCode+" font-bold text-lg"}>{data.amount}</span>
+              <span className={data.colorCode + " font-bold text-lg"}>
+                {data.amount}
+              </span>
             </div>
           ))}
         </div>

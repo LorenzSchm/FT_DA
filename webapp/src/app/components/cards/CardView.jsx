@@ -1,7 +1,3 @@
 export default function CardView() {
-    return (
-        <div>
-
-        </div>
-    )
+  return <div></div>;
 }
