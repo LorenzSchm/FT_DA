@@ -35,7 +35,7 @@ export default function NavBar() {
       </div>
       <div
         ref={containerRef}
-        className="flex flex-row items-center gap-2 m-4 text-white font-bold bg-white/10 backdrop-blur-sm border border-2 border-white/40 rounded-3xl relative"
+        className="flex flex-row items-center gap-2 m-4 text-white font-bold bg-blue-800/5 backdrop-blur-sm border border-2 border-white/40 rounded-3xl relative"
       >
         {navLinks.map((link) => (
           <Link

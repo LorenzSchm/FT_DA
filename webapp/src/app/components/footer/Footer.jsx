@@ -1,20 +1,22 @@
 import Link from "next/link";
-import { Instagram, Linkedin, Twitter } from "react-feather";
+import { Instagram, Linkedin, X } from "react-feather";
 
 export default function Footer() {
   return (
-    <div>
-      <div>
+    <div className={"flex flex-col gap-1 justify-center items-center"}>
+      <div className={"flex flex-row gap-2"}>
         <Link href={"/"}>Imprint</Link>
+          -
         <Link href={"/"}>Privacy Policy</Link>
+          -
         <span>© 2025 Finance Tracker</span>
       </div>
-      <div>
+      <div className={"flex flex-row gap-2 items-center"}>
         <Link href={"/"}>
           <Instagram />
         </Link>
-        <Link href={"/"}>
-          <Twitter />
+        <Link href={"/"} className={"text-3xl"}>
+          𝕏
         </Link>
         <Link href={"/"}>
           <Linkedin />
