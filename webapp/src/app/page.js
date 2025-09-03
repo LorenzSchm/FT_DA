@@ -16,15 +16,13 @@ export default function Home() {
           <NavBar />
         </div>
         <div>
-            <LandingPage />
+          <LandingPage />
         </div>
       </div>
-        <div>
-          <CardView />
-        </div>
       <div>
-
+        <CardView />
       </div>
+      <div></div>
       <div>
         <Footer />
       </div>
