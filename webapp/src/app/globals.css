@@ -5,12 +5,32 @@
   --foreground: #171717;
 }
 
+
+@keyframes marquee {
+  0%   { transform: translate3d(0,0,0); }
+  100% { transform: translate3d(-33.333333%,0,0); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content; /* track width equals content so -33.3333% equals one set when there are 3 sets */
+  animation: marquee 20s linear infinite;
+  will-change: transform;
+  align-items: center;
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
+  }
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-swiss: "Swiss 721 BT", Arial, sans-serif;
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
 }
 
 @media (prefers-color-scheme: dark) {

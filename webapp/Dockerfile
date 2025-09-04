@@ -1,4 +1,4 @@
-FROM node:18-alpine
+npm run FROM node:18-alpine
 
 WORKDIR /app
 
