@@ -27,7 +27,7 @@ export default function LandingPage() {
             </button>
           </div>
         </div>
-        <div className="hidden lg:block w-[350px]">
+        <div className="hidden lg:block">
           <NewYorkCard />
         </div>
       </div>

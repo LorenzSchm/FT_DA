@@ -1,0 +1,22 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend:/app
+    environment:
+      UV_SYSTEM_PYTHON: "1"
+
+  frontend:
+    build: ./webapp
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./webapp:/app
+      - /app/node_modules
+    environment:
+      BACKEND_BASE_URL: "http://localhost:8080"
+      NEXT_PUBLIC_BACKEND_BASE_URL: "http://localhost:8080"
+      NEXT_PUBLIC_BASE_URL: "http://localhost:3000"
+      NODE_ENV: development

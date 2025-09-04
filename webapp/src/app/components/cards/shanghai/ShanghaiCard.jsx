@@ -1,58 +1,60 @@
-import { ChevronDown, EyeOff } from "react-feather";
+import {ChevronDown, EyeOff} from "react-feather";
 
-export default function NewYorkCard({bg_visible = false}) {
-  const transactionData = [
+export default function ShanghaiCard () {
+    const transactionData = [
     {
       type: "Monthly Income",
-      amount: "+$3,250.00",
+      amount: "+$2,050.00",
       description: "Salary",
       colorCode: "text-green-300",
     },
     {
       type: "Monthly Subscription",
-      amount: "-$59.99",
-      description: "Internet",
-      colorCode: "text-red-300",
-    },
-    {
-      type: "Weekly Shopping",
-      amount: "-$85.50",
-      description: "Groceries",
-      colorCode: "text-red-300",
-    },
-    {
-      type: "Rental Income",
-      amount: "+$850.00",
-      description: "Property #2",
-      colorCode: "text-green-300",
-    },
-    {
-      type: "Monthly Payment",
-      amount: "-$1,200.00",
-      description: "Rent",
+      amount: "-$14.99",
+      description: "Netflix",
       colorCode: "text-red-300",
     },
     {
       type: "Dividend Payment",
-      amount: "+$412.33",
+      amount: "-+$210.54",
       description: "Stocks",
       colorCode: "text-green-300",
+    },
+    {
+      type: "Freelance Income",
+      amount: "+$850.00",
+      description: "Max Weber",
+      colorCode: "text-green-300",
+    },
+    {
+      type: "Shopping",
+      amount: "-$349.99",
+      description: "Mr Porter",
+      colorCode: "text-red-300",
+    },
+    {
+      type: "Monthly Payment",
+      amount: "-$950.00",
+      description: "Rent",
+      colorCode: "text-red-300",
     },
   ];
 
   return (
     <div
-      className={`w-[350px] rounded-[50px] p-5 flex flex-col gap-6 ${bg_visible ? "" : "border-2 border-white/50"}`}
-      style={bg_visible ? {
-        backgroundImage: "url('/ny_card.png')",
+      className={
+        "w-[350px] rounded-[50px] p-5 flex flex-col gap-6"
+      }
+      style={{
+        backgroundImage: "url('/shanghai_card.png')",
         backgroundPosition: "center",
         backgroundSize: "cover",
         backgroundRepeat: "no-repeat"
-      } : {}}
+      }}
     >
       <div
         className={
-          "bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-4xl p-2 px-3 flex flex-col gap-2"
+          "bg-white/10 backdrop-blur-sm border border-2 border-white/30 rounded-4xl p-2 px-3 flex flex-col gap-2"
         }
       >
         <div className={"flex flex-row items-center justify-between"}>
@@ -72,7 +74,7 @@ export default function NewYorkCard({bg_visible = false}) {
           className={"text-white font-swiss font-bold text-xl flex flex-col"}
         >
           Balance:
-          <span className={"text-green-300 text-2xl"}>+$6530.54</span>
+          <span className={"text-green-300 text-2xl"}>+$3049.09</span>
         </div>
       </div>
       <div
