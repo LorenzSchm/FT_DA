@@ -9,19 +9,21 @@ export default function CardView() {
     <div className={"h-full w-screen bg-white"}>
       <div className={"flex flex-col justify-center items-center mt-28 gap-4"}>
         <Image src={"/icon.svg"} width={100} height={100} />
-        <span className={"text-5xl font-swiss font-bold"}>
+        <span className={"lg:text-5xl text-3xl font-swiss font-bold"}>
           Track everything. Everywhere.
         </span>
       </div>
-      <div>
-        <LondonCard />
-      </div>
-      <div>
-        <NewYorkCard bg_visible={true} />
-      </div>
-      <div>
-        <ShanghaiCard />
-      </div>
+        <div className={"w-full flex flex-row gap-10 justify-center mt-10"}>
+          <div className={"hidden xl:block mt-12"}>
+            <LondonCard />
+          </div>
+          <div>
+            <NewYorkCard bg_visible={true} />
+          </div>
+          <div className={"hidden xl:block mt-12"}>
+            <ShanghaiCard />
+          </div>
+        </div>
     </div>
   );
 }
