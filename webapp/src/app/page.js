@@ -23,7 +23,7 @@ export default function Home() {
         <CardView />
       </div>
       <div>
-          <InfiniteMarqueeView />
+        <InfiniteMarqueeView />
       </div>
       <div>
         <Footer />

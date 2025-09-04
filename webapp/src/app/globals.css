@@ -5,10 +5,13 @@
   --foreground: #171717;
 }
 
-
 @keyframes marquee {
-  0%   { transform: translate3d(0,0,0); }
-  100% { transform: translate3d(-33.333333%,0,0); }
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-33.333333%, 0, 0);
+  }
 }
 
 .animate-marquee {
@@ -19,7 +22,6 @@
   align-items: center;
 }
 
-
 @media (prefers-reduced-motion: reduce) {
   .animate-marquee {
     animation: none;
@@ -29,8 +31,12 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
+  --font-sans:
+    system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New",
+    monospace;
 }
 
 @media (prefers-color-scheme: dark) {
