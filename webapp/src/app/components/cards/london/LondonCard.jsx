@@ -1,58 +1,54 @@
 import { ChevronDown, EyeOff } from "react-feather";
 
-export default function NewYorkCard({ bg_visible = false }) {
+export default function LondonCard() {
   const transactionData = [
     {
       type: "Monthly Income",
-      amount: "+$3,250.00",
-      description: "Salary",
+      amount: "+$100.00",
+      description: "Pocket Money",
       colorCode: "text-green-300",
     },
     {
       type: "Monthly Subscription",
-      amount: "-$59.99",
-      description: "Internet",
+      amount: "-$24.99",
+      description: "Open AI",
       colorCode: "text-red-300",
     },
     {
-      type: "Weekly Shopping",
+      type: "Shopping",
       amount: "-$85.50",
-      description: "Groceries",
+      description: "Foot Locker",
       colorCode: "text-red-300",
     },
     {
-      type: "Rental Income",
-      amount: "+$850.00",
-      description: "Property #2",
+      type: "Monthly Income",
+      amount: "+$500.00",
+      description: "Salary",
       colorCode: "text-green-300",
     },
     {
-      type: "Monthly Payment",
-      amount: "-$1,200.00",
-      description: "Rent",
+      type: "Shopping",
+      amount: "-$120.00",
+      description: "H&M",
       colorCode: "text-red-300",
     },
     {
-      type: "Dividend Payment",
-      amount: "+$412.33",
-      description: "Stocks",
+      type: "Birthday Present",
+      amount: "+$400.00",
+      description: "Karen Smith",
       colorCode: "text-green-300",
     },
   ];
 
   return (
     <div
-      className={`w-[350px] rounded-[50px] p-5 flex flex-col gap-6 ${bg_visible ? "" : "border-2 border-white/50"}`}
-      style={
-        bg_visible
-          ? {
-              backgroundImage: "url('/ny_card.png')",
-              backgroundPosition: "center",
-              backgroundSize: "cover",
-              backgroundRepeat: "no-repeat",
-            }
-          : {}
-      }
+      className={"w-[350px] rounded-[50px] p-5 flex flex-col gap-6"}
+      style={{
+        backgroundImage: "url('/london_card.png')",
+        backgroundPosition: "center",
+        backgroundSize: "cover",
+        backgroundRepeat: "no-repeat",
+      }}
     >
       <div
         className={
@@ -65,7 +61,7 @@ export default function NewYorkCard({ bg_visible = false }) {
               "text-white font-swiss font-bold text-2xl border-b border-white flex flex-row items-center"
             }
           >
-            Giro
+            Youth
             <ChevronDown size={20} />
           </div>
           <div className={"text-white font-swiss font-bold text-lg"}>
@@ -76,7 +72,7 @@ export default function NewYorkCard({ bg_visible = false }) {
           className={"text-white font-swiss font-bold text-xl flex flex-col"}
         >
           Balance:
-          <span className={"text-green-300 text-2xl"}>+$6530.54</span>
+          <span className={"text-green-300 text-2xl"}>+$430.72</span>
         </div>
       </div>
       <div
