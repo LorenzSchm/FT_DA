@@ -13,17 +13,17 @@ export default function CardView() {
           Track everything. Everywhere.
         </span>
       </div>
-        <div className={"w-full flex flex-row gap-10 justify-center mt-10"}>
-          <div className={"hidden xl:block mt-12"}>
-            <LondonCard />
-          </div>
-          <div>
-            <NewYorkCard bg_visible={true} />
-          </div>
-          <div className={"hidden xl:block mt-12"}>
-            <ShanghaiCard />
-          </div>
+      <div className={"w-full flex flex-row gap-10 justify-center mt-10"}>
+        <div className={"hidden xl:block mt-12"}>
+          <LondonCard />
         </div>
+        <div>
+          <NewYorkCard bg_visible={true} />
+        </div>
+        <div className={"hidden xl:block mt-12"}>
+          <ShanghaiCard />
+        </div>
+      </div>
     </div>
   );
 }
