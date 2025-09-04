@@ -1,6 +1,6 @@
 import { ChevronDown, EyeOff } from "react-feather";
 
-export default function NewYorkCard({bg_visible = false}) {
+export default function NewYorkCard({ bg_visible = false }) {
   const transactionData = [
     {
       type: "Monthly Income",
@@ -43,12 +43,16 @@ export default function NewYorkCard({bg_visible = false}) {
   return (
     <div
       className={`w-[350px] rounded-[50px] p-5 flex flex-col gap-6 ${bg_visible ? "" : "border-2 border-white/50"}`}
-      style={bg_visible ? {
-        backgroundImage: "url('/ny_card.png')",
-        backgroundPosition: "center",
-        backgroundSize: "cover",
-        backgroundRepeat: "no-repeat"
-      } : {}}
+      style={
+        bg_visible
+          ? {
+              backgroundImage: "url('/ny_card.png')",
+              backgroundPosition: "center",
+              backgroundSize: "cover",
+              backgroundRepeat: "no-repeat",
+            }
+          : {}
+      }
     >
       <div
         className={

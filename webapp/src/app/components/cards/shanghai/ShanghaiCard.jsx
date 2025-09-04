@@ -1,7 +1,7 @@
-import {ChevronDown, EyeOff} from "react-feather";
+import { ChevronDown, EyeOff } from "react-feather";
 
-export default function ShanghaiCard () {
-    const transactionData = [
+export default function ShanghaiCard() {
+  const transactionData = [
     {
       type: "Monthly Income",
       amount: "+$2,050.00",
@@ -42,14 +42,12 @@ export default function ShanghaiCard () {
 
   return (
     <div
-      className={
-        "w-[350px] rounded-[50px] p-5 flex flex-col gap-6"
-      }
+      className={"w-[350px] rounded-[50px] p-5 flex flex-col gap-6"}
       style={{
         backgroundImage: "url('/shanghai_card.png')",
         backgroundPosition: "center",
         backgroundSize: "cover",
-        backgroundRepeat: "no-repeat"
+        backgroundRepeat: "no-repeat",
       }}
     >
       <div
