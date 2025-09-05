@@ -2,55 +2,86 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { motion } from "framer-motion";
 
 export default function NavBar() {
   const pathname = usePathname();
   const [activeTab, setActiveTab] = useState(pathname);
-  const aboutRef = useRef(null);
-  const plansRef = useRef(null);
-  const teamRef = useRef(null);
   const containerRef = useRef(null);
-  const sliderRef = useRef(null);
 
-  const navLinks = [
-    { path: "/", ref: aboutRef, label: "About" },
-    { path: "/plans", ref: plansRef, label: "Plans" },
-    { path: "/team", ref: teamRef, label: "The Team" },
-  ];
+  const navLinks = useMemo(
+    () => [
+      { path: "/", label: "About" },
+      { path: "/plans", label: "Plans" },
+      { path: "/team", label: "The Team" },
+    ],
+    [],
+  );
 
-  const handleLinkClick = (path) => {
-    setActiveTab(path);
-  };
+  const itemRefs = useRef([]);
+  itemRefs.current = navLinks.map((_, i) => itemRefs.current[i] ?? null);
 
-  useEffect(() => {
-    setActiveTab(pathname);
-  }, [pathname]);
+  useEffect(() => setActiveTab(pathname), [pathname]);
+
+  const [slider, setSlider] = useState({ left: 0, width: 0 });
+  useLayoutEffect(() => {
+    const idx = navLinks.findIndex((l) => l.path === activeTab);
+    const el = itemRefs.current[idx];
+    const parent = containerRef.current;
+    if (!el || !parent) return;
+
+    const parentRect = parent.getBoundingClientRect();
+    const rect = el.getBoundingClientRect();
+    setSlider({ left: rect.left - parentRect.left, width: rect.width });
+  }, [activeTab, navLinks]);
+
+  const handleLinkClick = (path) => setActiveTab(path);
 
   return (
-    <div className="w-full bg-gradient-to-b from-[#B7B7B7] to-transparent flex flex-row justify-between items-center">
-      <div className="p-4 flex flex-row items-center gap-2">
-        <img src="/icon.svg" alt="logo" width={25} />
-        <h1 className="text-white font-bold text-3xl">Finance Tracker</h1>
+    <div className="w-full bg-gradient-to-b from-[#B7B7B7] to-transparent flex flex-row justify-between items-center px-4 py-3">
+      <div className="flex flex-row items-center gap-2">
+        <img
+          src="/icon.svg"
+          alt="logo"
+          width={24}
+          className="filter drop-shadow-md"
+        />
+        <h1 className="text-white text-xl font-extrabold tracking-tight">
+          Finance Tracker
+        </h1>
       </div>
+
       <div
         ref={containerRef}
-        className="flex flex-row items-center gap-2 m-4 text-white font-bold bg-blue-800/5 backdrop-blur-sm border border-2 border-white/40 rounded-3xl relative"
+        className="relative flex flex-row items-center gap-2 "
       >
-        {navLinks.map((link) => (
-          <Link
-            key={link.path}
-            ref={link.ref}
-            href={link.path}
-            className={`pl-3 pr-3 z-20 relative text-center transition-colors duration-300 ${
-              activeTab === link.path
-                ? "text-white bg-white/10 rounded-3xl z-10 border border-white/30"
-                : "text-white/90"
-            }`}
-            onClick={() => handleLinkClick(link.path)}
-          >
-            {link.label}
-          </Link>
+        <motion.div
+          className="absolute bottom-0 border-b-2 border-white"
+          animate={{ left: slider.left, width: slider.width }}
+          transition={{
+            type: "spring",
+            stiffness: 120,
+            damping: 18,
+            mass: 0.2,
+          }}
+          style={{ willChange: "left, width" }}
+        />
+
+        {navLinks.map((link, index) => (
+          <div key={link.path} ref={(el) => (itemRefs.current[index] = el)}>
+            <Link
+              href={link.path}
+              onClick={() => handleLinkClick(link.path)}
+              className={`relative z-20 inline-flex h-2 items-center justify-center px-3 lg:text-lg sm:text-sm font-bold transition-colors duration-300 ${
+                activeTab === link.path
+                  ? "text-white drop-shadow-md"
+                  : "text-white/70 hover:text-white/90"
+              }`}
+            >
+              {link.label}
+            </Link>
+          </div>
         ))}
       </div>
     </div>

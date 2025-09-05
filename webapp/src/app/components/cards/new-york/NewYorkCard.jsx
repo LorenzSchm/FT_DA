@@ -51,7 +51,9 @@ export default function NewYorkCard({ bg_visible = false }) {
               backgroundSize: "cover",
               backgroundRepeat: "no-repeat",
             }
-          : {}
+          : {
+              backgroundColor: "rgb(255,255,255,0.001)",
+            }
       }
     >
       <div
