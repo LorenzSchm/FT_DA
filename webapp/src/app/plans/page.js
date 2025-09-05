@@ -17,7 +17,7 @@ export default function PlansPage() {
       <div>
         <PlansView />
       </div>
-       <div>
+      <div>
         <Footer />
       </div>
     </div>

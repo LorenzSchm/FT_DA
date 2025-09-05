@@ -1,5 +1,5 @@
 import React from "react";
-import {CheckCircle} from "react-feather";
+import { CheckCircle } from "react-feather";
 
 export default function PersonalCard() {
   const data = {
@@ -19,26 +19,34 @@ export default function PersonalCard() {
 
         <div className="flex text-base flex-col gap-3">
           <div className="flex items-start">
-            <span className="text-green-500 h-3.5 mr-2"><CheckCircle /></span>
+            <span className="text-green-500 h-3.5 mr-2">
+              <CheckCircle />
+            </span>
             <span className="text-gray-800">
               Track <span className="font-bold">unlimited</span> transactions
             </span>
           </div>
           <div className="flex items-start">
-            <span className="text-green-500 h-3.5 mr-2"><CheckCircle /></span>
+            <span className="text-green-500 h-3.5 mr-2">
+              <CheckCircle />
+            </span>
             <span className="text-gray-800">
               <span className="font-bold">Connect</span> up to{" "}
               <span className="font-bold">2 bank accounts</span>
             </span>
           </div>
           <div className="flex items-start">
-            <span className="text-green-500 h-3.5 mr-2"><CheckCircle /></span>
+            <span className="text-green-500 h-3.5 mr-2">
+              <CheckCircle />
+            </span>
             <span className="text-gray-800">
               Track <span className="font-bold">unlimited</span> subscriptions
             </span>
           </div>
           <div className="flex items-start">
-            <span className="text-green-500 h-3.5 mr-2"><CheckCircle /></span>
+            <span className="text-green-500 h-3.5 mr-2">
+              <CheckCircle />
+            </span>
             <span className="text-gray-800">
               <span className="font-bold">Gain valuable</span> analytical{" "}
               <span className="font-bold">insights</span>

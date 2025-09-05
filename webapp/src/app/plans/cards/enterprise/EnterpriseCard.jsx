@@ -1,12 +1,13 @@
-import {CheckCircle} from "react-feather";
+import { CheckCircle } from "react-feather";
 import React from "react";
 
 export default function EnterpriseCard() {
-    const data =
-        {title: "Enterprise",
-        subtitle: "Scalable solutions for large organizations",}
+  const data = {
+    title: "Enterprise",
+    subtitle: "Scalable solutions for large organizations",
+  };
 
-    return(
+  return (
     <div className="w-[350px] h-[530px] border-2 border-gray-200 rounded-[50px] px-6 pt-3 pb-8 flex flex-col justify-between">
       <div className="flex flex-col mt-6 gap-5">
         <div className="font-bold text-3xl">{data.title}</div>
@@ -18,21 +19,27 @@ export default function EnterpriseCard() {
 
         <div className="flex text-base flex-col gap-3">
           <div className="flex items-start">
-            <span className="text-green-500 h-3.5 mr-2"><CheckCircle /></span>
+            <span className="text-green-500 h-3.5 mr-2">
+              <CheckCircle />
+            </span>
             <span className="text-gray-800">
-               <span className="font-bold">Everything from Pro</span>
+              <span className="font-bold">Everything from Pro</span>
             </span>
           </div>
           <div className="flex items-start">
-            <span className="text-green-500 h-3.5 mr-2"><CheckCircle /></span>
+            <span className="text-green-500 h-3.5 mr-2">
+              <CheckCircle />
+            </span>
             <span className="text-gray-800">
               <span className="font-bold">Connect unlimited bank accounts</span>
             </span>
           </div>
           <div className="flex items-start">
-            <span className="text-green-500 h-3.5 mr-2"><CheckCircle /></span>
+            <span className="text-green-500 h-3.5 mr-2">
+              <CheckCircle />
+            </span>
             <span className="text-gray-800">
-               <span className="font-bold">Priority support</span>
+              <span className="font-bold">Priority support</span>
             </span>
           </div>
         </div>
@@ -42,5 +49,5 @@ export default function EnterpriseCard() {
         Contact us
       </button>
     </div>
-    );
+  );
 }
