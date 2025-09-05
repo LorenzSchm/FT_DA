@@ -23,8 +23,8 @@
 }
 
 .animate-marquee:hover {
-    cursor: pointer;
-    animation-duration: 50s;
+  cursor: pointer;
+  animation-duration: 50s;
 }
 
 @media (prefers-reduced-motion: reduce) {
