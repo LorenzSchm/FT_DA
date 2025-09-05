@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import Image from "next/image";
 import ShanghaiCard from "@/app/components/cards/shanghai/ShanghaiCard";

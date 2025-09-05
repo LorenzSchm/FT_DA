@@ -16,7 +16,7 @@ export default function NavBar() {
       { path: "/plans", label: "Plans" },
       { path: "/team", label: "The Team" },
     ],
-    []
+    [],
   );
 
   const itemRefs = useRef([]);
@@ -41,7 +41,12 @@ export default function NavBar() {
   return (
     <div className="w-full bg-gradient-to-b from-[#B7B7B7] to-transparent flex flex-row justify-between items-center px-4 py-3">
       <div className="flex flex-row items-center gap-2">
-        <img src="/icon.svg" alt="logo" width={24} className="filter drop-shadow-md" />
+        <img
+          src="/icon.svg"
+          alt="logo"
+          width={24}
+          className="filter drop-shadow-md"
+        />
         <h1 className="text-white text-xl font-extrabold tracking-tight">
           Finance Tracker
         </h1>
@@ -51,19 +56,20 @@ export default function NavBar() {
         ref={containerRef}
         className="relative flex flex-row items-center gap-2 "
       >
-
         <motion.div
           className="absolute bottom-0 border-b-2 border-white"
           animate={{ left: slider.left, width: slider.width }}
-          transition={{ type: "spring", stiffness: 120, damping: 18, mass: 0.2 }}
+          transition={{
+            type: "spring",
+            stiffness: 120,
+            damping: 18,
+            mass: 0.2,
+          }}
           style={{ willChange: "left, width" }}
         />
 
         {navLinks.map((link, index) => (
-          <div
-            key={link.path}
-            ref={(el) => (itemRefs.current[index] = el)}
-          >
+          <div key={link.path} ref={(el) => (itemRefs.current[index] = el)}>
             <Link
               href={link.path}
               onClick={() => handleLinkClick(link.path)}

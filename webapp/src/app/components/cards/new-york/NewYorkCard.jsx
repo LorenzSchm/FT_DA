@@ -52,7 +52,7 @@ export default function NewYorkCard({ bg_visible = false }) {
               backgroundRepeat: "no-repeat",
             }
           : {
-            backgroundColor: "rgb(255,255,255,0.001)",
+              backgroundColor: "rgb(255,255,255,0.001)",
             }
       }
     >
