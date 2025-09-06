@@ -22,7 +22,7 @@ export default function EnterpriseCard() {
             <span className="text-green-500 h-3.5 mr-2">
               <CheckCircle />
             </span>
-            <span className="text-gray-800">
+            <span className="text-black">
               <span className="font-bold">Everything from Pro</span>
             </span>
           </div>
@@ -30,7 +30,7 @@ export default function EnterpriseCard() {
             <span className="text-green-500 h-3.5 mr-2">
               <CheckCircle />
             </span>
-            <span className="text-gray-800">
+            <span className="text-black">
               <span className="font-bold">Connect unlimited bank accounts</span>
             </span>
           </div>
@@ -38,7 +38,7 @@ export default function EnterpriseCard() {
             <span className="text-green-500 h-3.5 mr-2">
               <CheckCircle />
             </span>
-            <span className="text-gray-800">
+            <span className="text-black">
               <span className="font-bold">Priority support</span>
             </span>
           </div>

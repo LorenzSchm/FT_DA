@@ -8,8 +8,8 @@ export default function PersonalCard() {
   };
 
   return (
-    <div className="w-[350px] h-[530px] border-2 border-gray-200 rounded-[50px] px-6 pt-3 pb-8 flex flex-col justify-between">
-      <div className="flex flex-col mt-6 gap-5">
+    <div className="w-[350px] h-[530px] border-2 border-gray-200 rounded-[50px] px-6 pt-6 pb-12 flex flex-col justify-between">
+      <div className="flex flex-col gap-4">
         <div className="font-bold text-3xl">{data.title}</div>
         <div className="text-black font-bold text-lg">{data.subtitle}</div>
 
@@ -22,7 +22,7 @@ export default function PersonalCard() {
             <span className="text-green-500 h-3.5 mr-2">
               <CheckCircle />
             </span>
-            <span className="text-gray-800">
+            <span className="text-black">
               Track <span className="font-bold">unlimited</span> transactions
             </span>
           </div>
@@ -30,7 +30,7 @@ export default function PersonalCard() {
             <span className="text-green-500 h-3.5 mr-2">
               <CheckCircle />
             </span>
-            <span className="text-gray-800">
+            <span className="text-black">
               <span className="font-bold">Connect</span> up to{" "}
               <span className="font-bold">2 bank accounts</span>
             </span>
@@ -47,7 +47,7 @@ export default function PersonalCard() {
             <span className="text-green-500 h-3.5 mr-2">
               <CheckCircle />
             </span>
-            <span className="text-gray-800">
+            <span className="text-black">
               <span className="font-bold">Gain valuable</span> analytical{" "}
               <span className="font-bold">insights</span>
             </span>
