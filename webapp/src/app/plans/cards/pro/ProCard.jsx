@@ -1,5 +1,4 @@
 import React from "react";
-import { CheckCircle } from "react-feather";
 
 export default function ProCard() {
   const data = {
