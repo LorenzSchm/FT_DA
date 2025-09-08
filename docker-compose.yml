@@ -8,3 +8,4 @@ services:
     build: ./webapp
     ports:
       - "3000:3000"
+

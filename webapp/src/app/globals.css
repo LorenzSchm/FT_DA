@@ -16,10 +16,15 @@
 
 .animate-marquee {
   display: flex;
-  width: max-content; /* track width equals content so -33.3333% equals one set when there are 3 sets */
+  width: max-content;
   animation: marquee 20s linear infinite;
   will-change: transform;
   align-items: center;
+}
+
+.animate-marquee:hover {
+  cursor: pointer;
+  animation-duration: 50s;
 }
 
 @media (prefers-reduced-motion: reduce) {

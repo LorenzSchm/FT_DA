@@ -1,38 +1,61 @@
 "use client";
 
+import { motion } from "framer-motion";
+import { useState } from "react";
+
 export default function InfiniteMarquee() {
   const logos = [
-    { src: "/logos/robinHood.svg", alt: "RobinHood", text: "Subscriptions" },
+    { src: "/logos/robinHood.png", alt: "RobinHood", text: "Investments" },
     { src: "/logos/mastercard.svg", alt: "Mastercard", text: "Savings" },
     { src: "/logos/revolut.svg", alt: "Revolut", text: "Bank Accounts" },
-    { src: "/logos/hbo.svg", alt: "HBO", text: "Investments" },
+    { src: "/logos/hbo.svg", alt: "HBO", text: "Subscriptions" },
     { src: "/logos/netflix.svg", alt: "Netflix", text: "Subscriptions" },
-    { src: "/logos/whoop.svg", alt: "Whoop", text: "Savings" },
+    { src: "/logos/whoop.svg", alt: "Whoop", text: "Subscriptions" },
     {
       src: "/logos/bankOfAmerica.svg",
       alt: "Bank of America",
       text: "Bank Accounts",
     },
+    {
+      src: "/logos/tr.svg",
+      alt: "Trade Republic",
+      text: "Savings",
+    },
   ];
+
+  const logoWidth = 192;
+  const totalWidth = logos.length * logoWidth;
+  const [isHovered, setIsHovered] = useState(false);
+
   return (
-    <div className={"bg-white h-screen"}>
-      <div
-        className={
-          "flex bg-white flex-col justify-center items-center mt-28 gap-4"
-        }
-      >
-        <span
-          className={
-            "text-5xl ml-22  font-swiss mt-36 self-start text-black font-extrabold"
-          }
-        >
+    <div className="bg-white h-screen">
+      <div className="flex bg-white flex-col justify-center items-center gap-4">
+        <span className="lg:text-6xl text-5xl ml-10 font-swiss mt-28 self-start text-black font-bold">
           Everything, in one place.
         </span>
       </div>
       <div className="overflow-hidden relative w-full bg-white mt-36 py-6">
-        <div className="flex flex-nowrap animate-marquee whitespace-nowrap">
+        <motion.div
+          className="flex flex-nowrap whitespace-nowrap cursor-pointer"
+          animate={{
+            x: [0, -totalWidth],
+          }}
+          transition={{
+            x: {
+              repeat: Infinity,
+              repeatType: "loop",
+              duration: isHovered ? 90 : 20,
+              ease: "linear",
+            },
+          }}
+          onHoverStart={() => setIsHovered(true)}
+          onHoverEnd={() => setIsHovered(false)}
+        >
           {logos.concat(logos, logos).map((logo, index) => (
-            <div key={index} className="mx-2 w-48 flex flex-col items-center">
+            <div
+              key={index}
+              className="mx-2 w-48 flex flex-col items-center flex-shrink-0"
+            >
               <div className="text-black text-xl mb-2 font-extrabold text-center w-full">
                 {logo.text}
               </div>
@@ -40,17 +63,9 @@ export default function InfiniteMarquee() {
                 <img
                   src={logo.src}
                   alt={logo.alt}
-                  className={
-                    [
-                      "HBO",
-                      "Mastercard",
-                      "Netflix",
-                      "Bank of America",
-                      "RobinHood",
-                    ].includes(logo.alt)
-                      ? "max-h-28 w-auto object-contain block"
-                      : "max-h-full w-auto object-contain block"
-                  }
+                  height={100}
+                  width={100}
+                  className="max-h-28 w-auto object-contain block"
                 />
               </div>
               <div className="text-black text-xl mt-2 font-extrabold text-center w-full">
@@ -58,7 +73,7 @@ export default function InfiniteMarquee() {
               </div>
             </div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </div>
   );

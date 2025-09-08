@@ -79,14 +79,14 @@ export default function LandingPage() {
   return (
     <div>
       <div className="mt-20 justify-center gap-36 flex flex-row">
-        <div ref={textRef}>
+        <div ref={textRef} c>
           <motion.div
             initial="hidden"
             animate={isTextInView ? "visible" : "hidden"}
             variants={textVariants}
             custom={0}
           >
-            <h1 className="font-swiss text-white font-bold text-5xl">
+            <h1 className="font-swiss text-white font-bold text-6xl">
               Finance Simplified
             </h1>
           </motion.div>
@@ -112,7 +112,7 @@ export default function LandingPage() {
             variants={textVariants}
             custom={2}
           >
-            <button className="text-lg font-bold text-white px-5 py-1 rounded-3xl bg-white/20 border-2 border-solid border-white/50 hover:cursor-pointer hover:border-white/70">
+            <button className="text-lg mt-2 font-bold text-white px-5 py-1 rounded-3xl bg-white/20 border-2 border-solid border-white/50 hover:cursor-pointer hover:border-white/70">
               Start Saving
             </button>
           </motion.div>
