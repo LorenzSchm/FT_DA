@@ -1,7 +1,3 @@
 export default function TeamPage() {
-    return(
-        <div>
-
-        </div>
-    )
+  return <div></div>;
 }
