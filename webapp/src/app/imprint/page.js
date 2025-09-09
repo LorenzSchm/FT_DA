@@ -3,7 +3,10 @@ import ImprintView from "@/app/components/imprint/ImprintView";
 
 export default function Page() {
   return (
-    <div>
+    <div
+    className="w-full h-screen bg-cover bg-no-repeat"
+      style={{ backgroundImage: "url('/hongkong.jpg')" }}
+    >
       <ImprintView />
     </div>
   );
