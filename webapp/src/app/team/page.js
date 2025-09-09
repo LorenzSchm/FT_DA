@@ -8,7 +8,6 @@ import Footer from "@/app/components/footer/Footer";
 import TeamPage from "@/app/components/team/TeamPage";
 
 export default function Page() {
-
   return (
     <div>
       <div
@@ -23,16 +22,16 @@ export default function Page() {
         >
           The Finance Tracker Team
         </div>
-          <div className={"lg:mt-72 mt-72"}>
-              <Dots />
-          </div>
+        <div className={"lg:mt-72 mt-72"}>
+          <Dots />
+        </div>
       </div>
-        <div>
-            <TeamPage />
-        </div>
-        <div>
-            <Footer />
-        </div>
+      <div>
+        <TeamPage />
+      </div>
+      <div>
+        <Footer />
+      </div>
     </div>
   );
 }

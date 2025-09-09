@@ -33,7 +33,10 @@ export default function Card({
 
   const buttonVariants = {
     initial: { backgroundColor: "#000000" },
-    hover: { backgroundColor: "rgba(0,0,0,0.8)", transition: { duration: 0.2 } },
+    hover: {
+      backgroundColor: "rgba(0,0,0,0.8)",
+      transition: { duration: 0.2 },
+    },
     tap: { scale: reduceMotion ? 1 : 0.98 },
   };
 
@@ -61,7 +64,9 @@ export default function Card({
       whileTap="tap"
     >
       <div className="flex flex-col gap-4 sm:gap-5">
-        <h3 className="font-bold text-2xl sm:text-3xl leading-tight">{title}</h3>
+        <h3 className="font-bold text-2xl sm:text-3xl leading-tight">
+          {title}
+        </h3>
 
         {subtitle && (
           <p className="text-gray-800 font-semibold text-base sm:text-lg leading-snug">

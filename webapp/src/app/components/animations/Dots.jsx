@@ -11,22 +11,21 @@ export default function Dots() {
       opacity: 0,
     },
     visible: (index) => ({
-            scale: [1, 1.2, 1],
-            opacity: 1,
-            transition: {
-                scale: {
-                    repeat: Infinity,
-                    repeatType: "loop",
-                    duration: 1.5,
-                    delay: index * 0.2,
-                    ease: "easeInOut",
-                },
-                opacity: {
-                    duration: 0.5,
-                },
-            },
-        }
-    ),
+      scale: [1, 1.2, 1],
+      opacity: 1,
+      transition: {
+        scale: {
+          repeat: Infinity,
+          repeatType: "loop",
+          duration: 1.5,
+          delay: index * 0.2,
+          ease: "easeInOut",
+        },
+        opacity: {
+          duration: 0.5,
+        },
+      },
+    }),
     hover: {
       scale: 1.25,
       width: 20,
