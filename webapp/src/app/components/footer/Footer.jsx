@@ -10,14 +10,14 @@ export default function Footer() {
     >
       <div className={"flex flex-row gap-2"}>
         <Link
-          href={"/"}
+          href={"/imprint"}
           className={"text-gray-700 hover:cursor-pointer hover:text-gray-900"}
         >
           Imprint
         </Link>
         -
         <Link
-          href={"/"}
+          href={"/privacy-policy"}
           className={"text-gray-700 hover:cursor-pointer hover:text-gray-900"}
         >
           Privacy Policy
@@ -30,13 +30,13 @@ export default function Footer() {
         </span>
       </div>
       <div className={"flex flex-row gap-2 items-center"}>
-        <Link href={"/"}>
+        <Link href={"https://www.instagram.com/financetrackerapp/"}>
           <Instagram
             className={"text-gray-700 hover:cursor-pointer hover:text-gray-900"}
           />
         </Link>
         <Link
-          href={"/"}
+          href={"https://x.com/fintrackera_da"}
           className={
             "text-3xl text-gray-700 hover:cursor-pointer hover:text-gray-900"
           }
