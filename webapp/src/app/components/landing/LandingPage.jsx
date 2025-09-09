@@ -3,45 +3,13 @@
 import NewYorkCard from "@/app/components/cards/new-york/NewYorkCard";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+import Dots from "@/app/components/animations/Dots";
 
 export default function LandingPage() {
-  const dotsRef = useRef(null);
   const cardRef = useRef(null);
   const textRef = useRef(null);
-  const isDotsInView = useInView(dotsRef, { once: false, amount: 0.5 });
   const isCardInView = useInView(cardRef, { once: true, amount: 0.3 });
   const isTextInView = useInView(textRef, { once: true, amount: 0.5 });
-
-  const dotVariants = {
-    hidden: {
-      scale: 1,
-      opacity: 0,
-    },
-    visible: (index) => ({
-      scale: [1, 1.2, 1],
-      opacity: 1,
-      transition: {
-        scale: {
-          repeat: Infinity,
-          repeatType: "loop",
-          duration: 1.5,
-          delay: index * 0.2,
-          ease: "easeInOut",
-        },
-        opacity: {
-          duration: 0.5,
-        },
-      },
-    }),
-    hover: {
-      scale: 1.25,
-      width: 20,
-      height: 20,
-      transition: {
-        duration: 0.3,
-      },
-    },
-  };
 
   const cardVariants = {
     hidden: {
@@ -79,7 +47,7 @@ export default function LandingPage() {
   return (
     <div>
       <div className="mt-20 justify-center gap-36 flex flex-row">
-        <div ref={textRef} c>
+        <div ref={textRef}>
           <motion.div
             initial="hidden"
             animate={isTextInView ? "visible" : "hidden"}
@@ -127,21 +95,8 @@ export default function LandingPage() {
           <NewYorkCard />
         </motion.div>
       </div>
-      <div
-        ref={dotsRef}
-        className="flex flex-col gap-2 justify-center items-center lg:mt-10 sm:mt-72 md:mt-72"
-      >
-        {[0, 1, 2].map((index) => (
-          <motion.span
-            key={index}
-            className={`inline-block w-${2 + index} h-${2 + index} bg-white rounded-full mx-1`}
-            custom={index}
-            initial="hidden"
-            animate={isDotsInView ? "visible" : "hidden"}
-            whileHover="hover"
-            variants={dotVariants}
-          />
-        ))}
+      <div>
+        <Dots />
       </div>
     </div>
   );

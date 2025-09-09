@@ -92,6 +92,7 @@ export default function NewYorkCard({ bg_visible = false }) {
         <div>
           {transactionData.map((data, index) => (
             <div
+              key={index}
               className={
                 "flex flex-row items-start justify-between gap-4 text-white font-swiss font-medium"
               }
