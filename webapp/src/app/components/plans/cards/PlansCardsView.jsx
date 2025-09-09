@@ -45,12 +45,13 @@ export default function PlansCardsView() {
   };
 
   return (
-    <div className="flex flex-col xl:h-screen justify-center items-center mt-20">
+    <div className="flex flex-col justify-center items-center mt-20">
       <motion.div
-        className="text-4xl md:text-6xl text-black font-swiss font-black mb-10"
+        className="text-4xl md:text-6xl text-teal-950 font-swiss font-black mb-10"
         initial="hidden"
         animate={isInView ? "visible" : "hidden"}
         variants={centerCardVariants}
+        id="choose-plan"
       >
         Choose your plan
       </motion.div>

@@ -1,9 +1,10 @@
 import NavBar from "@/app/components/navigation/NavBar";
+import ImprintView from "@/app/components/imprint/ImprintView";
 
 export default function Page() {
   return (
-    <div>
-      <NavBar />
-    </div>
+      <div>
+          <ImprintView />
+      </div>
   );
 }

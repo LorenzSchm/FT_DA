@@ -49,8 +49,8 @@ export default function CardView() {
     <div className={"h-full w-screen bg-white"}>
       <div className={"flex flex-col justify-center items-center mt-28 gap-4"}>
         <Image src={"/icon.svg"} width={100} height={100} alt="Icon" />
-        <span className={"lg:text-5xl text-3xl font-swiss font-bold"}>
-          Track everything. Everywhere.
+        <span className={"lg:text-5xl text-3xl font-swiss font-bold text-teal-950"}>
+          Finance Simplified.
         </span>
       </div>
       <div

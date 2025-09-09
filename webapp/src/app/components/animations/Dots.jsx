@@ -1,7 +1,7 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 
-export default function Dots() {
+export default function Dots({link}) {
   const dotsRef = useRef(null);
   const isDotsInView = useInView(dotsRef, { once: false, amount: 0.1 });
 

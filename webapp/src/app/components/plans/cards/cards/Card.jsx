@@ -32,9 +32,7 @@ export default function Card({
   };
 
   const buttonVariants = {
-    initial: { backgroundColor: "#000000" },
     hover: {
-      backgroundColor: "rgba(0,0,0,0.8)",
       transition: { duration: 0.2 },
     },
     tap: { scale: reduceMotion ? 1 : 0.98 },
@@ -64,7 +62,7 @@ export default function Card({
       whileTap="tap"
     >
       <div className="flex flex-col gap-4 sm:gap-5">
-        <h3 className="font-bold text-2xl sm:text-3xl leading-tight">
+        <h3 className="font-bold text-2xl sm:text-3xl leading-tight text-teal-950">
           {title}
         </h3>
 
@@ -108,11 +106,12 @@ export default function Card({
             sm:w-full
             lg:w-64
             self-center
-            bg-black text-white font-semibold
+            bg-teal-950 text-white font-semibold
             text-sm sm:text-base
             py-3 px-6 rounded-full
             outline-none
             focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-black
+            hover:bg-teal-900 hover:cursor-pointer
           "
           variants={buttonVariants}
           initial="initial"

@@ -30,7 +30,7 @@ export default function InfiniteMarquee() {
   return (
     <div className="bg-white h-screen">
       <div className="flex bg-white flex-col justify-center items-center gap-4">
-        <span className="lg:text-6xl text-5xl ml-10 font-swiss mt-28 self-start text-black font-bold">
+        <span className="lg:text-6xl text-5xl ml-10 font-swiss mt-28 self-start text-teal-950 font-bold">
           Everything, in one place.
         </span>
       </div>
