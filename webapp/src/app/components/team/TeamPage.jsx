@@ -1,3 +1,5 @@
 export default function TeamPage() {
-  return <div></div>;
+  return <div className={"h-screen"}>
+
+  </div>;
 }

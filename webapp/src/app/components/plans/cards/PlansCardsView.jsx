@@ -1,11 +1,12 @@
 "use client";
-import PersonalCard from "@/app/plans/cards/personal/PersonalCard";
-import EnterpriseCard from "@/app/plans/cards/enterprise/EnterpriseCard";
-import ProCard from "@/app/plans/cards/pro/ProCard";
+
+import PersonalCard from "@/app/components/plans/cards/cards/personal/PersonalCard";
+import EnterpriseCard from "@/app/components/plans/cards/cards/enterprise/EnterpriseCard";
+import ProCard from "@/app/components/plans/cards/cards/pro/ProCard";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 
-export default function PlansView() {
+export default function PlansCardsView() {
   const cardsRef = useRef(null);
   const isInView = useInView(cardsRef, { once: false, amount: 0.3 });
 
@@ -44,7 +45,7 @@ export default function PlansView() {
   };
 
   return (
-    <div className="flex flex-col xl:h-screen justify-center items-center">
+    <div className="flex flex-col xl:h-screen justify-center items-center mt-20">
       <motion.div
         className="text-4xl md:text-6xl text-black font-swiss font-black mb-10"
         initial="hidden"

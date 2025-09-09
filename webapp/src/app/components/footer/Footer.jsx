@@ -3,7 +3,7 @@ import { Instagram, Linkedin, X } from "react-feather";
 
 export default function Footer() {
   return (
-    <div className={"bg-white flex flex-col gap-1 justify-center items-center"}>
+    <div className={"bg-white flex flex-col gap-1 justify-center items-center mt-10"}>
       <div className={"flex flex-row gap-2"}>
         <Link
           href={"/"}
