@@ -10,9 +10,6 @@ export default function PlansLanding() {
       >
         The Finance Tracker Plans
       </div>
-      <div className={"lg:mt-72"}>
-        <Dots />
-      </div>
     </div>
   );
 }

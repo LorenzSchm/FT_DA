@@ -11,18 +11,18 @@ export default function Page() {
   return (
     <div>
       <div
-        className="w-full h-screen bg-cover bg-no-repeat overflow-hidden"
+        className="w-full h-screen bg-cover bg-no-repeat overflow-hidden flex flex-col justify-between"
         style={{ backgroundImage: "url('/shanghai.jpg')" }}
       >
         <NavBar />
         <div
           className={
-            "mt-60 text-5xl lg:text-6xl font-swiss font-bold text-white flex items-center justify-center"
+            "text-5xl lg:text-6xl font-swiss font-bold text-white flex items-center justify-center"
           }
         >
           The Finance Tracker Team
         </div>
-        <div className={"lg:mt-72 mt-72"}>
+        <div>
           <Dots />
         </div>
       </div>

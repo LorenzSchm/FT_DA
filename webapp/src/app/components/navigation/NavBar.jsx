@@ -39,7 +39,7 @@ export default function NavBar() {
   const handleLinkClick = (path) => setActiveTab(path);
 
   return (
-    <div className="w-full bg-gradient-to-b from-[#B7B7B7] to-transparent flex flex-row justify-between items-center px-4 py-3">
+    <div className="w-full flex flex-row justify-between items-center px-4 py-3">
       <div className="flex flex-row items-center gap-2">
         <img
           src="/icon.svg"

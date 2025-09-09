@@ -95,9 +95,6 @@ export default function LandingPage() {
           <NewYorkCard />
         </motion.div>
       </div>
-      <div>
-        <Dots />
-      </div>
     </div>
   );
 }
