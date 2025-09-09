@@ -1,3 +1,1 @@
-export default function PrivacyPolicyView () {
-
-}
+export default function PrivacyPolicyView() {}

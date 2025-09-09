@@ -1,3 +1,1 @@
-export default function ImprintView () {
-
-}
+export default function ImprintView() {}
