@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const ImprintTextView = () => {
   return (
@@ -19,20 +19,39 @@ const ImprintTextView = () => {
 
       <h2 className="text-2xl font-semibold mt-6 mb-3">Contact Details</h2>
       <p className="text-gray-700 mb-4">
-        <strong>Email:</strong> <a href="mailto:Lorenz.schmidt@htl.rennweg.at" className="text-blue-600 hover:underline">Lorenz.schmidt@htl.rennweg.at</a>
+        <strong>Email:</strong>{" "}
+        <a
+          href="mailto:Lorenz.schmidt@htl.rennweg.at"
+          className="text-blue-600 hover:underline"
+        >
+          Lorenz.schmidt@htl.rennweg.at
+        </a>
       </p>
       <p className="text-gray-700 mb-4">
-        <strong>Website:</strong> <a href="http://www.financetracker.at" rel="external nofollow noopener" target="_blank" className="text-blue-600 hover:underline">www.financetracker.at</a>
+        <strong>Website:</strong>{" "}
+        <a
+          href="http://www.financetracker.at"
+          rel="external nofollow noopener"
+          target="_blank"
+          className="text-blue-600 hover:underline"
+        >
+          www.financetracker.at
+        </a>
       </p>
 
       <h2 className="text-2xl font-semibold mt-6 mb-3">Legal Information</h2>
       <p className="text-gray-700 mb-4">
-        The services provided by Finance Tracker are subject to the laws of the Republic of Austria, including the E-Commerce Act (ECG) and the General Data Protection Regulation (GDPR).
+        The services provided by Finance Tracker are subject to the laws of the
+        Republic of Austria, including the E-Commerce Act (ECG) and the General
+        Data Protection Regulation (GDPR).
       </p>
 
       <h2 className="text-2xl font-semibold mt-6 mb-3">Disclaimer</h2>
       <p className="text-gray-700 mb-4">
-        The information provided on this website is for general informational purposes only. Finance Tracker assumes no responsibility for errors or omissions in the contents of the website. For further information or inquiries, please contact us using the details provided above.
+        The information provided on this website is for general informational
+        purposes only. Finance Tracker assumes no responsibility for errors or
+        omissions in the contents of the website. For further information or
+        inquiries, please contact us using the details provided above.
       </p>
     </div>
   );
