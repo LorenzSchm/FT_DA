@@ -3,8 +3,8 @@ import ImprintView from "@/app/components/imprint/ImprintView";
 
 export default function Page() {
   return (
-      <div>
-          <ImprintView />
-      </div>
+    <div>
+      <ImprintView />
+    </div>
   );
 }
