@@ -63,7 +63,9 @@ export default function TeamPage() {
           whileHover="hover"
           custom={index}
         >
-          <span className="font-swiss font-bold text-lg text-black">{member.name}</span>
+          <span className="font-swiss font-bold text-lg text-black">
+            {member.name}
+          </span>
           <span className="text-gray-600 ">{member.role}</span>
         </motion.div>
       ))}

@@ -5,7 +5,9 @@
   --foreground: #171717;
 }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+}
 
 @keyframes marquee {
   0% {

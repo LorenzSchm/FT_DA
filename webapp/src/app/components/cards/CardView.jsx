@@ -60,7 +60,9 @@ export default function CardView() {
         className={"w-full flex flex-row gap-10 justify-center mt-10"}
       >
         <motion.div
-          className={"hidden xl:block mt-12 transition-transform duration-300 hover:scale-105"}
+          className={
+            "hidden xl:block mt-12 transition-transform duration-300 hover:scale-105"
+          }
           custom="left"
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
@@ -77,7 +79,9 @@ export default function CardView() {
           <NewYorkCard bg_visible={true} />
         </motion.div>
         <motion.div
-          className={"hidden xl:block mt-12 transition-transform duration-300 hover:scale-105"}
+          className={
+            "hidden xl:block mt-12 transition-transform duration-300 hover:scale-105"
+          }
           custom="right"
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}

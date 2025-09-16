@@ -10,9 +10,7 @@ import HeroBanner from "@/app/components/visuals/HeroBanner";
 export default function Home() {
   return (
     <div className="bg-white overflow-hidden overflow-y-hidden">
-      <section
-            data-nav-theme="dark"
-        >
+      <section data-nav-theme="dark">
         <LandingPage />
       </section>
 
@@ -20,7 +18,7 @@ export default function Home() {
         <CardView />
       </section>
 
-        {/* Visual banner: Shanghai */}
+      {/* Visual banner: Shanghai */}
       <HeroBanner
         src="/shanghai.jpg"
         alt="Shanghai skyline"

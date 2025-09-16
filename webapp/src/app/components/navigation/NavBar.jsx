@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
-export default function NavBar({onLaw = false}) {
+export default function NavBar({ onLaw = false }) {
   const [activeTab, setActiveTab] = useState("/#about");
   const [onDark, setOnDark] = useState(false);
   const navRef = useRef(null);
@@ -16,7 +16,7 @@ export default function NavBar({onLaw = false}) {
       { href: onLaw ? "/plans" : "/#plans", label: "Plans" },
       { href: onLaw ? "/team" : "/#team", label: "The Team" },
     ],
-    []
+    [],
   );
 
   const itemRefs = useRef([]);
@@ -78,9 +78,13 @@ export default function NavBar({onLaw = false}) {
     }
   };
 
-  const navBgClass = onDark ? "bg-transparent" : "bg-white/90 backdrop-blur-sm border-b border-black/5";
+  const navBgClass = onDark
+    ? "bg-transparent"
+    : "bg-white/90 backdrop-blur-sm border-b border-black/5";
   const textActiveClass = onDark ? "text-white drop-shadow" : "text-black";
-  const textIdleClass = onDark ? "text-white/90 hover:text-white/90" : "text-black/60 hover:text-black";
+  const textIdleClass = onDark
+    ? "text-white/90 hover:text-white/90"
+    : "text-black/60 hover:text-black";
   const sliderBorderClass = onDark ? "border-white" : "border-black";
 
   return (
@@ -93,17 +97,27 @@ export default function NavBar({onLaw = false}) {
         onClick={(e) => handleLinkClick(e, "/#about")}
         className="flex flex-row items-center gap-2 hover:cursor-pointer"
       >
-        <img src="/icon.svg" alt="logo" width={24}  />
-        <h1 className={`${onDark ? "text-white" : "text-black"} text-xl font-extrabold tracking-tight`}>
+        <img src="/icon.svg" alt="logo" width={24} />
+        <h1
+          className={`${onDark ? "text-white" : "text-black"} text-xl font-extrabold tracking-tight`}
+        >
           Finance Tracker
         </h1>
       </a>
 
-      <div ref={containerRef} className="relative flex flex-row items-center gap-2">
+      <div
+        ref={containerRef}
+        className="relative flex flex-row items-center gap-2"
+      >
         <motion.div
           className={`absolute bottom-0 border-b-2 ${sliderBorderClass}`}
           animate={{ x: slider.translateX, width: slider.width }}
-          transition={{ type: "spring", stiffness: 200, damping: 20, mass: 0.5 }}
+          transition={{
+            type: "spring",
+            stiffness: 200,
+            damping: 20,
+            mass: 0.5,
+          }}
           style={{ willChange: "transform, width" }}
         />
 

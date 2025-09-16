@@ -57,7 +57,9 @@ export default function BackgroundImageLoader({ imageUrl, children }) {
       {/* Content with fade-in animation */}
       <motion.div
         className="w-full h-screen bg-cover bg-no-repeat flex flex-col"
-        style={{ backgroundImage: isLoaded && !error ? `url(${imageUrl})` : "none" }}
+        style={{
+          backgroundImage: isLoaded && !error ? `url(${imageUrl})` : "none",
+        }}
         initial={{ opacity: 0 }}
         animate={{ opacity: isLoaded ? 1 : 0 }}
         transition={{ duration: 0.5 }}

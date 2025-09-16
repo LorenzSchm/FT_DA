@@ -8,7 +8,9 @@ export default function ImprintView() {
     <div>
       <div className={"h-screen flex flex-col justify-between"}>
         <div className={"w-full h-full flex items-center justify-center"}>
-          <h1 className={"text-white text-5xl font-swiss font-bold"}>Imprint</h1>
+          <h1 className={"text-white text-5xl font-swiss font-bold"}>
+            Imprint
+          </h1>
         </div>
         <div className={"mb-2"}>
           <Dots />
