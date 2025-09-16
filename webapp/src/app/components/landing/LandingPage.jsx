@@ -3,7 +3,6 @@
 import NewYorkCard from "@/app/components/cards/new-york/NewYorkCard";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import * as url from "node:url";
 
 export default function LandingPage() {
   const cardRef = useRef(null);
