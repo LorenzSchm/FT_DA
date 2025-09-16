@@ -1,33 +1,50 @@
-import NavBar from "@/app/components/navigation/NavBar";
-import { ChevronDown, EyeOff } from "react-feather";
-import NewYorkCard from "@/app/components/cards/new-york/NewYorkCard";
+"use client";
+
 import CardView from "@/app/components/cards/CardView";
-import Footer from "@/app/components/footer/Footer";
 import LandingPage from "@/app/components/landing/LandingPage";
 import InfiniteMarqueeView from "@/app/components/marquee/InfiniteMarqueeView";
+import PlansCardsView from "@/app/components/plans/cards/PlansCardsView";
+import TeamPage from "@/app/components/team/TeamPage";
+import HeroBanner from "@/app/components/visuals/HeroBanner";
+
 export default function Home() {
   return (
-    <div>
-      <div
-        className="w-full h-screen bg-cover bg-no-repeat overflow-hidden"
-        style={{ backgroundImage: "url('/Updated_ny.jpg')" }}
-      >
-        <div>
-          <NavBar />
-        </div>
-        <div>
-          <LandingPage />
-        </div>
-      </div>
-      <div>
+    <div className="bg-white overflow-hidden overflow-y-hidden">
+      <section data-nav-theme="dark">
+        <LandingPage />
+      </section>
+
+      <section>
         <CardView />
-      </div>
-      <div>
+      </section>
+
+      {/* Visual banner: Shanghai */}
+      <HeroBanner
+        src="/shanghai.jpg"
+        alt="Shanghai skyline"
+        title="Connect what matters"
+        subtitle="Banks, cards, and services—all in one app"
+      />
+
+      <section>
         <InfiniteMarqueeView />
-      </div>
-      <div>
-        <Footer />
-      </div>
+      </section>
+
+      {/* Visual banner: London */}
+      <HeroBanner
+        src="/london.jpg"
+        alt="London cityscape"
+        title="Plans that grow with you"
+        subtitle="From personal to pro—choose the features you need"
+      />
+
+      <section>
+        <PlansCardsView />
+      </section>
+
+      <section>
+        <TeamPage />
+      </section>
     </div>
   );
 }

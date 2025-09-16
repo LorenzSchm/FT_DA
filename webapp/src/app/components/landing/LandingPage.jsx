@@ -3,7 +3,7 @@
 import NewYorkCard from "@/app/components/cards/new-york/NewYorkCard";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import Dots from "@/app/components/animations/Dots";
+import * as url from "node:url";
 
 export default function LandingPage() {
   const cardRef = useRef(null);
@@ -45,8 +45,12 @@ export default function LandingPage() {
   };
 
   return (
-    <div>
-      <div className="mt-20 justify-center gap-36 flex flex-row">
+    <div
+      id="about"
+      className={"h-screen w-screen bg-white bg-cover"}
+      style={{ backgroundImage: "url(/Updated_ny.jpg)" }}
+    >
+      <div className="  gap-36 flex flex-row justify-center items-center h-full w-full">
         <div ref={textRef}>
           <motion.div
             initial="hidden"
@@ -80,8 +84,14 @@ export default function LandingPage() {
             variants={textVariants}
             custom={2}
           >
-            <button className="text-lg mt-2 font-bold text-white px-5 py-1 rounded-3xl bg-white/20 border-2 border-solid border-white/50 hover:cursor-pointer hover:border-white/70">
-              Start Saving
+            <button
+              className="text-lg mt-2 font-bold bg-white backdrop-blur-lg text-black px-5 py-2 rounded-3xl
+                        hover:cursor-pointer hover:text-black/90 transition-transform duration-200 ease-out transform
+                        hover:scale-105
+                        focus:scale-90
+                        "
+            >
+              Get the App
             </button>
           </motion.div>
         </div>
@@ -94,9 +104,6 @@ export default function LandingPage() {
         >
           <NewYorkCard />
         </motion.div>
-      </div>
-      <div>
-        <Dots />
       </div>
     </div>
   );

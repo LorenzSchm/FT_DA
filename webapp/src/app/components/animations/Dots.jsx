@@ -39,7 +39,7 @@ export default function Dots({ link }) {
   return (
     <div
       ref={dotsRef}
-      className="flex flex-col gap-2 justify-center items-center mt-80 lg:mt-10"
+      className="flex flex-col gap-2 justify-center items-center mt-80 lg:mt-10 mb-2"
     >
       {[0, 1, 2].map((index) => (
         <motion.span
