@@ -1,86 +1,123 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-import Link from "next/link";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
-export default function NavBar() {
-  const pathname = usePathname();
-  const [activeTab, setActiveTab] = useState(pathname);
+export default function NavBar({onLaw = false}) {
+  const [activeTab, setActiveTab] = useState("/#about");
+  const [onDark, setOnDark] = useState(false);
+  const navRef = useRef(null);
   const containerRef = useRef(null);
+  const [slider, setSlider] = useState({ translateX: 0, width: 0 });
 
   const navLinks = useMemo(
     () => [
-      { path: "/", label: "About" },
-      { path: "/plans", label: "Plans" },
-      { path: "/team", label: "The Team" },
+      { href: onLaw ? "/about" : "/#about", label: "About" },
+      { href: onLaw ? "/plans" : "/#plans", label: "Plans" },
+      { href: onLaw ? "/team" : "/#team", label: "The Team" },
     ],
-    [],
+    []
   );
 
   const itemRefs = useRef([]);
   itemRefs.current = navLinks.map((_, i) => itemRefs.current[i] ?? null);
 
-  useEffect(() => setActiveTab(pathname), [pathname]);
-
-  const [slider, setSlider] = useState({ left: 0, width: 0 });
   useLayoutEffect(() => {
-    const idx = navLinks.findIndex((l) => l.path === activeTab);
-    const el = itemRefs.current[idx];
-    const parent = containerRef.current;
-    if (!el || !parent) return;
+    const updateSlider = () => {
+      const idx = navLinks.findIndex((l) => l.href === activeTab);
+      const el = itemRefs.current[idx];
+      const parent = containerRef.current;
+      if (!el || !parent) return;
+      const parentRect = parent.getBoundingClientRect();
+      const rect = el.getBoundingClientRect();
+      setSlider({ translateX: rect.left - parentRect.left, width: rect.width });
+    };
 
-    const parentRect = parent.getBoundingClientRect();
-    const rect = el.getBoundingClientRect();
-    setSlider({ left: rect.left - parentRect.left, width: rect.width });
+    updateSlider();
+    const onResize = () => updateSlider();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, [activeTab, navLinks]);
 
-  const handleLinkClick = (path) => setActiveTab(path);
+  useEffect(() => {
+    const updateThemeUnderNav = () => {
+      const navEl = navRef.current;
+      if (!navEl) return;
+      const navRect = navEl.getBoundingClientRect();
+      const x = Math.round(window.innerWidth / 2);
+      const y = Math.round(navRect.top + navRect.height / 2);
+      const stack = document.elementsFromPoint(x, y) || [];
+      const themed = stack.find((el) => el.dataset && el.dataset.navTheme);
+      setOnDark(themed ? themed.dataset.navTheme === "dark" : false);
+    };
+
+    updateThemeUnderNav();
+    const onScroll = () => updateThemeUnderNav();
+    const onResize = () => updateThemeUnderNav();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
+    };
+  }, []);
+
+  const getIdFromHref = (href) => {
+    const hashIndex = href.lastIndexOf("#");
+    return hashIndex >= 0 ? href.slice(hashIndex + 1) : href;
+  };
+
+  const handleLinkClick = (e, href) => {
+    e.preventDefault();
+    const id = getIdFromHref(href);
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      setActiveTab(href);
+      history.replaceState(null, "", href);
+    }
+  };
+
+  const navBgClass = onDark ? "bg-transparent" : "bg-white/90 backdrop-blur-sm border-b border-black/5";
+  const textActiveClass = onDark ? "text-white drop-shadow" : "text-black";
+  const textIdleClass = onDark ? "text-white/90 hover:text-white/90" : "text-black/60 hover:text-black";
+  const sliderBorderClass = onDark ? "border-white" : "border-black";
 
   return (
-    <div className="w-full flex flex-row justify-between items-center px-4 py-3">
-      <div className="flex flex-row items-center gap-2">
-        <img
-          src="/icon.svg"
-          alt="logo"
-          width={24}
-          className="filter drop-shadow-md"
-        />
-        <h1 className="text-white text-xl font-extrabold tracking-tight">
+    <div
+      ref={navRef}
+      className={`fixed top-0 left-0 right-0 z-50 w-full flex flex-row justify-between items-center px-4 py-3 ${navBgClass}`}
+    >
+      <a
+        href={onLaw ? "/about" : "/#about"}
+        onClick={(e) => handleLinkClick(e, "/#about")}
+        className="flex flex-row items-center gap-2 hover:cursor-pointer"
+      >
+        <img src="/icon.svg" alt="logo" width={24}  />
+        <h1 className={`${onDark ? "text-white" : "text-black"} text-xl font-extrabold tracking-tight`}>
           Finance Tracker
         </h1>
-      </div>
+      </a>
 
-      <div
-        ref={containerRef}
-        className="relative flex flex-row items-center gap-2 "
-      >
+      <div ref={containerRef} className="relative flex flex-row items-center gap-2">
         <motion.div
-          className="absolute bottom-0 border-b-2 border-white"
-          animate={{ left: slider.left, width: slider.width }}
-          transition={{
-            type: "spring",
-            stiffness: 120,
-            damping: 18,
-            mass: 0.2,
-          }}
-          style={{ willChange: "left, width" }}
+          className={`absolute bottom-0 border-b-2 ${sliderBorderClass}`}
+          animate={{ x: slider.translateX, width: slider.width }}
+          transition={{ type: "spring", stiffness: 200, damping: 20, mass: 0.5 }}
+          style={{ willChange: "transform, width" }}
         />
 
         {navLinks.map((link, index) => (
-          <div key={link.path} ref={(el) => (itemRefs.current[index] = el)}>
-            <Link
-              href={link.path}
-              onClick={() => handleLinkClick(link.path)}
+          <div key={link.href} ref={(el) => (itemRefs.current[index] = el)}>
+            <a
+              href={link.href}
+              onClick={(e) => handleLinkClick(e, link.href)}
               className={`relative z-20 inline-flex h-2 items-center justify-center px-3 lg:text-lg sm:text-sm font-bold transition-colors duration-300 ${
-                activeTab === link.path
-                  ? "text-white drop-shadow-md"
-                  : "text-white/70 hover:text-white/90"
+                activeTab === link.href ? textActiveClass : textIdleClass
               }`}
             >
               {link.label}
-            </Link>
+            </a>
           </div>
         ))}
       </div>

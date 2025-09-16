@@ -10,6 +10,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@next/swc-darwin-arm64": "^15.5.3",
     "framer-motion": "^12.23.12",
     "next": "15.3.3",
     "react": "^19.0.0",

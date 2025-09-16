@@ -44,7 +44,6 @@ export default function Card({
       aria-label={`${title} plan`}
       className="
         w-full
-        w-sm
         sm:max-w-md
         lg:w-[350px] lg:max-w-none
         rounded-3xl border border-gray-200
@@ -62,7 +61,7 @@ export default function Card({
       whileTap="tap"
     >
       <div className="flex flex-col gap-4 sm:gap-5">
-        <h3 className="font-bold text-2xl sm:text-3xl leading-tight text-teal-950">
+        <h3 className="font-bold text-2xl sm:text-3xl leading-tight text-black">
           {title}
         </h3>
 
@@ -103,15 +102,14 @@ export default function Card({
           className="
             mt-6
             w-full
-            sm:w-full
             lg:w-64
             self-center
-            bg-teal-950 text-white font-semibold
+            bg-black text-white font-semibold
             text-sm sm:text-base
             py-3 px-6 rounded-full
             outline-none
             focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-black
-            hover:bg-teal-900 hover:cursor-pointer
+            hover:bg-black/80 hover:cursor-pointer
           "
           variants={buttonVariants}
           initial="initial"
