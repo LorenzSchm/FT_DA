@@ -76,10 +76,10 @@ export default function NavBar({ onLaw = false }) {
       setActiveTab(href);
       history.replaceState(null, "", href);
     } else {
-        console.log(onLaw)
-        console.log(id)
-        setActiveTab(href);
-        history.replaceState(null, "", id);
+      console.log(onLaw);
+      console.log(id);
+      setActiveTab(href);
+      history.replaceState(null, "", id);
     }
   };
 
