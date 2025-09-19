@@ -47,7 +47,7 @@ export default function PlansCardsView() {
   return (
     <div className="py-12 flex flex-col justify-center items-center" id="plans">
       <motion.div
-        className="text-4xl md:text-6xl text-black font-swiss font-black mb-8"
+        className="text-4xl md:text-6xl text-white font-swiss font-black mb-8"
         initial="hidden"
         animate={isInView ? "visible" : "hidden"}
         variants={centerCardVariants}

@@ -16,7 +16,7 @@ export default function ImprintView() {
           <Dots />
         </div>
       </div>
-      <div className={"h-screen mt-20"}>
+      <div className={"h-screen"}>
         <ImprintTextView />
       </div>
     </div>
