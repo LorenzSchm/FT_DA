@@ -4,23 +4,45 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
 export default function NavBar({ onLaw = false }) {
-  const [activeTab, setActiveTab] = useState("/#about");
+  const navLinks = useMemo(
+    () => [
+      { href: "/#about", label: "About" },
+      { href: "/#plans", label: "Plans" },
+      { href: "/#team", label: "The Team" },
+    ],
+    [],
+  );
+
+  const [activeTab, setActiveTab] = useState(navLinks[0]?.href ?? "/#about");
   const [onDark, setOnDark] = useState(false);
   const navRef = useRef(null);
   const containerRef = useRef(null);
   const [slider, setSlider] = useState({ translateX: 0, width: 0 });
 
-  const navLinks = useMemo(
-    () => [
-      { href: onLaw ? "/" : "/#about", label: "About" },
-      { href: onLaw ? "/plans" : "/#plans", label: "Plans" },
-      { href: onLaw ? "/team" : "/#team", label: "The Team" },
-    ],
-    [onLaw],
-  );
-
   const itemRefs = useRef([]);
   itemRefs.current = navLinks.map((_, i) => itemRefs.current[i] ?? null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    if (onLaw) {
+      setActiveTab(navLinks[0]?.href ?? "/#about");
+      return;
+    }
+
+    const { hash } = window.location;
+    if (hash) {
+      const target = `/${hash}`;
+      const matched = navLinks.find((link) => link.href === target);
+      if (matched) {
+        setActiveTab(matched.href);
+        return;
+      }
+    }
+
+    setActiveTab(navLinks[0]?.href ?? "/#about");
+  }, [onLaw, navLinks]);
+
 
   useLayoutEffect(() => {
     const updateSlider = () => {
@@ -68,18 +90,21 @@ export default function NavBar({ onLaw = false }) {
   };
 
   const handleLinkClick = (e, href) => {
-    e.preventDefault();
+    if (onLaw) {
+      e.preventDefault();
+      setActiveTab(href);
+      window.location.assign(href);
+      return;
+    }
+
     const id = getIdFromHref(href);
     const el = document.getElementById(id);
-    if (el && !onLaw) {
+
+    if (el) {
+      e.preventDefault();
       el.scrollIntoView({ behavior: "smooth", block: "start" });
       setActiveTab(href);
       history.replaceState(null, "", href);
-    } else {
-      console.log(onLaw);
-      console.log(id);
-      setActiveTab(href);
-      history.replaceState(null, "", id);
     }
   };
 

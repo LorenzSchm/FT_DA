@@ -1,7 +1,7 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 
-export default function Dots({ link }) {
+export default function Dots({ className = "mt-12 lg:mt-10" }) {
   const dotsRef = useRef(null);
   const isDotsInView = useInView(dotsRef, { once: false, amount: 0.1 });
 
@@ -39,7 +39,7 @@ export default function Dots({ link }) {
   return (
     <div
       ref={dotsRef}
-      className="flex flex-col gap-2 justify-center items-center mt-80 lg:mt-10 mb-2"
+      className={`flex flex-col gap-2 justify-center items-center mb-2 ${className}`}
     >
       {[0, 1, 2].map((index) => (
         <motion.span

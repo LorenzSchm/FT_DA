@@ -5,20 +5,24 @@ import PrivacyPolicyTextView from "@/app/components/privacy-policy/text/PrivacyP
 
 export default function PrivacyPolicyView() {
   return (
-    <div className={"h-fit"}>
-      <div className={"h-screen flex flex-col justify-between"}>
-        <div className={"w-full h-full flex items-center justify-center"}>
-          <h1 className={"text-white text-5xl font-swiss font-bold"}>
+    <div className="flex flex-col">
+      <section className="relative flex h-screen flex-col justify-between overflow-hidden px-4 pb-12 pt-20 text-white">
+        <div
+          className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
+          aria-hidden
+        />
+        <div className="relative flex items-center justify-center text-center">
+          <h1 className="text-4xl font-swiss font-bold drop-shadow lg:text-5xl">
             Privacy Policy
           </h1>
         </div>
-        <div className={"mb-2"}>
-          <Dots />
+        <div className="relative flex justify-center">
+          <Dots className="mt-0 lg:mt-0" />
         </div>
-      </div>
-      <div className={"h-screen"}>
+      </section>
+      <section className=" bg-white/90 px-4 py-16 backdrop-blur-sm h-screen">
         <PrivacyPolicyTextView />
-      </div>
+      </section>
     </div>
   );
 }

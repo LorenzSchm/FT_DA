@@ -2,23 +2,23 @@ import React from "react";
 
 const ImprintTextView = () => {
   return (
-    <div className="max-w-4xl h-screen mx-auto p-6 bg-white  rounded-lg">
-      <h1 className="text-3xl font-bold mb-4">Impressum</h1>
-      <p className="text-gray-600 mb-2">Last updated: September 09, 2025</p>
+    <div className="mx-auto max-w-4xl rounded-lg bg-white p-6 shadow-lg">
+      <h1 className="mb-4 text-3xl font-bold text-gray-900">Impressum</h1>
+      <p className="mb-2 text-sm text-gray-500">Last updated: September 09, 2025</p>
 
-      <h2 className="text-2xl font-semibold mt-6 mb-3">Company Information</h2>
-      <p className="text-gray-700 mb-4">
+      <h2 className="mb-3 mt-6 text-2xl font-semibold text-gray-900">Company Information</h2>
+      <p className="mb-4 leading-relaxed text-gray-700">
         <strong>Company Name:</strong> Finance Tracker
       </p>
-      <p className="text-gray-700 mb-4">
+      <p className="mb-4 leading-relaxed text-gray-700">
         <strong>Operator:</strong> Lorenz Schmidt
       </p>
-      <p className="text-gray-700 mb-4">
+      <p className="mb-4 leading-relaxed text-gray-700">
         <strong>Address:</strong> Rennweg 89b, 1030 Vienna, Austria
       </p>
 
-      <h2 className="text-2xl font-semibold mt-6 mb-3">Contact Details</h2>
-      <p className="text-gray-700 mb-4">
+      <h2 className="mb-3 mt-6 text-2xl font-semibold text-gray-900">Contact Details</h2>
+      <p className="mb-4 leading-relaxed text-gray-700">
         <strong>Email:</strong>{" "}
         <a
           href="mailto:Lorenz.schmidt@htl.rennweg.at"
@@ -27,7 +27,7 @@ const ImprintTextView = () => {
           Lorenz.schmidt@htl.rennweg.at
         </a>
       </p>
-      <p className="text-gray-700 mb-4">
+      <p className="mb-4 leading-relaxed text-gray-700">
         <strong>Website:</strong>{" "}
         <a
           href="http://www.financetracker.at"
@@ -39,15 +39,15 @@ const ImprintTextView = () => {
         </a>
       </p>
 
-      <h2 className="text-2xl font-semibold mt-6 mb-3">Legal Information</h2>
-      <p className="text-gray-700 mb-4">
+      <h2 className="mb-3 mt-6 text-2xl font-semibold text-gray-900">Legal Information</h2>
+      <p className="mb-4 leading-relaxed text-gray-700">
         The services provided by Finance Tracker are subject to the laws of the
         Republic of Austria, including the E-Commerce Act (ECG) and the General
         Data Protection Regulation (GDPR).
       </p>
 
-      <h2 className="text-2xl font-semibold mt-6 mb-3">Disclaimer</h2>
-      <p className="text-gray-700 mb-4">
+      <h2 className="mb-3 mt-6 text-2xl font-semibold text-gray-900">Disclaimer</h2>
+      <p className="mb-4 leading-relaxed text-gray-700">
         The information provided on this website is for general informational
         purposes only. Finance Tracker assumes no responsibility for errors or
         omissions in the contents of the website. For further information or

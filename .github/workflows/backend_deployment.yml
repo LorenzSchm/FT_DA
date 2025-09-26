@@ -1,0 +1,6 @@
+name: "FastAPI Deployment"
+on:
+  push:
+    branches: ["main"]
+
+jobs:

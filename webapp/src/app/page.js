@@ -14,7 +14,11 @@ export default function Home() {
     </button>
   );
 
-  const contactButton = <div className="flex flex-row gap-2"></div>;
+  const contactButton = (
+    <button className="text-white bg-black mt-4 p-3 rounded-2xl font-swiss font-bold hover:cursor-pointer hover:scale-105 hover:bg-black/90 shadow-2xl transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50">
+      Contact Us
+    </button>
+  );
 
   const planHighlights = [
     {
