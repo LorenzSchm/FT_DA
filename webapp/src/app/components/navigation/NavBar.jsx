@@ -12,11 +12,11 @@ export default function NavBar({ onLaw = false }) {
 
   const navLinks = useMemo(
     () => [
-      { href: onLaw ? "/about" : "/#about", label: "About" },
+      { href: onLaw ? "/" : "/#about", label: "About" },
       { href: onLaw ? "/plans" : "/#plans", label: "Plans" },
       { href: onLaw ? "/team" : "/#team", label: "The Team" },
     ],
-    [],
+    [onLaw],
   );
 
   const itemRefs = useRef([]);
@@ -71,10 +71,15 @@ export default function NavBar({ onLaw = false }) {
     e.preventDefault();
     const id = getIdFromHref(href);
     const el = document.getElementById(id);
-    if (el) {
+    if (el && !onLaw) {
       el.scrollIntoView({ behavior: "smooth", block: "start" });
       setActiveTab(href);
       history.replaceState(null, "", href);
+    } else {
+      console.log(onLaw);
+      console.log(id);
+      setActiveTab(href);
+      history.replaceState(null, "", id);
     }
   };
 
@@ -93,8 +98,7 @@ export default function NavBar({ onLaw = false }) {
       className={`fixed top-0 left-0 right-0 z-50 w-full flex flex-row justify-between items-center px-4 py-3 ${navBgClass}`}
     >
       <a
-        href={onLaw ? "/about" : "/#about"}
-        onClick={(e) => handleLinkClick(e, "/#about")}
+        href={"/"}
         className="flex flex-row items-center gap-2 hover:cursor-pointer"
       >
         <img src="/icon.svg" alt="logo" width={24} />
