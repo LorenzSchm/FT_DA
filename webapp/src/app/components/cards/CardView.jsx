@@ -50,7 +50,7 @@ export default function CardView() {
     <div className="h-screen w-screen bg-white">
       <div className="flex flex-col justify-center items-center mt-20 gap-4">
         <Image src="/icon.svg" width={100} height={100} alt="Icon" />
-        <span className="lg:text-5xl text-3xl font-swiss font-bold text-black">
+        <span className="lg:text-5xl text-2xl font-swiss font-bold text-black">
           Track Everything. Everywhere.
         </span>
       </div>

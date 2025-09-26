@@ -51,16 +51,16 @@ export default function HeroBanner({ src, alt, title, subtitle, plans = [] }) {
   };
 
   const itemClasses = {
-    base: "group rounded-3xl bg-white p-4 transition-colors duration-300 hover:cursor-pointer",
-    heading: "flex w-full items-center gap-3 py-3 hover:cursor-pointer",
+    base: "group rounded-3xl bg-white p-2 md:p-4 lg-p-4 transition-colors duration-300 hover:cursor-pointer",
+    heading: "flex w-full items-center gap-3 py-2 hover:cursor-pointer",
     trigger:
       "flex flex-1 items-center gap-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/50 rounded-xl px-2 py-1 transition-colors data-[hover=true]:bg-white/10",
     title:
-      "font-swiss text-base text-3xl font-semibold tracking-tight text-black transition-colors",
-    subtitle: "text-md font-medium text-black/60 tracking-wide",
+      "font-swiss text-base text-xl md:text-3xl lg:text-3xl font-semibold tracking-tight text-black transition-colors",
+    subtitle: "text-sm lg:text-md font-medium text-black/60 tracking-wide",
     indicator:
       "group-data-[open=true]:rotate-90 transition-transform duration-300",
-    content: "md:text-base leading-relaxed text-black/90 [&_p]:mt-2 pb-6",
+    content: "md:text-base text-sm leading-relaxed text-black/90 [&_p]:mt-1",
   };
 
   return (
@@ -88,7 +88,7 @@ export default function HeroBanner({ src, alt, title, subtitle, plans = [] }) {
 
         <motion.div className="relative flex-1" variants={imageVariants}>
           <div className="absolute inset-0 -translate-x-6 blur-3xl sm:-translate-x-10" />
-          <div className="relative overflow-hidden rounded-3xl shadow-2xl shadow-black/40 group">
+          <div className="relative overflow-hidden rounded-4xl shadow-2xl shadow-black/40 group">
             <Image
               src={imageSrc}
               alt={imageAlt}
@@ -132,12 +132,12 @@ export default function HeroBanner({ src, alt, title, subtitle, plans = [] }) {
                                   <p
                                     key={i}
                                     className={
-                                      "text-xl flex flex-row items-center gap-2"
+                                      "text-sm md:text-xl lg:text-xl flex flex-row items-center gap-2"
                                     }
                                   >
                                     {" "}
                                     <CheckCircle
-                                      className={"text-green-500"}
+                                      className={"text-green-500 w-4 h-4"}
                                     />{" "}
                                     {feature}
                                   </p>
