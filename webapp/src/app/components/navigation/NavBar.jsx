@@ -43,7 +43,6 @@ export default function NavBar({ onLaw = false }) {
     setActiveTab(navLinks[0]?.href ?? "/#about");
   }, [onLaw, navLinks]);
 
-
   useLayoutEffect(() => {
     const updateSlider = () => {
       const idx = navLinks.findIndex((l) => l.href === activeTab);

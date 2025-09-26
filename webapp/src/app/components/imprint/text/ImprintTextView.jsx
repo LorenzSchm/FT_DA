@@ -4,9 +4,13 @@ const ImprintTextView = () => {
   return (
     <div className="mx-auto max-w-4xl rounded-lg bg-white p-6 shadow-lg">
       <h1 className="mb-4 text-3xl font-bold text-gray-900">Impressum</h1>
-      <p className="mb-2 text-sm text-gray-500">Last updated: September 09, 2025</p>
+      <p className="mb-2 text-sm text-gray-500">
+        Last updated: September 09, 2025
+      </p>
 
-      <h2 className="mb-3 mt-6 text-2xl font-semibold text-gray-900">Company Information</h2>
+      <h2 className="mb-3 mt-6 text-2xl font-semibold text-gray-900">
+        Company Information
+      </h2>
       <p className="mb-4 leading-relaxed text-gray-700">
         <strong>Company Name:</strong> Finance Tracker
       </p>
@@ -17,7 +21,9 @@ const ImprintTextView = () => {
         <strong>Address:</strong> Rennweg 89b, 1030 Vienna, Austria
       </p>
 
-      <h2 className="mb-3 mt-6 text-2xl font-semibold text-gray-900">Contact Details</h2>
+      <h2 className="mb-3 mt-6 text-2xl font-semibold text-gray-900">
+        Contact Details
+      </h2>
       <p className="mb-4 leading-relaxed text-gray-700">
         <strong>Email:</strong>{" "}
         <a
@@ -39,14 +45,18 @@ const ImprintTextView = () => {
         </a>
       </p>
 
-      <h2 className="mb-3 mt-6 text-2xl font-semibold text-gray-900">Legal Information</h2>
+      <h2 className="mb-3 mt-6 text-2xl font-semibold text-gray-900">
+        Legal Information
+      </h2>
       <p className="mb-4 leading-relaxed text-gray-700">
         The services provided by Finance Tracker are subject to the laws of the
         Republic of Austria, including the E-Commerce Act (ECG) and the General
         Data Protection Regulation (GDPR).
       </p>
 
-      <h2 className="mb-3 mt-6 text-2xl font-semibold text-gray-900">Disclaimer</h2>
+      <h2 className="mb-3 mt-6 text-2xl font-semibold text-gray-900">
+        Disclaimer
+      </h2>
       <p className="mb-4 leading-relaxed text-gray-700">
         The information provided on this website is for general informational
         purposes only. Finance Tracker assumes no responsibility for errors or

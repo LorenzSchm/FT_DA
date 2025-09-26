@@ -23,9 +23,7 @@ export default function Footer() {
           Privacy Policy
         </Link>
         -
-        <span
-          className={"text-gray-700 hover:cursor-pointer hover:text-black"}
-        >
+        <span className={"text-gray-700 hover:cursor-pointer hover:text-black"}>
           © 2025 Finance Tracker
         </span>
       </div>

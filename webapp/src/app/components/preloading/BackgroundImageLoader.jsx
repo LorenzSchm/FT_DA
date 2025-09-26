@@ -36,10 +36,7 @@ export default function BackgroundImageLoader({ imageUrl, children }) {
   }, [imageUrl]);
 
   return (
-    <div
-      className="relative w-full min-h-screen"
-      data-nav-theme="dark"
-    >
+    <div className="relative w-full min-h-screen" data-nav-theme="dark">
       {!isLoaded && (
         <div className="absolute inset-0 z-40 flex items-center justify-center bg-white">
           <motion.div
