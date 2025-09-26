@@ -25,14 +25,14 @@ export default function InfiniteMarquee() {
   const track = [...logos, ...logos, ...logos];
 
   return (
-    <div className="bg-white h-screen">
+    <div className="bg-white h-fit">
       <div className="flex bg-white flex-col justify-center items-center gap-4">
-        <span className="lg:text-6xl text-5xl ml-10 font-swiss mt-28 self-start text-black font-bold">
+        <span className="lg:text-6xl md:text-5xl text-3xl ml-10 font-swiss mt-24 self-start text-black font-bold">
           All in one app.
         </span>
       </div>
 
-      <div className="overflow-hidden relative w-full bg-white mt-36 py-6">
+      <div className="overflow-hidden relative w-full bg-white mt-24 py-6">
         <div className="animate-marquee">
           {track.map((logo, index) => (
             <div

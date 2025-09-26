@@ -36,7 +36,7 @@ export default function BackgroundImageLoader({ imageUrl, children }) {
   }, [imageUrl]);
 
   return (
-    <div className="w-full h-screen" data-nav-theme="dark">
+    <div className="relative w-full min-h-screen" data-nav-theme="dark">
       {!isLoaded && (
         <div className="absolute inset-0 z-40 flex items-center justify-center bg-white">
           <motion.div
@@ -55,7 +55,7 @@ export default function BackgroundImageLoader({ imageUrl, children }) {
 
       {/* Content with fade-in animation */}
       <motion.div
-        className="w-full h-screen bg-cover bg-no-repeat flex flex-col"
+        className="w-full min-h-screen bg-cover bg-no-repeat flex flex-col"
         style={{
           backgroundImage: isLoaded && !error ? `url(${imageUrl})` : "none",
         }}

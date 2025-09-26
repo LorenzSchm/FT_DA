@@ -49,34 +49,38 @@ export default function LandingPage() {
       className={"h-screen w-screen bg-white bg-cover"}
       style={{ backgroundImage: "url(/Updated_ny.jpg)" }}
     >
-      <div className="  gap-36 flex flex-row justify-center items-center h-full w-full">
+      <div className="gap-36 flex flex-row justify-center items-center h-full w-full">
         <div ref={textRef}>
-          <motion.div
-            initial="hidden"
-            animate={isTextInView ? "visible" : "hidden"}
-            variants={textVariants}
-            custom={0}
-          >
-            <h1 className="font-swiss text-white font-bold text-6xl">
-              Finance Simplified
-            </h1>
-          </motion.div>
-          <motion.div
-            initial="hidden"
-            animate={isTextInView ? "visible" : "hidden"}
-            variants={textVariants}
-            custom={1}
-          >
-            <p className="text-white font-swiss font-medium">
-              The Finance Tracker is a user-friendly mobile app that <br />{" "}
-              helps you manage your finances efficiently. With our <br />{" "}
-              platform, you can keep track of your income, expenses,
-              <br /> and subscriptions.
-            </p>
-            <p className="text-white font-swiss font-bold mt-2 text-3xl">
-              All in one convenient place.
-            </p>
-          </motion.div>
+          <div className={"flex w-full justify-center"}>
+            <motion.div
+              initial="hidden"
+              animate={isTextInView ? "visible" : "hidden"}
+              variants={textVariants}
+              custom={0}
+            >
+              <h1 className="font-swiss text-white font-bold text-4xl lg:text-6xl sm:text-5xl">
+                Finance Simplified
+              </h1>
+            </motion.div>
+          </div>
+          <div className={"flex w-full justify-center"}>
+            <motion.div
+              initial="hidden"
+              animate={isTextInView ? "visible" : "hidden"}
+              variants={textVariants}
+              custom={1}
+            >
+              <p className="text-white font-swiss font-medium">
+                The Finance Tracker is a user-friendly mobile <br /> app that
+                helps you manage your finances <br /> efficiently. With our
+                platform, you can keep <br /> track of your income, expenses,
+                <br /> and subscriptions.
+              </p>
+              <p className="text-white font-swiss font-bold mt-2 text-2xl lg:text-3xl">
+                All in one convenient place.
+              </p>
+            </motion.div>
+          </div>
           <motion.div
             initial="hidden"
             animate={isTextInView ? "visible" : "hidden"}
