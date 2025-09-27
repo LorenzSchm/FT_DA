@@ -140,7 +140,9 @@ export default function HeroBanner({ src, alt, title, subtitle, plans = [] }) {
                                       "text-sm md:text-xl lg:text-xl flex flex-row items-center gap-2"
                                     }
                                   >
-                                    <CheckCircle className={"text-green-500 w-4 h-4"} />
+                                    <CheckCircle
+                                      className={"text-green-500 w-4 h-4"}
+                                    />
                                     {feature}
                                   </p>
                                 ))
