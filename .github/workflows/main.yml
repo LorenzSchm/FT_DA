@@ -1,9 +1,9 @@
+name: Versioning
+
 on:
   push:
     branches: [main]
   workflow_dispatch: {}
-
-name: Versioning
 
 permissions:
   contents: read
