@@ -63,7 +63,7 @@ export default function LandingPage() {
               </h1>
             </motion.div>
           </div>
-          <div className={"flex w-full justify-center"}>
+          <div className={"flex w-full"}>
             <motion.div
               initial="hidden"
               animate={isTextInView ? "visible" : "hidden"}
