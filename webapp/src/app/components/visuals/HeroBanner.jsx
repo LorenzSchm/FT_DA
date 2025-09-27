@@ -4,7 +4,6 @@ import Image from "next/image";
 import { motion, useInView } from "framer-motion";
 import { useMemo, useRef } from "react";
 import { Accordion, AccordionItem } from "@heroui/accordion";
-import { CheckIcon } from "lucide-react";
 import { CheckCircle } from "react-feather";
 
 export default function HeroBanner({ src, alt, title, subtitle, plans = [] }) {
@@ -51,7 +50,7 @@ export default function HeroBanner({ src, alt, title, subtitle, plans = [] }) {
   };
 
   const itemClasses = {
-    base: "group rounded-3xl bg-white p-2 md:p-4 lg-p-4 transition-colors duration-300 hover:cursor-pointer",
+    base: "group rounded-3xl bg-white p-2 md:p-4 lg:p-4 transition-colors duration-300 hover:cursor-pointer",
     heading: "flex w-full items-center gap-3 py-2 hover:cursor-pointer",
     trigger:
       "flex flex-1 items-center gap-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/50 rounded-xl px-2 py-1 transition-colors data-[hover=true]:bg-white/10",
@@ -71,7 +70,7 @@ export default function HeroBanner({ src, alt, title, subtitle, plans = [] }) {
       animate={isInView ? "visible" : "hidden"}
     >
       <div className="mx-auto flex min-h-[26rem] w-full max-w-6xl flex-col gap-10 px-6 py-16 md:px-12 lg:flex-row lg:items-stretch lg:gap-14 lg:py-24">
-        {/* Heading column (kept outside the picture) */}
+        {/* Heading column */}
         {title && (
           <motion.div
             className="flex-1 flex flex-col"
@@ -86,17 +85,23 @@ export default function HeroBanner({ src, alt, title, subtitle, plans = [] }) {
           </motion.div>
         )}
 
+        {/* Image column */}
         <motion.div className="relative flex-1" variants={imageVariants}>
           <div className="absolute inset-0 -translate-x-6 blur-3xl sm:-translate-x-10" />
-          <div className="relative overflow-hidden rounded-4xl shadow-2xl shadow-black/40 group">
+
+          {/* Responsive aspect ratios across breakpoints */}
+          <div className="relative overflow-hidden rounded-4xl shadow-2xl shadow-black/40 group aspect-[4/5] sm:aspect-[3/4] md:aspect-[16/10] lg:aspect-[16/9]">
+            {/* Use fill + sizes so the image scales with container width */}
             <Image
               src={imageSrc}
               alt={imageAlt}
-              width={720}
-              height={900}
+              fill
+              sizes="(min-width:1280px) 640px, (min-width:1024px) 50vw, 100vw"
               priority={false}
-              className="h-full w-full object-cover transition-transform duration-[2500ms] ease-[cubic-bezier(.19,1,.22,1)] group-hover:scale-[1.03]"
+              className="absolute inset-0 h-full w-full object-cover transition-transform duration-[2500ms] ease-[cubic-bezier(.19,1,.22,1)] group-hover:scale-[1.03]"
             />
+
+            {/* Gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
 
             {(subtitle || planItems.length > 0) && (
@@ -135,10 +140,9 @@ export default function HeroBanner({ src, alt, title, subtitle, plans = [] }) {
                                       "text-sm md:text-xl lg:text-xl flex flex-row items-center gap-2"
                                     }
                                   >
-                                    {" "}
                                     <CheckCircle
                                       className={"text-green-500 w-4 h-4"}
-                                    />{" "}
+                                    />
                                     {feature}
                                   </p>
                                 ))
