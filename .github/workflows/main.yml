@@ -1,7 +1,7 @@
 name: Semantic Release
 on:
   push:
-    branches: [main]  # Change to your default branch name
+    branches: [main]
   workflow_dispatch:
 
 permissions:
