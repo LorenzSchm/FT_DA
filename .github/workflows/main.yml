@@ -1,7 +1,7 @@
 name: Semantic Release
 on:
   push:
-    branches: [main]  # Change to your default branch name
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -21,15 +21,15 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          
+          node-version: "18"
+
       - name: Install dependencies
         run: |
           npm install -D semantic-release
           npm install -D @semantic-release/commit-analyzer
           npm install -D @semantic-release/release-notes-generator
           npm install -D @semantic-release/github
-          
+
       - name: Run semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}

@@ -1,7 +1,7 @@
-name: Build & Push Backend 
+name: Build & Push Backend
 
 on:
-  workflow_dispatch: {}  
+  workflow_dispatch: {}
 
 jobs:
   build-and-push:
@@ -25,16 +25,16 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      
+
       - name: Docker metadata (Docker Hub)
         id: meta_dh
         uses: docker/metadata-action@v5
         with:
-           images: ${{ secrets.DOCKERHUB_USERNAME }}/backend
-           tags: |
-             type=ref,event=branch
-             type=sha
-             type=raw,value=latest
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/backend
+          tags: |
+            type=ref,event=branch
+            type=sha
+            type=raw,value=latest
 
       - name: Build & Push
         uses: docker/build-push-action@v6
