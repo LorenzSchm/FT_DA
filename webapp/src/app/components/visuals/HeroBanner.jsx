@@ -50,7 +50,8 @@ export default function HeroBanner({ src, alt, title, subtitle, plans = [] }) {
     subtitle: "text-sm lg:text-md font-medium text-black/60 tracking-wide",
     indicator:
       "group-data-[open=true]:rotate-90 transition-transform duration-300",
-    content: "md:text-base text-sm leading-relaxed text-black/90 [&_p]:mt-1 overflow-visible",
+    content:
+      "md:text-base text-sm leading-relaxed text-black/90 [&_p]:mt-1 overflow-visible",
   };
 
   return (
@@ -75,9 +76,18 @@ export default function HeroBanner({ src, alt, title, subtitle, plans = [] }) {
           </motion.div>
         )}
 
-        <motion.div className="relative flex-1 min-h-[400px] md:min-h-[700px] lg:min-h-[700px]" variants={imageVariants}>
+        <motion.div
+          className="relative flex-1 min-h-[400px] md:min-h-[700px] lg:min-h-[700px]"
+          variants={imageVariants}
+        >
           <div className="relative h-[600px] rounded-4xl shadow-2xl shadow-black/40">
-            <Image src={imageSrc} alt={imageAlt} fill priority className="object-cover rounded-4xl" />
+            <Image
+              src={imageSrc}
+              alt={imageAlt}
+              fill
+              priority
+              className="object-cover rounded-4xl"
+            />
 
             <div className="absolute inset-0 rounded-4xl bg-gradient-to-t from-black/70 via-black/30 to-transparent hover:cursor-pointer" />
 
