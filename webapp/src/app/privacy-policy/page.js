@@ -3,8 +3,6 @@ import BackgroundImageLoader from "@/app/components/preloading/BackgroundImageLo
 
 export default function Page() {
   return (
-    <BackgroundImageLoader imageUrl={"/franky.jpg"}>
       <PrivacyPolicyView />
-    </BackgroundImageLoader>
   );
 }

@@ -3,7 +3,6 @@
 import CardView from "@/app/components/cards/CardView";
 import LandingPage from "@/app/components/landing/LandingPage";
 import InfiniteMarqueeView from "@/app/components/marquee/InfiniteMarqueeView";
-import PlansCardsView from "@/app/components/plans/cards/PlansCardsView";
 import TeamPage from "@/app/components/team/TeamPage";
 import HeroBanner from "@/app/components/visuals/HeroBanner";
 

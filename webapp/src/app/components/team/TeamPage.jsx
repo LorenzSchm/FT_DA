@@ -8,16 +8,16 @@ export default function TeamPage() {
       role: "Product Owner & Lead Developer",
     },
     {
+      name: "Anne Mieke Vincken",
+      role: "Scrum Master & Public Relations",
+    },
+    {
       name: "Philipp Seytter",
-      role: "Scrum Master & Developer",
+      role: "Developer",
     },
     {
       name: "Loreine Maly",
       role: "Developer",
-    },
-    {
-      name: "Anne Mieke Vincken",
-      role: "Public Relations",
     },
   ];
 

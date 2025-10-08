@@ -16,7 +16,7 @@ export const metadata = {
   title: "Finance Tracker",
   description: "Manage your finances with ease using Finance Tracker",
   icons: {
-    icon: "/icon.ico",
+    icon: "/favicon.ico",
   },
 };
 

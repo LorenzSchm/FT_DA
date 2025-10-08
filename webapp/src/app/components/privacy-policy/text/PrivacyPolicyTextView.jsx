@@ -2,7 +2,7 @@ import React from "react";
 
 const PrivacyPolicyTextView = () => {
   return (
-    <div className="mx-auto max-w-4xl rounded-lg bg-white p-6 shadow-lg h-screen">
+    <div className="mx-auto max-w-4xl bg-white p-6">
       <h1 className="text-3xl font-bold mb-4">Privacy Policy</h1>
       <p className="text-gray-600 mb-2">Last updated: September 09, 2025</p>
       <p className="text-gray-700 mb-4">

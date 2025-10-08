@@ -3,8 +3,6 @@ import BackgroundImageLoader from "@/app/components/preloading/BackgroundImageLo
 
 export default function Page() {
   return (
-    <BackgroundImageLoader imageUrl={"/hongkong.jpg"}>
       <ImprintView />
-    </BackgroundImageLoader>
   );
 }

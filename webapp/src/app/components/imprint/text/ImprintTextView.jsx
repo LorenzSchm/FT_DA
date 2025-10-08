@@ -2,8 +2,8 @@ import React from "react";
 
 const ImprintTextView = () => {
   return (
-    <div className="mx-auto max-w-4xl rounded-lg bg-white p-6 shadow-lg">
-      <h1 className="mb-4 text-3xl font-bold text-gray-900">Impressum</h1>
+    <div className="mx-auto max-w-4xl  bg-white p-6 ">
+      <h1 className="mb-4 text-3xl font-bold text-gray-900">Imprint</h1>
       <p className="mb-2 text-sm text-gray-500">
         Last updated: September 09, 2025
       </p>
