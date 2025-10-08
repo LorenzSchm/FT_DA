@@ -40,37 +40,28 @@ export default function HeroBanner({ src, alt, title, subtitle, plans = [] }) {
     },
   };
 
-  const planItemVariants = {
-    hidden: { opacity: 0, y: 14 },
-    visible: (i) => ({
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.4, ease: "easeOut", delay: 0.5 + i * 0.09 },
-    }),
-  };
-
   const itemClasses = {
     base: "group rounded-3xl bg-white p-2 md:p-4 lg:p-4 transition-colors duration-300 hover:cursor-pointer",
     heading: "flex w-full items-center gap-3 py-2 hover:cursor-pointer",
     trigger:
-      "flex flex-1 items-center gap-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/50 rounded-xl px-2 py-1 transition-colors data-[hover=true]:bg-white/10",
+      "flex flex-1 items-center gap-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/50 rounded-xl px-2 py-1 transition-colors data-[hover=true]:bg-white/10 hover:cursor-pointer",
     title:
       "font-swiss text-base text-xl md:text-3xl lg:text-3xl font-semibold tracking-tight text-black transition-colors",
     subtitle: "text-sm lg:text-md font-medium text-black/60 tracking-wide",
     indicator:
       "group-data-[open=true]:rotate-90 transition-transform duration-300",
-    content: "md:text-base text-sm leading-relaxed text-black/90 [&_p]:mt-1",
+    content:
+      "md:text-base text-sm leading-relaxed text-black/90 [&_p]:mt-1 overflow-visible",
   };
 
   return (
     <motion.section
       ref={containerRef}
-      className="overflow-hidden relative"
+      className="relative overflow-hidden"
       initial="hidden"
       animate={isInView ? "visible" : "hidden"}
     >
-      <div className="mx-auto flex min-h-[26rem] w-full max-w-6xl flex-col gap-10 px-6 py-16 md:px-12 lg:flex-row lg:items-stretch lg:gap-14 lg:py-24">
-        {/* Heading column */}
+      <div className="mx-auto flex h-full w-full max-w-6xl flex-col gap-10 px-6 py-16 md:px-12 lg:flex-row lg:items-stretch lg:gap-14 lg:py-24">
         {title && (
           <motion.div
             className="flex-1 flex flex-col"
@@ -85,29 +76,25 @@ export default function HeroBanner({ src, alt, title, subtitle, plans = [] }) {
           </motion.div>
         )}
 
-        {/* Image column */}
-        <motion.div className="relative flex-1" variants={imageVariants}>
-          <div className="absolute inset-0 -translate-x-6 blur-3xl sm:-translate-x-10" />
-
-          {/* Responsive aspect ratios across breakpoints */}
-          <div className="relative overflow-hidden rounded-4xl shadow-2xl shadow-black/40 group aspect-[4/5] sm:aspect-[3/4] md:aspect-[16/10] lg:aspect-[16/9]">
-            {/* Use fill + sizes so the image scales with container width */}
+        <motion.div
+          className="relative flex-1 min-h-[400px] md:min-h-[700px] lg:min-h-[700px]"
+          variants={imageVariants}
+        >
+          <div className="relative h-[600px] rounded-4xl shadow-2xl shadow-black/40">
             <Image
               src={imageSrc}
               alt={imageAlt}
               fill
-              sizes="(min-width:1280px) 640px, (min-width:1024px) 50vw, 100vw"
-              priority={false}
-              className="absolute inset-0 h-full w-full object-cover transition-transform duration-[2500ms] ease-[cubic-bezier(.19,1,.22,1)] group-hover:scale-[1.03]"
+              priority
+              className="object-cover rounded-4xl"
             />
 
-            {/* Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+            <div className="absolute inset-0 rounded-4xl bg-gradient-to-t from-black/70 via-black/30 to-transparent hover:cursor-pointer" />
 
             {(subtitle || planItems.length > 0) && (
               <motion.div
                 variants={overlayVariants}
-                className="w-full pointer-events-none absolute inset-0 flex flex-col justify-start p-8 py-10 gap-5"
+                className="w-full pointer-events-none absolute inset-0 flex flex-col justify-start p-2 py-4 gap-5 overflow-y-hidden"
               >
                 {planItems.length > 0 && (
                   <motion.ul
