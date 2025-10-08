@@ -1,5 +1,4 @@
-FT_DA Backend
-=============
+# FT_DA Backend
 
 FastAPI service that will power the FT_DA personal finance assistant. The
 repository currently provides a modular foundation with routers for core
@@ -9,8 +8,7 @@ external data integrations. Endpoint logic is intentionally left blank, so the
 next development tasks can focus on wiring real business rules into the
 pre-defined shells.
 
-Getting Started
----------------
+## Getting Started
 
 Prerequisites:
 
@@ -38,8 +36,7 @@ docker build -t ft-da-backend .
 docker run --rm -p 8000:8000 ft-da-backend
 ```
 
-Project Layout
---------------
+## Project Layout
 
 ```
 app/
@@ -57,8 +54,7 @@ app/
     └── external/               # API client stubs (OpenAI, BrandFetch, FX, etc.)
 ```
 
-Development Tasks
------------------
+## Development Tasks
 
 1. Flesh out each router with concrete request/response models, validation,
    and business logic.
@@ -72,8 +68,7 @@ Development Tasks
    yfinance) and centralize API configuration/secrets management.
 6. Add automated tests (ideally with `pytest`) and wire CI to run them.
 
-Notes for Contributors
-----------------------
+## Notes for Contributors
 
 - Keep routers focused on HTTP orchestration; push heavy lifting into
   dedicated service modules so the code stays testable.
