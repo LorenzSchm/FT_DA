@@ -1,19 +1,20 @@
-import os
-from dotenv import load_dotenv
-from supabase import create_client, Client
-from typing import Annotated
-from fastapi import Depends
+from fastapi import Request, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-load_dotenv()
+security = HTTPBearer(auto_error=True)
 
-def get_supabase_client() -> Client:
-    url: str = os.getenv("SUPABASE_URL")
-    key: str = os.getenv("SUPABASE_KEY")
+def get_supabase(request: Request):
+    return request.app.state.supabase
 
-    if not url or not key:
-        raise ValueError("SUPABASE_URL and SUPABASE_KEY must be set in environment variables")
+def get_user_token(
+        credentials: HTTPAuthorizationCredentials  = Depends(security)
+) -> str:
+    return credentials.credentials
 
-    supabase: Client = create_client(url, key)
-    return supabase
-
-SupabaseClient = Annotated[Client, Depends(get_supabase_client)]
+def get_supabase_for_user(
+        request: Request,
+        token: str = Depends(get_user_token)
+):
+    base_supabase = request.app.state.supabase
+    user_supabase = base_supabase.postgrest.auth(token)
+    return user_supabase
