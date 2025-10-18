@@ -25,7 +25,7 @@ class UserResponse(BaseModel):
     updated_at: datetime | None = None
 
 
-@router.get("/user", response_model=UserResponse, status_code=status.HTTP_200_OK)
+@router.get("/", response_model=UserResponse, status_code=status.HTTP_200_OK)
 async def get_user(
         supabase=Depends(get_supabase),
         credentials=Depends(get_user_token)
@@ -50,7 +50,7 @@ async def get_user(
         raise HTTPException(status_code=400, detail=f"Get user failed: {e}")
 
 
-@router.patch("/user", response_model=UserResponse, status_code=status.HTTP_200_OK)
+@router.patch("/", response_model=UserResponse, status_code=status.HTTP_200_OK)
 async def update_user(
         request: UpdateUserRequest,
         supabase=Depends(get_supabase),
@@ -80,3 +80,5 @@ async def update_user(
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Update user failed: {e}")
+
+

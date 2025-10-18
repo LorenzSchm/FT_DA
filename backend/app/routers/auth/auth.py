@@ -5,10 +5,15 @@ from pydantic import BaseModel, EmailStr
 from typing import Dict, Any, Optional
 
 from app.dependencies import get_supabase
+from starlette.responses import JSONResponse
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 auth_scheme = HTTPBearer(auto_error=True)
 
+
+class SignOutRequest(BaseModel):
+    access_token: str
+    refresh_token: str
 
 class SignUpRequest(BaseModel):
     email: EmailStr
@@ -86,7 +91,19 @@ async def sign_up(request: SignUpRequest, supabase=Depends(get_supabase)):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Sign-up failed: {e}")
 
-@router.get("/refresh-access-token", response_model=RefreshAccessTokenResponse, status_code=status.HTTP_200_OK)
+@router.post("/sign-out", status_code=status.HTTP_200_OK)
+async def sign_out(
+        request: SignOutRequest,
+        supabase=Depends(get_supabase),
+):
+    try:
+        supabase.auth.set_session(request.access_token, request.refresh_token)
+        supabase.auth.sign_out()
+        return {"message": "User signed out successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Sign-out failed: {e}")
+
+@router.get("/refresh-token", response_model=RefreshAccessTokenResponse, status_code=status.HTTP_200_OK)
 async def refresh_access_token(
         supabase=Depends(get_supabase),
         credentials: HTTPAuthorizationCredentials = Depends(auth_scheme),):
