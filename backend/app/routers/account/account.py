@@ -13,6 +13,7 @@ auth_scheme = HTTPBearer(auto_error=True)
 class UpdateUserRequest(BaseModel):
     email: EmailStr | None = None
     display_name: str | None = None
+    refresh_token: str
 
 
 class UserResponse(BaseModel):
@@ -23,10 +24,11 @@ class UserResponse(BaseModel):
     created_at: datetime
     updated_at: datetime | None = None
 
+
 @router.get("/user", response_model=UserResponse, status_code=status.HTTP_200_OK)
 async def get_user(
-    supabase = Depends(get_supabase),
-    credentials = Depends(get_user_token)
+        supabase=Depends(get_supabase),
+        credentials=Depends(get_user_token)
 ):
     try:
         resp = supabase.auth.get_user(credentials)
@@ -50,19 +52,19 @@ async def get_user(
 
 @router.patch("/user", response_model=UserResponse, status_code=status.HTTP_200_OK)
 async def update_user(
-    request: UpdateUserRequest,
-    supabase = Depends(get_supabase),
-    token: str = Depends(lambda credentials=Depends(auth_scheme): credentials.credentials),
+        request: UpdateUserRequest,
+        supabase=Depends(get_supabase),
+        credentials: str = Depends(get_user_token),
 ):
     try:
         if not request.email and not request.display_name:
             raise HTTPException(status_code=400, detail="No update requested")
-        resp = supabase.auth.update_user(token, {
+
+        supabase.auth.set_session(credentials, request.refresh_token)
+        resp = supabase.auth.update_user({
             "email": request.email,
-            "options": {
-                "data": {
-                    "display_name": request.display_name
-                }
+            "data": {
+                "display_name": request.display_name
             }
         })
         if not resp or not resp.user:
@@ -71,7 +73,8 @@ async def update_user(
             id=resp.user.id,
             email=resp.user.email,
             email_confirmed_at=getattr(resp.user, "email_confirmed_at", None),
-            display_name=(resp.user.user_metadata.get("display_name") if isinstance(resp.user.user_metadata, dict) else None),
+            display_name=(
+                resp.user.user_metadata.get("display_name") if isinstance(resp.user.user_metadata, dict) else None),
             created_at=getattr(resp.user, "created_at", None),
             updated_at=getattr(resp.user, "updated_at", None),
         )
