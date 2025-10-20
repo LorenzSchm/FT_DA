@@ -99,18 +99,8 @@ def get_supabase_for_user_session(
             base_supabase.auth._save_session(session_obj)
         except Exception as exc:
             logger.debug("_save_session failed: %s", exc)
-            try:
-                if hasattr(base_supabase.auth, "_in_memory_session"):
-                    setattr(base_supabase.auth, "_in_memory_session", session_obj)
-                    # Prefer reading in-memory session over storage
-                    try:
-                        if hasattr(base_supabase.auth, "_persist_session"):
-                            setattr(base_supabase.auth, "_persist_session", False)
-                    except Exception:
-                        pass
-            except Exception as exc2:
-                logger.debug("setting _in_memory_session failed: %s", exc2)
-
+            logger.error("No public API available to set session in-memory; cannot proceed without manipulating private attributes.")
+            raise HTTPException(status_code=500, detail="Unable to set Supabase session using public APIs")
         # Final verification
         try:
             if base_supabase.auth.get_session() is None:
