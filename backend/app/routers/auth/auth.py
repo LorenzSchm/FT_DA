@@ -40,7 +40,6 @@ class RefreshAccessTokenResponse(BaseModel):
     expires_at: int | str
 
 
-
 @router.post("/sign-in", response_model=SignInResponse, status_code=status.HTTP_200_OK)
 async def sign_in(request: SignInRequest, supabase=Depends(get_supabase)):
     try:
