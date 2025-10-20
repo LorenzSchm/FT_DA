@@ -113,7 +113,10 @@ async def refresh_access_token(
 
         expires_at_val = None
         try:
-            expires_at_val = int(response.session.expires_at) if response.session and response.session.expires_at is not None else None
+            if response.session and response.session.expires_at is not None:
+                expires_at_val = int(response.session.expires_at)
+            else:
+                expires_at_val = None
         except Exception:
             expires_at_val = response.session.expires_at if response.session else None
 
