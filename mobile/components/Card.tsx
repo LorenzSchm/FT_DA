@@ -9,8 +9,8 @@ interface CardProps {
 export default function Card({ kind, amount, currency }: CardProps) {
   const { width } = useWindowDimensions();
 
-  const cardWidth = (width-60) * 0.9;
-    const cardHeight = cardWidth * (181 / 317);
+  const cardWidth = (width - 60) * 0.9;
+  const cardHeight = cardWidth * (181 / 317);
 
   return (
     <View
@@ -23,9 +23,9 @@ export default function Card({ kind, amount, currency }: CardProps) {
           amount < 0 ? "text-red-500" : "text-green-500"
         }`}
       >
-        {amount < 0 ? "-" : ""}{Math.abs(amount)} {currency === "USD" ? "$" : "€"}
+        {amount < 0 ? "-" : ""}
+        {Math.abs(amount)} {currency === "USD" ? "$" : "€"}
       </Text>
     </View>
   );
 }
-

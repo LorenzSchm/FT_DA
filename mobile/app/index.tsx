@@ -1,4 +1,10 @@
-import { View, Text, ImageBackground, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  ImageBackground,
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
 import Logo from "../assets/icons/icon.svg";
 import { useRouter } from "expo-router";
 import SignInModal from "@/components/modals/SignInModal";
@@ -23,7 +29,7 @@ export default function AppScreen() {
   useEffect(() => {
     async function loadFonts() {
       await Font.loadAsync({
-        "SpaceMono": require("../assets/fonts/SpaceMono-Regular.ttf"),
+        SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
       });
       setFontsLoaded(true);
     }
@@ -46,22 +52,20 @@ export default function AppScreen() {
     setState(STATE.DEFAULT);
   };
 
-
   // Create a default text style with SpaceMono font
   const defaultTextStyle = {
     fontFamily: "SpaceMono",
   };
 
   return (
-      <View className="flex h-full justify-end">
-
-       <View className="flex items-center flex-col justify-between h-[93vh] ">
-           <TopBar></TopBar>
-           <DashBoard></DashBoard>
-           <View className="w-full">
-               <NavBar></NavBar>
-           </View>
+    <View className="flex h-full justify-end">
+      <View className="flex items-center flex-col justify-between h-[93vh] ">
+        <TopBar></TopBar>
+        <DashBoard></DashBoard>
+        <View className="w-full">
+          <NavBar></NavBar>
+        </View>
+      </View>
     </View>
-          </View>
   );
 }
