@@ -7,6 +7,9 @@ import {
   StyleSheet,
   Image,
 } from "react-native";
+import { useRouter } from "expo-router";
+
+const router = useRouter();
 
 export default function RegisterScreen() {
   return (
@@ -30,7 +33,10 @@ export default function RegisterScreen() {
           style={styles.input}
         />
 
-        <TouchableOpacity style={styles.continueBtn}>
+        <TouchableOpacity
+          style={styles.continueBtn}
+          onPress={() => router.push("/registerCardStepOne")}
+        >
           <Text style={styles.continueText}>Continue</Text>
         </TouchableOpacity>
 
@@ -106,7 +112,7 @@ const styles = StyleSheet.create({
     padding: 14,
     paddingLeft: 20,
     marginBottom: 15,
-    fontSize: 16,
+    fontSize: 20,
   },
   continueBtn: {
     backgroundColor: "#000",

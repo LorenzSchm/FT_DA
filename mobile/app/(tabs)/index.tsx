@@ -12,7 +12,9 @@ export default function HomeScreen() {
   const router = useRouter();
 
   return (
-    <ThemedView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+    <ThemedView
+      style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+    >
       {/* Beispieltext zum Test */}
       <ThemedText>INDEX HOME</ThemedText>
 
