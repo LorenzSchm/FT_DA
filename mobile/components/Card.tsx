@@ -14,7 +14,7 @@ export default function Card({ kind, amount, currency }: CardProps) {
 
   return (
     <View
-      className="bg-black gap-2 rounded-3xl p-5 shadow-xl"
+      className="bg-black gap-2 rounded-3xl p-5 "
       style={{ width: cardWidth, height: cardHeight }}
     >
       <Text className="text-white font-bold">{kind}</Text>
