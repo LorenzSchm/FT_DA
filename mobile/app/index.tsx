@@ -14,6 +14,7 @@ import NavBar from "@/components/NavBar";
 import DashBoard from "@/components/DashBoard";
 import TopBar from "@/components/TopBar";
 import * as Font from "expo-font";
+import InvestmentView from "@/components/Views/InvestmentView";
 
 enum STATE {
   "DEFAULT",
@@ -58,6 +59,7 @@ export default function AppScreen() {
   };
 
   return (
+
     <View className="flex h-full justify-end">
       <View className="flex items-center flex-col justify-between h-[93vh] ">
         <TopBar></TopBar>

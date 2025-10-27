@@ -1,4 +1,10 @@
-import React, { createContext, useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   View,
   ScrollView,
@@ -8,16 +14,16 @@ import {
   NativeScrollEvent,
   Pressable,
   Text,
-} from 'react-native';
-import Feather from 'react-native-vector-icons/Feather';
-import { cn } from '../../../lib/utils';
+} from "react-native";
+import Feather from "react-native-vector-icons/Feather";
+import { cn } from "../../../lib/utils";
 
 import {
   carouselClassNames,
   carouselContentClassNames,
   carouselItemClassNames,
   carouselNavigationClassNames,
-} from './styles';
+} from "./styles";
 
 // Types for custom icon rendering
 type IconProps = {
@@ -46,9 +52,9 @@ type CarouselContextProps = {
   itemCount: number;
   viewportWidth: number;
   viewportHeight: number;
-  orientation: 'horizontal' | 'vertical';
+  orientation: "horizontal" | "vertical";
   handleScrollEnd: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
-  mode: 'light' | 'dark';
+  mode: "light" | "dark";
 };
 
 // Create context
@@ -59,7 +65,7 @@ function useCarousel() {
   const context = React.useContext(CarouselContext);
 
   if (!context) {
-    throw new Error('useCarousel must be used within a <Carousel />');
+    throw new Error("useCarousel must be used within a <Carousel />");
   }
 
   return context;
@@ -68,21 +74,21 @@ function useCarousel() {
 // Carousel Props
 interface CarouselProps extends ViewProps {
   className?: string;
-  orientation?: 'horizontal' | 'vertical';
+  orientation?: "horizontal" | "vertical";
   loop?: boolean;
   itemCount?: number;
-  mode?: 'light' | 'dark';
+  mode?: "light" | "dark";
   onIndexChange?: (index: number) => void;
 }
 
 // Main Carousel component
 const Carousel = ({
-  orientation = 'horizontal',
+  orientation = "horizontal",
   className,
   children,
   loop = false,
   itemCount: propItemCount,
-  mode = 'light',
+  mode = "light",
   ...props
 }: CarouselProps) => {
   // References and state
@@ -93,8 +99,12 @@ const Carousel = ({
   const [itemCount, setItemCount] = useState(propItemCount || 0);
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
-  const [viewportWidth, setViewportWidth] = useState(Dimensions.get('window').width);
-  const [viewportHeight, setViewportHeight] = useState(Dimensions.get('window').height);
+  const [viewportWidth, setViewportWidth] = useState(
+    Dimensions.get("window").width,
+  );
+  const [viewportHeight, setViewportHeight] = useState(
+    Dimensions.get("window").height,
+  );
 
   // Update scroll capabilities
   useEffect(() => {
@@ -121,9 +131,9 @@ const Carousel = ({
       setViewportWidth(width);
       setViewportHeight(height);
       setItemWidth(width);
-      setItemHeight(orientation === 'vertical' ? height : height);
+      setItemHeight(orientation === "vertical" ? height : height);
     },
-    [orientation]
+    [orientation],
   );
 
   // Scroll to a specific index
@@ -139,8 +149,10 @@ const Carousel = ({
         targetIndex = loop ? 0 : itemCount - 1;
       }
 
-      const isHorizontal = orientation === 'horizontal';
-      const offset = isHorizontal ? targetIndex * itemWidth : targetIndex * viewportHeight; // Use viewportHeight for vertical scrolling
+      const isHorizontal = orientation === "horizontal";
+      const offset = isHorizontal
+        ? targetIndex * itemWidth
+        : targetIndex * viewportHeight; // Use viewportHeight for vertical scrolling
 
       scrollRef.current?.scrollTo({
         x: isHorizontal ? offset : 0,
@@ -150,7 +162,7 @@ const Carousel = ({
 
       setCurrentIndex(targetIndex);
     },
-    [itemCount, itemWidth, viewportHeight, orientation, loop]
+    [itemCount, itemWidth, viewportHeight, orientation, loop],
   );
 
   // Scroll to previous item
@@ -174,7 +186,7 @@ const Carousel = ({
   // Handle scroll end to update current index
   const handleScrollEnd = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const isHorizontal = orientation === 'horizontal';
+      const isHorizontal = orientation === "horizontal";
       const contentOffset = isHorizontal
         ? event.nativeEvent.contentOffset.x
         : event.nativeEvent.contentOffset.y;
@@ -188,12 +200,12 @@ const Carousel = ({
         props.onIndexChange?.(newIndex);
       }
     },
-    [orientation, itemWidth, viewportHeight, itemCount, props]
+    [orientation, itemWidth, viewportHeight, itemCount, props],
   );
 
   // Provide context values to children
   // @ts-ignore
-    const contextValue: CarouselContextProps = {
+  const contextValue: CarouselContextProps = {
     scrollRef,
     currentIndex,
     scrollTo,
@@ -219,17 +231,21 @@ const Carousel = ({
         onLayout={handleLayout}
         {...props}
       >
-        {React.Children.map(children, child => {
+        {React.Children.map(children, (child) => {
           if (React.isValidElement(child)) {
             // Use a safer way to check for CarouselContent
             const childType = child.type as any;
             const isCarouselContent =
-              childType === CarouselContent || (childType && childType.name === 'CarouselContent');
+              childType === CarouselContent ||
+              (childType && childType.name === "CarouselContent");
 
             if (isCarouselContent) {
-              return React.cloneElement(child as React.ReactElement<CarouselContentProps>, {
-                onItemCountChange: updateItemCount,
-              });
+              return React.cloneElement(
+                child as React.ReactElement<CarouselContentProps>,
+                {
+                  onItemCountChange: updateItemCount,
+                },
+              );
             }
           }
           return child;
@@ -266,12 +282,12 @@ const CarouselContent = ({
     <View
       className={cn(
         carouselContentClassNames.base,
-        orientation === 'vertical' ? carouselContentClassNames.vertical : ''
+        orientation === "vertical" ? carouselContentClassNames.vertical : "",
       )}
     >
       <ScrollView
         ref={scrollRef}
-        horizontal={orientation === 'horizontal'}
+        horizontal={orientation === "horizontal"}
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}
@@ -279,14 +295,14 @@ const CarouselContent = ({
         snapToAlignment="start"
         onMomentumScrollEnd={handleScrollEnd}
         className={cn(
-          orientation === 'horizontal'
+          orientation === "horizontal"
             ? carouselContentClassNames.horizontal
             : carouselContentClassNames.vertical_content,
-          className
+          className,
         )}
         contentContainerStyle={{
-          alignItems: 'center',
-          justifyContent: 'center',
+          alignItems: "center",
+          justifyContent: "center",
         }}
         {...props}
       >
@@ -310,8 +326,8 @@ const CarouselItem = ({ className, children, ...props }: CarouselItemProps) => {
       accessibilityRole="none"
       className={cn(carouselItemClassNames.base, className)}
       style={{
-        width: orientation === 'horizontal' ? viewportWidth : '100%',
-        height: orientation === 'vertical' ? viewportHeight : undefined,
+        width: orientation === "horizontal" ? viewportWidth : "100%",
+        height: orientation === "vertical" ? viewportHeight : undefined,
       }}
       {...props}
     >
@@ -323,21 +339,21 @@ const CarouselItem = ({ className, children, ...props }: CarouselItemProps) => {
 // Carousel Previous button
 interface CarouselNavigationProps extends ViewProps {
   className?: string;
-  variant?: 'default' | 'outline' | 'ghost';
-  size?: 'default' | 'sm' | 'lg' | 'icon';
+  variant?: "default" | "outline" | "ghost";
+  size?: "default" | "sm" | "lg" | "icon";
 }
 
 const CarouselPrevious = ({
   className,
-  variant = 'outline',
-  size = 'icon',
+  variant = "outline",
+  size = "icon",
   ...props
 }: CarouselNavigationProps) => {
   const { orientation, scrollPrev, canScrollPrev, mode } = useCarousel();
 
   // Get icon color based on variant and mode
   const getIconColor = () => {
-    if (variant === 'default') {
+    if (variant === "default") {
       return carouselNavigationClassNames.iconColor.default;
     }
     return carouselNavigationClassNames.iconColor[variant][mode];
@@ -355,14 +371,14 @@ const CarouselPrevious = ({
         carouselNavigationClassNames.position.previous[orientation],
         carouselNavigationClassNames.variant[variant][mode],
         !canScrollPrev && carouselNavigationClassNames.disabled,
-        className
+        className,
       )}
       disabled={!canScrollPrev}
       onPress={scrollPrev}
       {...props}
     >
       <FeatherIcon
-        name={orientation === 'vertical' ? 'chevron-up' : 'chevron-left'}
+        name={orientation === "vertical" ? "chevron-up" : "chevron-left"}
         size={16}
         color={getIconColor()}
       />
@@ -374,15 +390,15 @@ const CarouselPrevious = ({
 // Carousel Next button
 const CarouselNext = ({
   className,
-  variant = 'outline',
-  size = 'icon',
+  variant = "outline",
+  size = "icon",
   ...props
 }: CarouselNavigationProps) => {
   const { orientation, scrollNext, canScrollNext, mode } = useCarousel();
 
   // Get icon color based on variant and mode
   const getIconColor = () => {
-    if (variant === 'default') {
+    if (variant === "default") {
       return carouselNavigationClassNames.iconColor.default;
     }
     return carouselNavigationClassNames.iconColor[variant][mode];
@@ -400,14 +416,14 @@ const CarouselNext = ({
         carouselNavigationClassNames.position.next[orientation],
         carouselNavigationClassNames.variant[variant][mode],
         !canScrollNext && carouselNavigationClassNames.disabled,
-        className
+        className,
       )}
       disabled={!canScrollNext}
       onPress={scrollNext}
       {...props}
     >
       <FeatherIcon
-        name={orientation === 'vertical' ? 'chevron-down' : 'chevron-right'}
+        name={orientation === "vertical" ? "chevron-down" : "chevron-right"}
         size={16}
         color={getIconColor()}
       />
@@ -416,4 +432,11 @@ const CarouselNext = ({
   );
 };
 
-export { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext, useCarousel };
+export {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselPrevious,
+  CarouselNext,
+  useCarousel,
+};
