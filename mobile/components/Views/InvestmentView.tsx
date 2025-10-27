@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {View, Text, FlatList, ScrollView} from "react-native";
+import { View, Text, FlatList, ScrollView } from "react-native";
 import axios from "axios";
 
 export default function InvestmentView() {
