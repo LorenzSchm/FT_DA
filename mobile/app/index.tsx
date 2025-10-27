@@ -1,4 +1,10 @@
-import { View, Text, ImageBackground, TouchableOpacity, Animated } from "react-native";
+import {
+  View,
+  Text,
+  ImageBackground,
+  TouchableOpacity,
+  Animated,
+} from "react-native";
 import Logo from "../assets/icons/icon.svg";
 import { useRouter } from "expo-router";
 import SignInModal from "@/components/modals/SignInModal";
@@ -47,10 +53,11 @@ export default function AppScreen() {
         style={{ backgroundColor: "rgba(0, 0, 0, 0.09)" }}
       />
       <View className="h-screen w-screen">
-        <View
-          className="flex flex-col items-center justify-center gap-4 mt-[140px]"
-        >
-          <Animated.View style={{ opacity: fadeAnim }} className={"flex flex-col gap-2 items-center"}>
+        <View className="flex flex-col items-center justify-center gap-4 mt-[140px]">
+          <Animated.View
+            style={{ opacity: fadeAnim }}
+            className={"flex flex-col gap-2 items-center"}
+          >
             {state === STATE.DEFAULT && (
               <>
                 <Logo width={40} height={40} />
@@ -60,9 +67,7 @@ export default function AppScreen() {
               </>
             )}
           </Animated.View>
-          <Text className="text-white text-5xl font-bold">
-            Finance Tracker
-          </Text>
+          <Text className="text-white text-5xl font-bold">Finance Tracker</Text>
         </View>
         <View className="flex items-center justify-center gap-8 mt-[400px]">
           <TouchableOpacity

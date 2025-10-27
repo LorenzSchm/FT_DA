@@ -28,7 +28,11 @@ type AuthState = {
   isVip: boolean;
   _hasHydrated: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, displayName?: string) => Promise<void>;
+  signUp: (
+    email: string,
+    password: string,
+    displayName?: string,
+  ) => Promise<void>;
   signOut: () => Promise<void>;
   refreshToken: () => Promise<void>;
   completeOnboarding: () => void;
@@ -193,7 +197,8 @@ export const useAuthStore = create(
 
           // Schedule token refresh after rehydration
           if (state?.session) {
-            const expiresIn = state.session.expires_at * 1000 - Date.now() - 60000;
+            const expiresIn =
+              state.session.expires_at * 1000 - Date.now() - 60000;
             if (expiresIn > 0) {
               refreshTokenTimeout = setTimeout(() => {
                 state.refreshToken();
@@ -205,6 +210,6 @@ export const useAuthStore = create(
           }
         };
       },
-    }
-  )
+    },
+  ),
 );
