@@ -8,7 +8,6 @@ import {
   Animated,
 } from "react-native";
 import { useEffect, useMemo, useState, useRef } from "react";
-import SignInForm from "@/components/sign-in/SignInForm";
 import SignUpForm from "@/components/sign-up/SignUpForm";
 
 const BRANDFETCH_CLIENT_ID = process.env.EXPO_PUBLIC_LOGO_API_KEY;
