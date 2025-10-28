@@ -118,7 +118,7 @@ export default function SignUpForm({isVisible, email}: Props) {
 
     const handleSubmit = () => {
         if (validateSecondStep()) {
-            console.log("Form submitted:", {mail, password, firstName, lastName, phone, currency});
+            console.log("Form submitted:", {mail, firstName, lastName, phone, currency});
         }
     };
 
