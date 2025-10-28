@@ -1,7 +1,6 @@
 import {Text, TextInput, TouchableOpacity, View, StyleSheet} from "react-native"; // Changed import
 import {useEffect, useState} from "react";
 import DropDownPicker from "react-native-dropdown-picker";
-import {pick} from "query-string";
 import CustomPicker from "@/components/ui/CustomPicker";
 
 type Props = {
