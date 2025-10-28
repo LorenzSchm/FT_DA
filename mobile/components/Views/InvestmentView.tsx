@@ -9,7 +9,9 @@ export default function InvestmentView() {
   useEffect(() => {
     const fetchTrending = async () => {
       try {
-        const resp = await axios.get("https://query1.finance.yahoo.com/v1/finance/trending/US");
+        const resp = await axios.get(
+          "https://query1.finance.yahoo.com/v1/finance/trending/US",
+        );
         const quotes = resp.data.finance?.result?.[0]?.quotes || [];
         setTrending(quotes);
 
@@ -19,8 +21,8 @@ export default function InvestmentView() {
           symbols.map((symbol) =>
             axios
               .get(`http://localhost:8000/stock/${symbol}/price`)
-              .then((res) => ({ symbol, price: res.data.price }))
-          )
+              .then((res) => ({ symbol, price: res.data.price })),
+          ),
         );
 
         const priceMap = priceResponses.reduce((acc, { symbol, price }) => {
@@ -38,10 +40,8 @@ export default function InvestmentView() {
   }, []);
 
   return (
-    <View >
-      <Text>
-        Investment View
-      </Text>
+    <View>
+      <Text>Investment View</Text>
 
       {trending.length === 0 ? (
         <Text>Loading trending stocks...</Text>
@@ -50,7 +50,7 @@ export default function InvestmentView() {
           data={trending}
           keyExtractor={(item) => item.symbol}
           renderItem={({ item }) => (
-            <View >
+            <View>
               <Text>{item.symbol}</Text>
               <Text>{item.shortName}</Text>
               <Text>Price: {prices[item.symbol] ?? "Loading..."}</Text>

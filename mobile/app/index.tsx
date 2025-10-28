@@ -60,7 +60,7 @@ export default function AppScreen() {
 
   return (
     <View className="flex h-full justify-end">
-        <InvestmentView></InvestmentView>
+      <InvestmentView></InvestmentView>
     </View>
   );
 }
