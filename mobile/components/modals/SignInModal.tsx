@@ -92,14 +92,6 @@ export default function SignInModal({ isVisible, onClose }: Props) {
     }
   };
 
-  const providers = useMemo(
-    () => [
-      { label: "Continue with Apple", domain: "apple.com" },
-      { label: "Continue with Google", domain: "google.com" },
-    ],
-    [],
-  );
-
   return (
     <Modal
       animationType="slide"
