@@ -53,7 +53,7 @@ export default function InvestmentView() {
             <View>
               <Text>{item.symbol}</Text>
               <Text>{item.shortName}</Text>
-              <Text>Price: {prices[item.symbol] ?? "Loading..."}</Text>
+              <Text>Price: {prices[item.symbol] ?? "Loadg..."}</Text>
             </View>
           )}
         />
