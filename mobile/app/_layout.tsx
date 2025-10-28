@@ -30,7 +30,7 @@ export default function RootLayout() {
           </Stack.Protected>
         </Stack.Protected>
       </Stack>
-        <Toast />
+      <Toast />
     </React.Fragment>
   );
 }
