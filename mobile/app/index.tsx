@@ -10,6 +10,11 @@ import { useRouter } from "expo-router";
 import SignInModal from "@/components/modals/SignInModal";
 import { useState, useRef, useEffect } from "react";
 import CreateAccountModal from "@/components/modals/CreateAccountModal";
+import NavBar from "@/components/NavBar";
+import DashBoard from "@/components/DashBoard";
+import TopBar from "@/components/TopBar";
+import * as Font from "expo-font";
+import InvestmentView from "@/components/Views/InvestmentView";
 
 enum STATE {
   DEFAULT = "DEFAULT",
@@ -40,6 +45,11 @@ export default function AppScreen() {
 
   const handleModalClose = () => {
     setState(STATE.DEFAULT);
+  };
+
+  // Create a default text style with SpaceMono font
+  const defaultTextStyle = {
+    fontFamily: "SpaceMono",
   };
 
   return (
@@ -86,14 +96,6 @@ export default function AppScreen() {
           </TouchableOpacity>
         </View>
       </View>
-      <SignInModal
-        isVisible={state === STATE.LOG_IN}
-        onClose={handleModalClose}
-      />
-      <CreateAccountModal
-        isVisible={state === STATE.CREATE_ACCOUNT}
-        onClose={handleModalClose}
-      />
-    </ImageBackground>
+    </View>
   );
 }
