@@ -5,9 +5,11 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { StatusBar } from "react-native";
 import React, { useEffect } from "react";
 import { Stack } from "expo-router";
+import { useAuthStore } from "@/utils/authStore";
+import Toast from "react-native-toast-message";
 
 export default function RootLayout() {
-  const isLoggedIn = false;
+  const { isLoggedIn } = useAuthStore();
   const shouldCreateAccount = false;
 
   return (
@@ -17,7 +19,7 @@ export default function RootLayout() {
         <Stack.Protected guard={isLoggedIn}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         </Stack.Protected>
-        <Stack.Protected guard={!isLoggedIn && !shouldCreateAccount}>
+        <Stack.Protected guard={!isLoggedIn}>
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="sign-in" options={{ headerShown: false }} />
           <Stack.Protected guard={shouldCreateAccount}>
@@ -28,6 +30,7 @@ export default function RootLayout() {
           </Stack.Protected>
         </Stack.Protected>
       </Stack>
+        <Toast />
     </React.Fragment>
   );
 }
