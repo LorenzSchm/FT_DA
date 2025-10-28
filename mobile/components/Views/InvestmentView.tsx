@@ -1,24 +1,46 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, ScrollView } from "react-native";
+import { View, Text, FlatList } from "react-native";
 import axios from "axios";
 
 export default function InvestmentView() {
   const [trending, setTrending] = useState([]);
+  const [prices, setPrices] = useState({});
 
   useEffect(() => {
-    axios
-      .get("https://query1.finance.yahoo.com/v1/finance/trending/US")
-      .then((resp) => {
+    const fetchTrending = async () => {
+      try {
+        const resp = await axios.get("https://query1.finance.yahoo.com/v1/finance/trending/US");
         const quotes = resp.data.finance?.result?.[0]?.quotes || [];
         setTrending(quotes);
-      })
-      .catch((err) => console.error("Error fetching trending stocks:", err));
+
+        const symbols = quotes.map((q) => q.symbol);
+
+        const priceResponses = await Promise.all(
+          symbols.map((symbol) =>
+            axios
+              .get(`http://localhost:8000/stock/${symbol}/price`)
+              .then((res) => ({ symbol, price: res.data.price }))
+          )
+        );
+
+        const priceMap = priceResponses.reduce((acc, { symbol, price }) => {
+          acc[symbol] = price;
+          return acc;
+        }, {});
+
+        setPrices(priceMap);
+      } catch (err) {
+        console.error("Error fetching trending stocks:", err);
+      }
+    };
+
+    fetchTrending();
   }, []);
 
   return (
-    <View style={{ padding: 16 }}>
-      <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 10 }}>
-        Investment Vie
+    <View >
+      <Text>
+        Investment View
       </Text>
 
       {trending.length === 0 ? (
@@ -26,12 +48,12 @@ export default function InvestmentView() {
       ) : (
         <FlatList
           data={trending}
-          scrollEnabled={true}
           keyExtractor={(item) => item.symbol}
           renderItem={({ item }) => (
-            <View style={{ marginBottom: 8 }}>
-              <Text style={{ fontWeight: "600" }}>{item.symbol}</Text>
+            <View >
+              <Text>{item.symbol}</Text>
               <Text>{item.shortName}</Text>
+              <Text>Price: {prices[item.symbol] ?? "Loading..."}</Text>
             </View>
           )}
         />

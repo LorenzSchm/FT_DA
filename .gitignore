@@ -2,3 +2,5 @@
 /node_modules
 /.next
 .env
+backend/.env
+mobile/.env

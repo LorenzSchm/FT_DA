@@ -60,13 +60,7 @@ export default function AppScreen() {
 
   return (
     <View className="flex h-full justify-end">
-      <View className="flex items-center flex-col justify-between h-[93vh] ">
-        <TopBar></TopBar>
-        <DashBoard></DashBoard>
-        <View className="w-full">
-          <NavBar></NavBar>
-        </View>
-      </View>
+        <InvestmentView></InvestmentView>
     </View>
   );
 }
