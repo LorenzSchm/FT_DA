@@ -13,10 +13,16 @@ def get_supabase(request: Request):
 
 
 def get_user_token(
+    request: Request,
     credentials: HTTPAuthorizationCredentials = Depends(security),
 ) -> str:
-    """Extract bearer token from Authorization header via FastAPI security dependency."""
-    return credentials.credentials
+    access_token = credentials.credentials if credentials else None
+    refresh_token = request.headers.get("x-refresh-token") or request.cookies.get("refresh_token")
+
+    if not access_token:
+        raise HTTPException(status_code=401, detail="Missing access token")
+
+    return {"access_token": access_token, "refresh_token": refresh_token}
 
 
 def get_supabase_for_user(request: Request, token: str = Depends(get_user_token)):
