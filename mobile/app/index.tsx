@@ -15,6 +15,7 @@ import DashBoard from "@/components/DashBoard";
 import TopBar from "@/components/TopBar";
 import * as Font from "expo-font";
 import InvestmentView from "@/components/Views/InvestmentView";
+import {GestureHandlerRootView} from "react-native-gesture-handler";
 
 enum STATE {
   DEFAULT = "DEFAULT",
@@ -53,49 +54,10 @@ export default function AppScreen() {
   };
 
   return (
-    <ImageBackground
-      source={require("../assets/images/london_small.png")}
-      className="flex-1"
-      resizeMode="cover"
-    >
-      <View
-        className="absolute inset-0"
-        style={{ backgroundColor: "rgba(0, 0, 0, 0.09)" }}
-      />
-      <View className="h-screen w-screen">
-        <View className="flex flex-col items-center justify-center gap-4 mt-[140px]">
-          <Animated.View
-            style={{ opacity: fadeAnim }}
-            className={"flex flex-col gap-2 items-center"}
-          >
-            {state === STATE.DEFAULT && (
-              <>
-                <Logo width={40} height={40} />
-                <Text className="text-white text-[20px] font-bold">
-                  Welcome to
-                </Text>
-              </>
-            )}
-          </Animated.View>
-          <Text className="text-white text-5xl font-bold">Finance Tracker</Text>
-        </View>
-        <View className="flex items-center justify-center gap-8 mt-[400px]">
-          <TouchableOpacity
-            className="bg-white flex items-center justify-center p-4 w-4/5 rounded-full"
-            onPress={redirectToSignUp}
-            activeOpacity={0.9}
-          >
-            <Text className="font-bold text-xl">Sign Up</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className="bg-black flex items-center justify-center p-4 w-4/5 rounded-full"
-            onPress={redirectToLogin}
-            activeOpacity={0.9}
-          >
-            <Text className="text-white font-bold text-xl">Log In</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
+          <View className="flex-1 mt-20">
+
+
+    <InvestmentView></InvestmentView>
+              </View>
   );
 }

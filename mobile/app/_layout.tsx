@@ -1,5 +1,7 @@
-import { useFonts } from "expo-font";
+
+import "react-native-gesture-handler";
 import "react-native-reanimated";
+import { useFonts } from "expo-font";
 import "../global.css";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { StatusBar } from "react-native";
@@ -30,7 +32,7 @@ export default function RootLayout() {
           </Stack.Protected>
         </Stack.Protected>
       </Stack>
-        <Toast />
+      <Toast />
     </React.Fragment>
   );
 }
