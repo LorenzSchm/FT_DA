@@ -11,7 +11,7 @@ auth_scheme = HTTPBearer(auto_error=True)
 
 
 class CreateFinanceAccountRequest(BaseModel):
-    user_id: str
+    user_id: Optional[str] = None
     name: str
     institution: Optional[str] = None
     currency: str
@@ -73,3 +73,57 @@ async def post_finance(
         return res.data
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Post finance failed: {e}")
+
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_finance(
+    id: str,
+    supabase=Depends(get_supabase),
+    tokens=Depends(get_user_token),
+):
+    try:
+        access = tokens.get("access_token")
+        refresh = tokens.get("refresh_token")
+        supabase.auth.set_session(access, refresh)
+
+        response = (
+            supabase.schema("finance")
+            .table("accounts")
+            .delete()
+            .eq("id", id)
+            .execute()
+        )
+        return response.data
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Delete finance failed: {e}")
+
+@router.patch("/{id}", status_code=status.HTTP_200_OK)
+async def patch_finance(
+    id: str,
+    request: CreateFinanceAccountRequest,
+    supabase=Depends(get_supabase),
+    tokens=Depends(get_user_token),
+):
+    try:
+        access = tokens.get("access_token")
+        refresh = tokens.get("refresh_token")
+
+        supabase.auth.set_session(access, refresh)
+
+        payload = request.model_dump(exclude_none=True)  # convert to dict
+        resp = (
+            supabase.schema("finance")
+            .table("accounts")
+            .update(payload)
+            .eq("id", id)
+            .execute()
+        )
+
+        return resp.data
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Patch finance failed: {e}")
+
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Patch finance failed: {e}")
