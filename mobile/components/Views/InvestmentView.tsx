@@ -74,10 +74,10 @@ export default function InvestmentView() {
         const quotes = resp.data.finance?.result?.[0]?.quotes.slice(0, 10) || [];
         setTrending(quotes);
 
-        const symbols = quotes.map((q) => q.symbol);
+        const symbols = quotes.map((q:any) => q.symbol);
 
         const priceResponses = await Promise.all(
-          symbols.map((symbol) =>
+          symbols.map((symbol :any) =>
             axios
               .get(`http://localhost:8000/stock/${symbol}/price`)
               .then((res) => ({
