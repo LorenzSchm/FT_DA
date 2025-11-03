@@ -77,7 +77,7 @@ export default function InvestmentView() {
         const symbols = quotes.map((q:any) => q.symbol);
 
         const priceResponses = await Promise.all(
-          symbols.map((symbol :any) =>
+          symbols.map((symbol: string) =>
             axios
               .get(`http://localhost:8000/stock/${symbol}/price`)
               .then((res) => ({
