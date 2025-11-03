@@ -1,4 +1,4 @@
-import { Tabs } from "expo-router";
+import {Stack, Tabs} from "expo-router";
 
 export default function TabsLayout({
   children,
@@ -6,9 +6,9 @@ export default function TabsLayout({
   children: React.ReactNode;
 }) {
   return (
-    <Tabs>
-      <Tabs.Screen name="index" options={{ headerShown: false }} />
-      <Tabs.Screen name="settings" options={{ headerShown: false }} />
-    </Tabs>
+    <Stack>
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="settings" options={{ headerShown: false }} />
+    </Stack>
   );
 }
