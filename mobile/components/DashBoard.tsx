@@ -11,42 +11,44 @@ import {
     CarouselContent,
     CarouselItem,
 } from "@/components/ui/carousel";
-import {useEffect, useState} from "react";
+import {useEffect, useState, useCallback} from "react";
 import {useAuthStore} from "@/utils/authStore";
-import { financeService, type FinanceAccount } from "@/utils/db/finance/finance";
+import {getAccounts} from "@/utils/db/finance/finance";
+
 
 export default function DashBoard() {
     const {width, height} = useWindowDimensions();
     const [accountIndex, setAccountIndex] = useState(0);
-    const [isLoadingUser, setIsLoadingUser] = useState(false);
     const contentWidth = (width - 60) * 0.9;
     const maxListHeight = height * 0.45;
 
     const {user, session} = useAuthStore()
 
-    const [accounts, setAccounts] = useState<FinanceAccount[]>([]);
+    const [accounts, setAccounts] = useState([]);
     const [isLoadingAccounts, setIsLoadingAccounts] = useState(false);
     const [accountsError, setAccountsError] = useState<string | null>(null);
 
-    const loadAccounts = async () => {
+    const loadAccounts = useCallback(async () => {
         if (!session?.access_token) return;
         try {
             setAccountsError(null);
             setIsLoadingAccounts(true);
-            const rows = await financeService.getAccounts();
+            const rows = await getAccounts(session.access_token, session.refresh_token);
             setAccounts(rows);
+            console.log(session.access_token);
+            console.log(session.refresh_token);
         } catch (e: any) {
             setAccountsError(e?.message || "Failed to load accounts");
         } finally {
             setIsLoadingAccounts(false);
         }
-    };
+    }, [session?.access_token, session?.refresh_token]);
 
     useEffect(() => {
-        // Load accounts when the screen mounts or when session changes
+        console.log(session.access_token);
+            console.log(session.refresh_token);
         loadAccounts();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [session?.access_token]);
+    }, [loadAccounts]);
 
     const transactions = {
         data: [
@@ -201,8 +203,8 @@ export default function DashBoard() {
             <View className="flex-1 items-center justify-center">
                 <View className="gap-3 items-center">
                     <Text className="text-center text-2xl font-bold">
-                        {isLoadingUser ? "Good morning!" : `Good morning ${
-                            user?.user_metadata?.display_name || user?.display_name || "there"
+                        {`Good morning ${
+                            user?.display_name || "there"
                         }!`}
                     </Text>
 
@@ -227,7 +229,7 @@ export default function DashBoard() {
                                             className="items-center justify-center"
                                         >
                                             <Card
-                                                kind={account.kind || "Account"}
+                                                kind={account.name || "Account"}
                                                 amount={0}
                                                 currency={account.currency || "USD"}
                                             />

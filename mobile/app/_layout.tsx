@@ -11,7 +11,7 @@ import { useAuthStore } from "@/utils/authStore";
 import Toast from "react-native-toast-message";
 
 export default function RootLayout() {
-  const { isLoggedIn } = useAuthStore();
+  const { isLoggedIn, _hasHydrated } = useAuthStore();
   const shouldCreateAccount = false;
 
   return (
