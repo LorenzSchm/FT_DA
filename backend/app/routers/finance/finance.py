@@ -50,6 +50,56 @@ async def get_finance(supabase=Depends(get_supabase), tokens=Depends(get_user_to
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Get finance failed: {e}")
 
+@router.get("/transactions", status_code=status.HTTP_200_OK)
+async def get_transactions(
+    supabase=Depends(get_supabase),
+    tokens=Depends(get_user_token)
+):
+    try:
+        access = tokens.get("access_token")
+        refresh = tokens.get("refresh_token")
+
+        supabase.auth.set_session(access, refresh)
+
+        user_resp = supabase.auth.get_user()
+        user = user_resp.user
+        if not user:
+            raise HTTPException(status_code=401, detail="Unauthorized: No valid session")
+
+        # 1️⃣ get all accounts belonging to the user
+        accounts_response = (
+            supabase.schema("finance")
+            .table("accounts")
+            .select("id")
+            .eq("user_id", user.id)
+            .execute()
+        )
+
+        if not accounts_response.data:
+            return {"user": user.model_dump(), "rows": []}
+
+        account_ids = [acc["id"] for acc in accounts_response.data]
+
+        # 2️⃣ fetch transactions linked to those account_ids
+        transactions_response = (
+            supabase.schema("finance")
+            .table("transactions")
+            .select("*")
+            .in_("account_id", account_ids)
+            .execute()
+        )
+
+        return {
+            "user": user.model_dump(),
+            "rows": transactions_response.data
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Get transactions failed: {e}")
+
+
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def post_finance(
     request: CreateFinanceAccountRequest,
