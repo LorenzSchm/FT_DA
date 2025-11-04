@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,18 +8,18 @@ import {
   ScrollView,
   Pressable,
   Dimensions,
-} from 'react-native';
-import { ChevronDown, Check } from 'lucide-react-native';
+} from "react-native";
+import { ChevronDown, Check } from "lucide-react-native";
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const CustomPicker = ({
-  placeholder = 'Select an option',
+  placeholder = "Select an option",
   value,
   onValueChange,
   options = [],
   disabled = false,
-  className = '',
+  className = "",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
@@ -27,7 +27,7 @@ const CustomPicker = ({
   const rotateAnim = useRef(new Animated.Value(0)).current;
   const selectedScaleAnim = useRef(new Animated.Value(1)).current;
 
-  const selectedOption = options.find(opt => opt.value === value);
+  const selectedOption = options.find((opt) => opt.value === value);
 
   useEffect(() => {
     if (isOpen) {
@@ -102,7 +102,7 @@ const CustomPicker = ({
 
   const rotate = rotateAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: ['0deg', '180deg'],
+    outputRange: ["0deg", "180deg"],
   });
 
   return (
@@ -111,19 +111,17 @@ const CustomPicker = ({
         onPress={handleOpen}
         disabled={disabled}
         activeOpacity={0.7}
-        className={`flex-row items-center justify-between border rounded-full h-[50px] px-4 ${
-          'border-black'
-        } ${disabled ? 'opacity-50 bg-gray-100' : 'bg-white'}`}
+        className={`flex-row items-center justify-between border rounded-full h-[50px] px-4 ${"border-black"} ${disabled ? "opacity-50 bg-gray-100" : "bg-white"}`}
       >
         <Text
           className={`text-[20px] ${
-            selectedOption ? 'text-black' : 'text-gray-400'
+            selectedOption ? "text-black" : "text-gray-400"
           }`}
         >
           {selectedOption ? selectedOption.label : placeholder}
         </Text>
         <Animated.View style={{ transform: [{ rotate }] }}>
-          <ChevronDown size={24} color={'#000'} />
+          <ChevronDown size={24} color={"#000"} />
         </Animated.View>
       </TouchableOpacity>
 
@@ -134,15 +132,12 @@ const CustomPicker = ({
         onRequestClose={handleClose}
       >
         <View className="flex-1">
-          <Pressable
-            onPress={handleClose}
-            className="flex-1"
-          >
+          <Pressable onPress={handleClose} className="flex-1">
             <Animated.View
               style={{
                 opacity: fadeAnim,
                 flex: 1,
-                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                backgroundColor: "rgba(0, 0, 0, 0.5)",
               }}
             />
           </Pressable>
@@ -185,12 +180,12 @@ const CustomPicker = ({
                       onPress={() => handleSelect(option)}
                       activeOpacity={0.6}
                       className={`flex-row items-center justify-between py-4 px-4 my-1 rounded-2xl ${
-                        isSelected ? 'bg-black' : 'bg-gray-50'
+                        isSelected ? "bg-black" : "bg-gray-50"
                       }`}
                     >
                       <Text
                         className={`text-[18px] ${
-                          isSelected ? 'text-white font-semibold' : 'text-black'
+                          isSelected ? "text-white font-semibold" : "text-black"
                         }`}
                       >
                         {option.label}

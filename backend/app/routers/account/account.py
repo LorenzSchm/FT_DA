@@ -31,7 +31,7 @@ async def get_user(
         credentials=Depends(get_user_token)
 ):
     try:
-        resp = supabase.auth.get_user(credentials)
+        resp = supabase.auth.get_user(credentials.get("access_token"))
         if not resp or not resp.user:
             raise HTTPException(status_code=401, detail="Unauthorized: No valid session")
 
@@ -60,7 +60,7 @@ async def update_user(
         if not request.email and not request.display_name:
             raise HTTPException(status_code=400, detail="No update requested")
 
-        supabase.auth.set_session(credentials, request.refresh_token)
+        supabase.auth.set_session(credentials.get("access_token"), request.refresh_token)
         resp = supabase.auth.update_user({
             "email": request.email,
             "data": {
@@ -80,5 +80,7 @@ async def update_user(
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Update user failed: {e}")
+
+
 
 
