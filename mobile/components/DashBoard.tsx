@@ -12,8 +12,8 @@ import {
     CarouselItem,
 } from "@/components/ui/carousel";
 import {useEffect, useState} from "react";
-import axios from "axios";
 import {useAuthStore} from "@/utils/authStore";
+import { financeService, type FinanceAccount } from "@/utils/db/finance/finance";
 
 export default function DashBoard() {
     const {width, height} = useWindowDimensions();
@@ -22,50 +22,31 @@ export default function DashBoard() {
     const contentWidth = (width - 60) * 0.9;
     const maxListHeight = height * 0.45;
 
-    const {user} = useAuthStore()
-    console.log(user)
+    const {user, session} = useAuthStore()
 
+    const [accounts, setAccounts] = useState<FinanceAccount[]>([]);
+    const [isLoadingAccounts, setIsLoadingAccounts] = useState(false);
+    const [accountsError, setAccountsError] = useState<string | null>(null);
 
-    const accounts = {
-        data: [
-            {
-                id: 1,
-                user_id: 1,
-                name: "Checking Account",
-                institution: "Bank of America",
-                currency: "USD",
-                kind: "Checking",
-                amount: 3000,
-            },
-            {
-                id: 2,
-                user_id: 1,
-                name: "Savings Account",
-                institution: "Bank of America",
-                currency: "USD",
-                kind: "Savings",
-                amount: 15000,
-            },
-            {
-                id: 3,
-                user_id: 1,
-                name: "Investment Account",
-                institution: "Fidelity",
-                currency: "USD",
-                kind: "Investment",
-                amount: -20,
-            },
-            {
-                id: 4,
-                user_id: 1,
-                name: "Credit Card",
-                institution: "Chase",
-                currency: "USD",
-                kind: "Credit",
-                amount: 30,
-            },
-        ],
+    const loadAccounts = async () => {
+        if (!session?.access_token) return;
+        try {
+            setAccountsError(null);
+            setIsLoadingAccounts(true);
+            const rows = await financeService.getAccounts();
+            setAccounts(rows);
+        } catch (e: any) {
+            setAccountsError(e?.message || "Failed to load accounts");
+        } finally {
+            setIsLoadingAccounts(false);
+        }
     };
+
+    useEffect(() => {
+        // Load accounts when the screen mounts or when session changes
+        loadAccounts();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [session?.access_token]);
 
     const transactions = {
         data: [
@@ -226,22 +207,35 @@ export default function DashBoard() {
                     </Text>
 
                     <View className="w-full">
-                        <Carousel onIndexChange={setAccountIndex}>
-                            <CarouselContent>
-                                {accounts.data.map((account) => (
-                                    <CarouselItem
-                                        key={account.id}
-                                        className="items-center justify-center"
-                                    >
-                                        <Card
-                                            kind={account.kind}
-                                            amount={account.amount}
-                                            currency={account.currency}
-                                        />
-                                    </CarouselItem>
-                                ))}
-                            </CarouselContent>
-                        </Carousel>
+                        {isLoadingAccounts ? (
+                            <Text className="text-center text-lg text-gray-500">Loading accounts...</Text>
+                        ) : accountsError ? (
+                            <View className="items-center gap-2">
+                                <Text className="text-center text-red-500">{accountsError}</Text>
+                                <Pressable onPress={loadAccounts} className="bg-black px-4 py-2 rounded-full">
+                                    <Text className="text-white font-bold">Retry</Text>
+                                </Pressable>
+                            </View>
+                        ) : accounts.length === 0 ? (
+                            <Text className="text-center text-lg text-gray-500">No accounts yet</Text>
+                        ) : (
+                            <Carousel onIndexChange={setAccountIndex}>
+                                <CarouselContent>
+                                    {accounts.map((account) => (
+                                        <CarouselItem
+                                            key={account.id}
+                                            className="items-center justify-center"
+                                        >
+                                            <Card
+                                                kind={account.kind || "Account"}
+                                                amount={0}
+                                                currency={account.currency || "USD"}
+                                            />
+                                        </CarouselItem>
+                                    ))}
+                                </CarouselContent>
+                            </Carousel>
+                        )}
                     </View>
                 </View>
             </View>
@@ -257,7 +251,7 @@ export default function DashBoard() {
                         <View className="gap-5 pb-5">
                             {transactions.data
                                 .filter(
-                                    (txn) => txn.account_id === accounts.data[accountIndex]?.id,
+                                    (txn) => txn.account_id === (accounts[accountIndex]?.id as any),
                                 )
                                 .map((txn) => (
                                     <View
