@@ -66,7 +66,6 @@ async def get_transactions(
         if not user:
             raise HTTPException(status_code=401, detail="Unauthorized: No valid session")
 
-        # 1️⃣ get all accounts belonging to the user
         accounts_response = (
             supabase.schema("finance")
             .table("accounts")
@@ -80,7 +79,6 @@ async def get_transactions(
 
         account_ids = [acc["id"] for acc in accounts_response.data]
 
-        # 2️⃣ fetch transactions linked to those account_ids
         transactions_response = (
             supabase.schema("finance")
             .table("transactions")
