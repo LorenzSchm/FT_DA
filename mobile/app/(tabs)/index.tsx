@@ -3,7 +3,7 @@ import DashboardView from "@/components/Views/DashboardView";
 export default function Index() {
   return (
     <View className="flex flex-1">
-        <DashboardView></DashboardView>
+        <DashboardView />
     </View>
   );
 }
