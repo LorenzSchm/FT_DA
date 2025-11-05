@@ -9,7 +9,7 @@ export const getAccounts = async (accessToken, refreshToken) => {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${accessToken}`,
+      Authorization: `Bearer ${accessToken}`,
       "x-refresh-token": refreshToken,
     },
   });
@@ -31,7 +31,7 @@ export const getTransactions = async (accessToken, refreshToken) => {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${accessToken}`,
+      Authorization: `Bearer ${accessToken}`,
       "x-refresh-token": refreshToken,
     },
   });

@@ -80,39 +80,39 @@ const mockTransactions = [
     category_id: "Savings",
   },
 ];
-  // const loadAccounts = async () => {
-  //   if (!session?.access_token) return;
-  //   try {
-  //     setAccountsError(null);
-  //     setIsLoadingAccounts(true);
-  //     const data = await getAccounts(session.access_token, session.refresh_token);
-  //     setAccounts(data.rows);
-  //   } catch (e: any) {
-  //     setAccountsError(e?.message || "Failed to load accounts");
-  //   } finally {
-  //     setIsLoadingAccounts(false);
-  //   }
-  // };
-  //
-  // const loadTransactions = async () => {
-  //   if (!session?.access_token) return;
-  //   try {
-  //     setTransactionsError(null);
-  //     setIsLoadingTransactions(true);
-  //     const data = await getTransactions(session.access_token, session.refresh_token);
-  //     setTransactions(data.rows);
-  //   } catch (e: any) {
-  //     setTransactionsError(e?.message || "Failed to load transactions");
-  //   } finally {
-  //     setIsLoadingTransactions(false);
-  //   }
-  // };
-  //
-  // useEffect(() => {
-  //   loadAccounts();
-  //   loadTransactions();
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [session?.access_token]);
+// const loadAccounts = async () => {
+//   if (!session?.access_token) return;
+//   try {
+//     setAccountsError(null);
+//     setIsLoadingAccounts(true);
+//     const data = await getAccounts(session.access_token, session.refresh_token);
+//     setAccounts(data.rows);
+//   } catch (e: any) {
+//     setAccountsError(e?.message || "Failed to load accounts");
+//   } finally {
+//     setIsLoadingAccounts(false);
+//   }
+// };
+//
+// const loadTransactions = async () => {
+//   if (!session?.access_token) return;
+//   try {
+//     setTransactionsError(null);
+//     setIsLoadingTransactions(true);
+//     const data = await getTransactions(session.access_token, session.refresh_token);
+//     setTransactions(data.rows);
+//   } catch (e: any) {
+//     setTransactionsError(e?.message || "Failed to load transactions");
+//   } finally {
+//     setIsLoadingTransactions(false);
+//   }
+// };
+//
+// useEffect(() => {
+//   loadAccounts();
+//   loadTransactions();
+//   // eslint-disable-next-line react-hooks/exhaustive-deps
+// }, [session?.access_token]);
 
 export default function DashBoard() {
   const { width, height } = useWindowDimensions();
@@ -132,9 +132,7 @@ export default function DashBoard() {
         <View className="gap-3 items-center">
           <Text className="text-center text-2xl font-bold">
             {`Good morning ${
-              user?.user_metadata?.display_name ||
-              user?.display_name ||
-              "there"
+              user?.user_metadata?.display_name || user?.display_name || "there"
             }!`}
           </Text>
 
@@ -166,15 +164,12 @@ export default function DashBoard() {
                     <View
                       key={index}
                       className={`w-2 h-2 rounded-full ${
-                        index === accountIndex
-                          ? "bg-black"
-                          : "bg-gray-300"
+                        index === accountIndex ? "bg-black" : "bg-gray-300"
                       }`}
                     />
                   ))}
                 </View>
               </Carousel>
-
             )}
           </View>
         </View>
@@ -191,9 +186,7 @@ export default function DashBoard() {
           >
             <View className="gap-5 pb-5">
               {transactions
-                .filter(
-                  (txn) => txn.account_id === accounts[accountIndex]?.id
-                )
+                .filter((txn) => txn.account_id === accounts[accountIndex]?.id)
                 .map((txn) => (
                   <View
                     key={txn.id}
@@ -225,9 +218,7 @@ export default function DashBoard() {
       </View>
 
       {/* Add Button */}
-      <Pressable
-        className="bg-black absolute bottom-20 right-10 w-32 h-16 rounded-full items-center justify-center shadow-lg"
-      >
+      <Pressable className="bg-black absolute bottom-20 right-10 w-32 h-16 rounded-full items-center justify-center shadow-lg">
         <Text className="text-white font-bold text-xl">Add +</Text>
       </Pressable>
     </View>

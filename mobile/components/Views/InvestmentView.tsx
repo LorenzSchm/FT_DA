@@ -71,10 +71,11 @@ export default function InvestmentView() {
         const resp = await axios.get(
           "https://query1.finance.yahoo.com/v1/finance/trending/US",
         );
-        const quotes = resp.data.finance?.result?.[0]?.quotes.slice(0, 10) || [];
+        const quotes =
+          resp.data.finance?.result?.[0]?.quotes.slice(0, 10) || [];
         setTrending(quotes);
 
-        const symbols = quotes.map((q:any) => q.symbol);
+        const symbols = quotes.map((q: any) => q.symbol);
 
         const priceResponses = await Promise.all(
           symbols.map((symbol: string) =>
@@ -113,7 +114,6 @@ export default function InvestmentView() {
 
   return (
     <View className="p-7 flex-1">
-
       <TextInput
         placeholder="Search investment"
         className="border border-black rounded-lg p-2 mb-4"
@@ -158,8 +158,8 @@ export default function InvestmentView() {
                       changes[item.symbol] > 0
                         ? "text-green-500"
                         : changes[item.symbol] < 0
-                        ? "text-red-500"
-                        : "text-gray-500"
+                          ? "text-red-500"
+                          : "text-gray-500"
                     }`}
                   >
                     {changes[item.symbol] != null
@@ -203,7 +203,7 @@ export default function InvestmentView() {
 
             {selectedStock && (
               <>
-               <Text>Drag</Text>
+                <Text>Drag</Text>
               </>
             )}
           </Animated.View>
