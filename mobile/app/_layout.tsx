@@ -1,5 +1,7 @@
-import { useFonts } from "expo-font";
+
+import "react-native-gesture-handler";
 import "react-native-reanimated";
+import { useFonts } from "expo-font";
 import "../global.css";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { StatusBar } from "react-native";
@@ -9,7 +11,8 @@ import { useAuthStore } from "@/utils/authStore";
 import Toast from "react-native-toast-message";
 
 export default function RootLayout() {
-  const { isLoggedIn } = useAuthStore();
+  const { isLoggedIn, _hasHydrated, signOut } = useAuthStore();
+
   const shouldCreateAccount = false;
 
   return (
@@ -30,7 +33,7 @@ export default function RootLayout() {
           </Stack.Protected>
         </Stack.Protected>
       </Stack>
-      <Toast />
+      <Toast topOffset={50} />
     </React.Fragment>
   );
 }

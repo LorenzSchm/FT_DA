@@ -3,11 +3,14 @@
 import { View, Text, TouchableOpacity, TouchableWithoutFeedback } from "react-native";
 import React, { useState } from "react";
 import AddAccountModal from "@/components/modals/AddAccountModal";
+import DashboardView from "@/components/Views/DashboardView";
+
 
 enum STATE {
     DEFAULT = "DEFAULT",
     ADD_ACCOUNT = "ADD_ACCOUNT",
 }
+
 
 export default function Index() {
     const [state, setState] = useState(STATE.DEFAULT);
@@ -31,6 +34,7 @@ export default function Index() {
     };
 
   return (
+        <View className="flex flex-1">
     <View className="flex-1 bg-white">
       <Text className="p-4">Home</Text>
 
@@ -73,6 +77,7 @@ export default function Index() {
 
       {/* AddAccount modal */}
       <AddAccountModal isVisible={state === STATE.ADD_ACCOUNT} onClose={handleModalClose} />
+        <DashboardView></DashboardView>
     </View>
   );
 }
