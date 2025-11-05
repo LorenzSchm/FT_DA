@@ -172,6 +172,3 @@ async def patch_finance(
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Patch finance failed: {e}")
 
-
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Patch finance failed: {e}")
