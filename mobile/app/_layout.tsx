@@ -9,7 +9,7 @@ import { useAuthStore } from "@/utils/authStore";
 import Toast from "react-native-toast-message";
 
 export default function RootLayout() {
-  const { isLoggedIn } = useAuthStore();
+  const { isLoggedIn, signOut } = useAuthStore();
   const shouldCreateAccount = false;
 
   return (
@@ -30,7 +30,7 @@ export default function RootLayout() {
           </Stack.Protected>
         </Stack.Protected>
       </Stack>
-      <Toast />
+      <Toast topOffset={50} />
     </React.Fragment>
   );
 }

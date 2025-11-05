@@ -195,7 +195,6 @@ export const useAuthStore = create(
         return (state) => {
           state?.setHasHydrated(true);
 
-          // Schedule token refresh after rehydration
           if (state?.session) {
             const expiresIn =
               state.session.expires_at * 1000 - Date.now() - 60000;
@@ -204,7 +203,6 @@ export const useAuthStore = create(
                 state.refreshToken();
               }, expiresIn);
             } else {
-              // Token already expired, refresh immediately
               state.refreshToken();
             }
           }

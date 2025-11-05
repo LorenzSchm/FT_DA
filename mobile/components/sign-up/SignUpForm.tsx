@@ -4,9 +4,12 @@ import {
   TouchableOpacity,
   View,
   StyleSheet,
+  Pressable,
 } from "react-native";
 import { useEffect, useState } from "react";
 import CustomPicker from "@/components/ui/CustomPicker";
+import { useAuthStore } from "@/utils/authStore";
+import Toast from "react-native-toast-message";
 
 type Props = {
   isVisible: boolean;
@@ -42,12 +45,10 @@ export default function SignUpForm({ isVisible, email }: Props) {
     { label: "USD", value: "USD" },
     { label: "EUR", value: "EUR" },
     { label: "GBP", value: "GBP" },
-    { label: "JPY", value: "JPY" },
-    { label: "AUD", value: "AUD" },
-    { label: "CAD", value: "CAD" },
     { label: "CHF", value: "CHF" },
-    { label: "CNY", value: "CNY" },
   ]);
+
+  const { signUp } = useAuthStore();
 
   useEffect(() => {
     setMail(email);
@@ -124,16 +125,20 @@ export default function SignUpForm({ isVisible, email }: Props) {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (validateSecondStep()) {
-      console.log("Form submitted:", {
-        mail,
-        password,
-        firstName,
-        lastName,
-        phone,
-        currency,
-      });
+      await signUp(email, password, firstName + " " + lastName)
+        .then(() => {
+          console.log("User signed up successfully");
+          Toast.show({
+            type: "success",
+            text1: "User signed up successfully",
+            visibilityTime: 3000,
+          });
+        })
+        .catch((error) => {
+          console.error("Error signing up:", error);
+        });
     }
   };
 
@@ -210,8 +215,11 @@ export default function SignUpForm({ isVisible, email }: Props) {
           </View>
 
           <View className="flex flex-row items-center justify-center gap-2">
-            <View className="bg-black h-3 w-3 rounded-full" />
-            <View className="bg-gray-400 h-3 w-3 rounded-full" />
+            <View className="bg-black h-[7px] w-[7px] rounded-full" />
+            <TouchableOpacity
+              onPress={handleContinue}
+              className="bg-gray-400 h-[7px] w-[7px] rounded-full"
+            />
           </View>
 
           <TouchableOpacity
@@ -298,8 +306,11 @@ export default function SignUpForm({ isVisible, email }: Props) {
           />
 
           <View className="flex flex-row items-center justify-center gap-2">
-            <View className="bg-gray-400 h-3 w-3 rounded-full" />
-            <View className="bg-black h-3 w-3 rounded-full" />
+            <TouchableOpacity
+              onPress={() => setState(STATE.FIRST)}
+              className="bg-gray-400 h-[7px] w-[7px] rounded-full"
+            />
+            <View className="bg-black h-[7px] w-[7px] rounded-full" />
           </View>
 
           <TouchableOpacity
