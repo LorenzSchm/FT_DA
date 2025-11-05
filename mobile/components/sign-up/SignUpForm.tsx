@@ -4,7 +4,7 @@ import {
   TouchableOpacity,
   View,
   StyleSheet,
-} from "react-native"; // Changed import
+} from "react-native";
 import { useEffect, useState } from "react";
 import CustomPicker from "@/components/ui/CustomPicker";
 
@@ -128,6 +128,7 @@ export default function SignUpForm({ isVisible, email }: Props) {
     if (validateSecondStep()) {
       console.log("Form submitted:", {
         mail,
+        password,
         firstName,
         lastName,
         phone,
