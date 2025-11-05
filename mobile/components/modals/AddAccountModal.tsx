@@ -30,14 +30,12 @@ export default function AddAccountModal({ isVisible, onClose }: Props) {
   useEffect(() => {
     setIsModalVisible(isVisible);
     if (isVisible) {
-      // Slide modal in from bottom (to bottom two-thirds)
       Animated.timing(modalAnim, {
         toValue: 0,
         duration: 300,
         useNativeDriver: true,
       }).start();
     } else {
-      // Animate out
       Animated.timing(modalAnim, {
         toValue: MODAL_HEIGHT,
         duration: 300,
