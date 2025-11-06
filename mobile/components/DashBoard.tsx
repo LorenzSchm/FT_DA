@@ -118,7 +118,7 @@ export default function DashBoard() {
   };
 
   const filteredTransactions = transactions.filter(
-    (txn) => txn.account_id === accounts[accountIndex]?.id
+    (txn) => txn.account_id === accounts[accountIndex]?.id,
   );
 
   return (
@@ -236,7 +236,9 @@ export default function DashBoard() {
                 className="flex-row justify-between items-center pb-3"
                 onPress={openAddAccountModal}
               >
-                <Text className="text-white text-3xl font-semibold">Account</Text>
+                <Text className="text-white text-3xl font-semibold">
+                  Account
+                </Text>
                 <Text className="text-white text-3xl">›</Text>
               </TouchableOpacity>
 
