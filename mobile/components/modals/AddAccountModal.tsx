@@ -39,7 +39,10 @@ export default function AddAccountModal({ isVisible, onClose }: Props) {
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: (_, gestureState) => {
-        return Math.abs(gestureState.dy) > Math.abs(gestureState.dx) && Math.abs(gestureState.dy) > 2;
+        return (
+          Math.abs(gestureState.dy) > Math.abs(gestureState.dx) &&
+          Math.abs(gestureState.dy) > 2
+        );
       },
       onPanResponderMove: (_, gestureState) => {
         if (gestureState.dy > 0) {
@@ -56,7 +59,7 @@ export default function AddAccountModal({ isVisible, onClose }: Props) {
           }).start();
         }
       },
-    })
+    }),
   ).current;
 
   useEffect(() => {
@@ -124,12 +127,20 @@ export default function AddAccountModal({ isVisible, onClose }: Props) {
             <View className={"flex items-center"}>
               <View
                 {...panResponder.panHandlers}
-                style={{ height: 40,marginTop: 30 ,width: "100%", alignItems: "center", justifyContent: "center" }}
+                style={{
+                  height: 40,
+                  marginTop: 30,
+                  width: "100%",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
               >
                 <View className={"bg-gray-400 w-[50px] h-[5px] rounded-full"} />
               </View>
             </View>
-            <Text className="text-3xl font-extrabold text-black mb-6">Account</Text>
+            <Text className="text-3xl font-extrabold text-black mb-6">
+              Account
+            </Text>
             {/* Type toggle */}
             <Text className="text-lg font-semibold text-black mb-3">Type</Text>
             <View className="flex-row justify-around items-center mb-6 bg-[#F1F1F2] w-full h-[40px] rounded-full">
@@ -164,12 +175,16 @@ export default function AddAccountModal({ isVisible, onClose }: Props) {
             </View>
             {state === "manual" ? (
               <>
-                <Text className="text-lg font-semibold text-black mb-2">Provider</Text>
+                <Text className="text-lg font-semibold text-black mb-2">
+                  Provider
+                </Text>
                 <View className="bg-neutral-100 rounded-2xl px-5 py-4 mb-4 flex-row justify-between items-center">
                   <Text className="text-neutral-900">FT</Text>
                   <ChevronDown className="text-neutral-500" />
                 </View>
-                <Text className="text-lg font-semibold text-black mb-2">Initial Amount</Text>
+                <Text className="text-lg font-semibold text-black mb-2">
+                  Initial Amount
+                </Text>
                 <View className="bg-neutral-100 rounded-2xl px-5 py-4 mb-8">
                   <TextInput
                     className="text-black"
@@ -177,7 +192,10 @@ export default function AddAccountModal({ isVisible, onClose }: Props) {
                     keyboardType="numbers-and-punctuation"
                   />
                 </View>
-                <TouchableOpacity className="bg-black rounded-full py-4" onPress={handleClose}>
+                <TouchableOpacity
+                  className="bg-black rounded-full py-4"
+                  onPress={handleClose}
+                >
                   <Text className="text-center text-white font-semibold text-lg">
                     Add Account
                   </Text>
@@ -185,11 +203,19 @@ export default function AddAccountModal({ isVisible, onClose }: Props) {
               </>
             ) : (
               <View>
-                <Text className="text-lg font-semibold text-black mb-2">Connect your account</Text>
+                <Text className="text-lg font-semibold text-black mb-2">
+                  Connect your account
+                </Text>
                 <View className="bg-neutral-100 rounded-2xl px-5 py-4 mb-8">
-                  <TextInput className="text-black" placeholder="Search for provider..." />
+                  <TextInput
+                    className="text-black"
+                    placeholder="Search for provider..."
+                  />
                 </View>
-                <TouchableOpacity className="bg-black rounded-full py-4" onPress={handleClose}>
+                <TouchableOpacity
+                  className="bg-black rounded-full py-4"
+                  onPress={handleClose}
+                >
                   <Text className="text-center text-white font-semibold text-lg">
                     Add Connection
                   </Text>
