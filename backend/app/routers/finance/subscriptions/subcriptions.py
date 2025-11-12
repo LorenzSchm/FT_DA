@@ -81,3 +81,60 @@ async def add_subscription(
 
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_subscription(
+    id: str,
+    supabase=Depends(get_supabase),
+    tokens=Depends(get_user_token),
+):
+    try:
+        access = tokens.get("access_token")
+        refresh = tokens.get("refresh_token")
+        supabase.auth.set_session(access, refresh)
+        user_resp = supabase.auth.get_user()
+        user = user_resp.user
+
+        if not user:
+            raise HTTPException(status_code=401, detail="Unauthorized: No valid session")
+
+        subscription_response = (
+            supabase.schema("finance")
+            .table("subscriptions")
+            .delete()
+            .eq("id", id)
+            .execute()
+        )
+        return {"user": user.model_dump(), "rows": subscription_response.data}
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+@router.patch("/{id}", status_code=status.HTTP_200_OK)
+async def patch_subscription(
+    id: str,
+    request: AddSubscriptionRequest,
+    supabase=Depends(get_supabase),
+    tokens=Depends(get_user_token),
+):
+    try:
+        access = tokens.get("access_token")
+        refresh = tokens.get("refresh_token")
+        supabase.auth.set_session(access, refresh)
+        user_resp = supabase.auth.get_user()
+        user = user_resp.user
+
+        if not user:
+            raise HTTPException(status_code=401, detail="Unauthorized: No valid session")
+
+        payload = request.model_dump(exclude_none=True)
+        subscription_response = (
+            supabase.schema("finance")
+            .table("subscriptions")
+            .update(payload)
+            .eq("id", id)
+            .execute()
+        )
+        return {"user": user.model_dump(), "rows": subscription_response.data}
+
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
