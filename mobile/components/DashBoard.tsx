@@ -95,7 +95,6 @@ export default function DashBoard() {
   const contentWidth = (width - 60) * 0.9;
   const maxListHeight = height * 0.45;
 
-  // Using mock data
   const user = mockUser;
   const accounts = mockAccounts;
   const transactions = mockTransactions;
@@ -256,7 +255,6 @@ export default function DashBoard() {
         </TouchableOpacity>
       </View>
 
-      {/* Add Account Modal */}
       <AddAccountModal
         isVisible={state === STATE.ADD_ACCOUNT}
         onClose={handleModalClose}

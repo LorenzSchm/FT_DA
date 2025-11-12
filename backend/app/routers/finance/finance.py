@@ -1,3 +1,4 @@
+import logging
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -5,6 +6,7 @@ from app.dependencies import get_supabase, get_user_token
 from fastapi.security import HTTPBearer
 from pydantic import BaseModel
 from starlette import status
+from datetime import date, datetime
 
 router = APIRouter(prefix="/finance", tags=["finance"])
 auth_scheme = HTTPBearer(auto_error=True)
@@ -18,6 +20,13 @@ class CreateFinanceAccountRequest(BaseModel):
     kind: str
     ext_conn_id: Optional[str] = None
     archived_at: Optional[str] = None
+
+class TransactionRequest(BaseModel):
+    type: str
+    amount_minor: float | str
+    currency: str
+    description: str | None = None
+    merchant: str | None = None
 
 
 @router.get("/", status_code=status.HTTP_200_OK)
@@ -50,54 +59,6 @@ async def get_finance(supabase=Depends(get_supabase), tokens=Depends(get_user_to
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Get finance failed: {e}")
 
-@router.get("/transactions", status_code=status.HTTP_200_OK)
-async def get_transactions(
-    supabase=Depends(get_supabase),
-    tokens=Depends(get_user_token)
-):
-    try:
-        access = tokens.get("access_token")
-        refresh = tokens.get("refresh_token")
-
-        supabase.auth.set_session(access, refresh)
-
-        user_resp = supabase.auth.get_user()
-        user = user_resp.user
-        if not user:
-            raise HTTPException(status_code=401, detail="Unauthorized: No valid session")
-
-        accounts_response = (
-            supabase.schema("finance")
-            .table("accounts")
-            .select("id")
-            .eq("user_id", user.id)
-            .execute()
-        )
-
-        if not accounts_response.data:
-            return {"user": user.model_dump(), "rows": []}
-
-        account_ids = [acc["id"] for acc in accounts_response.data]
-
-        transactions_response = (
-            supabase.schema("finance")
-            .table("transactions")
-            .select("*")
-            .in_("account_id", account_ids)
-            .execute()
-        )
-
-        return {
-            "user": user.model_dump(),
-            "rows": transactions_response.data
-        }
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Get transactions failed: {e}")
-
-
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def post_finance(
     request: CreateFinanceAccountRequest,
@@ -110,7 +71,7 @@ async def post_finance(
 
         supabase.auth.set_session(access, refresh)
 
-        payload = request.model_dump(exclude_none=True)  # convert to JSON-serializable dict
+        payload = request.model_dump(exclude_none=True)
         res = (
             supabase.schema("finance")
             .table("accounts")
@@ -172,3 +133,90 @@ async def patch_finance(
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Patch finance failed: {e}")
 
+
+@router.post("/transactions/{account_id}", status_code=status.HTTP_201_CREATED)
+async def add_transactions(
+        request: TransactionRequest,
+        account_id: str,
+        supabase=Depends(get_supabase),
+        tokens=Depends(get_user_token)
+):
+    try:
+        access = tokens.get("access_token")
+        refresh = tokens.get("refresh_token")
+        print(request)
+        supabase.auth.set_session(access, refresh)
+        user_resp = supabase.auth.get_user()
+        user = user_resp.user
+        if not user:
+            raise HTTPException(status_code=401, detail="Unauthorized: No valid session")
+
+
+        amount_minor = request.amount_minor
+        if isinstance(amount_minor, str):
+            amount_minor = float(amount_minor)
+        amount_minor_int = int(amount_minor * 100)
+
+        payload = request.model_dump(exclude_none=True)
+
+
+        transactions_response = (
+            supabase.schema("finance")
+            .table("transactions")
+            .insert({
+                "user_id": user.id,
+                "account_id": account_id,
+                "txn_date": str(datetime.now().date()),
+                "source": "manual",
+                "created_at": str(datetime.now()),
+                **payload
+            })
+            .execute()
+        )
+        return {
+            "user": user.model_dump(),
+            "rows": transactions_response.data
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Add transaction failed: {e}")
+
+@router.get("/transactions/{account_id}", status_code=status.HTTP_200_OK)
+async def get_transactions(
+    supabase=Depends(get_supabase),
+    tokens=Depends(get_user_token),
+    account_id: str = None
+):
+    try:
+        access = tokens.get("access_token")
+        refresh = tokens.get("refresh_token")
+
+        supabase.auth.set_session(access, refresh)
+
+        user_resp = supabase.auth.get_user()
+        user = user_resp.user
+
+        if not user:
+            raise HTTPException(status_code=401, detail="Unauthorized: No valid session")
+
+        if not account_id:
+            raise HTTPException(status_code=400, detail="Missing account_id")
+
+        transactions_response = (
+            supabase.schema("finance")
+            .table("transactions")
+            .select("*")
+            .eq("account_id", account_id)
+            .execute()
+        )
+
+        return {
+            "user": user.model_dump(),
+            "rows": transactions_response.data
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Get transactions failed: {e}")
