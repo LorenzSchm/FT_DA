@@ -220,3 +220,27 @@ async def get_transactions(
         raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Get transactions failed: {e}")
+
+@router.delete("/transactions/{account_id}/{id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_transaction(
+    id: str,
+    account_id: str,
+    supabase=Depends(get_supabase),
+    tokens=Depends(get_user_token),
+):
+    try:
+        access = tokens.get("access_token")
+        refresh = tokens.get("refresh_token")
+
+        supabase.auth.set_session(access, refresh)
+
+        response = (
+            supabase.schema("finance")
+            .table("transactions")
+            .delete()
+            .eq("id", id)
+            .execute()
+        )
+        return response.data
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Delete transaction failed: {e}")
