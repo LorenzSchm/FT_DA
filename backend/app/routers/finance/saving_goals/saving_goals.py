@@ -1,0 +1,88 @@
+from datetime import datetime
+
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import HTTPBearer
+from app.dependencies import get_supabase, get_user_token
+from pydantic import BaseModel
+from starlette import status
+
+router = APIRouter(prefix="/saving-goals", tags=["finance"])
+auth_scheme = HTTPBearer(auto_error=True)
+
+class SavingGoalRequest(BaseModel):
+    name: str
+    target_minor: int
+    currency: str
+
+@router.get("/")
+async def get_saving_goals(
+        supabase=Depends(get_supabase),
+        tokens=Depends(get_user_token),
+):
+    try:
+        access = tokens.get("access_token")
+        refresh = tokens.get("refresh_token")
+        supabase.auth.set_session(access, refresh)
+        user_resp = supabase.auth.get_user()
+        user = user_resp.user
+
+        if not user:
+            raise HTTPException(status_code=401, detail="Unauthorized: No valid session")
+
+        response = (
+            supabase.schema("finance")
+            .table("saving_goals")
+            .select("*")
+            .eq("user_id", user.id)
+            .execute()
+        )
+
+        if response.data:
+            for goal in response.data:
+                contributions = (
+                    supabase.schema("finance")
+                    .table("saving_contributions")
+                    .select("contributed_minor")
+                    .eq("goal_id", goal["id"])
+                    .execute()
+                )
+                total_contributed = sum(c["contributed_minor"] for c in contributions.data) if contributions.data else 0
+                goal["contributed_minor"] = total_contributed
+
+        return {"user": user.model_dump(), "goals": response.data}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"qAdd transaction failed: {e}")
+
+
+@router.post("/", status_code=status.HTTP_201_CREATED)
+async def add_saving_goal(
+        request: SavingGoalRequest,
+        supabase=Depends(get_supabase),
+        tokens=Depends(get_user_token),
+):
+    try:
+        access = tokens.get("access_token")
+        refresh = tokens.get("refresh_token")
+        supabase.auth.set_session(access, refresh)
+        user_resp = supabase.auth.get_user()
+        user = user_resp.user
+
+        if not user:
+            raise HTTPException(status_code=401, detail="Unauthorized: No valid session")
+
+        payload = request.model_dump(exclude_none=True)
+        response = (
+            supabase.schema("finance")
+            .table("saving_goals")
+            .insert(
+                {
+                    "user_id": user.id,
+                    **payload,
+                }
+            )
+        )
+
+        return {"user": user.model_dump(), "rows": response.data}
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Add transaction failed: {e}")
