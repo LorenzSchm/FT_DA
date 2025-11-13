@@ -21,7 +21,6 @@ export default function InvestmentView() {
   const [prices, setPrices] = useState({});
   const [changes, setChanges] = useState({});
 
-  // ---- Modal state & animation ----
   const [selectedStock, setSelectedStock] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const translateY = useRef(new Animated.Value(0)).current;
@@ -180,7 +179,7 @@ export default function InvestmentView() {
         animationType="none"
         onRequestClose={closeModal}
       >
-        <View className="flex-1 bg-black/40 justify-end">
+        <View className="flex-1  justify-end ">
           {/* Tap outside to close */}
           <Pressable className="flex-1" onPress={closeModal} />
 
@@ -193,11 +192,11 @@ export default function InvestmentView() {
               borderTopRightRadius: 20,
               padding: 20,
               paddingBottom: 40,
-              minHeight: 300,
+              minHeight: SCREEN_HEIGHT,
             }}
           >
             {/* Drag handle */}
-            <View className="items-center mb-4">
+            <View className="items-center mb-4 mt-20">
               <View className="w-12 h-1 bg-gray-400 rounded-full" />
             </View>
 

@@ -8,7 +8,6 @@ from .routers.savings.savings import router as savings_router
 from .routers.bank_connection.bank_connection import router as bank_connection_router
 from .routers.bot.bot import router as bot_router
 from .routers.investments.investments import router as investments_router
-from .routers.transactions.transactions import router as transactions_router
 from .utils.external.yfinance.yfinance_api import router as yfinance_router
 from .routers.finance.finance import router as finance_router
 from supabase import create_client, Client
@@ -33,7 +32,6 @@ app.include_router(savings_router)
 app.include_router(bank_connection_router)
 app.include_router(bot_router)
 app.include_router(investments_router)
-app.include_router(transactions_router)
 
 app.include_router(yfinance_router)
 
