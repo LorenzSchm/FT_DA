@@ -3,11 +3,13 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPBearer
 from app.dependencies import get_supabase, get_user_token
+from .contributions.contributions import router as contributions_router
 from pydantic import BaseModel
 from starlette import status
 
 router = APIRouter(prefix="/saving-goals", tags=["finance"])
 auth_scheme = HTTPBearer(auto_error=True)
+router.include_router(contributions_router)
 
 class SavingGoalRequest(BaseModel):
     name: str
