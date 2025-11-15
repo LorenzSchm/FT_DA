@@ -80,9 +80,71 @@ async def add_saving_goal(
                     **payload,
                 }
             )
+            .execute()
         )
 
         return {"user": user.model_dump(), "rows": response.data}
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Add transaction failed: {e}")
+
+@router.delete("/{id}")
+async def delete_saving_goal(
+    id: str,
+    supabase=Depends(get_supabase),
+    tokens=Depends(get_user_token),
+):
+    try:
+        access = tokens.get("access_token")
+        refresh = tokens.get("refresh_token")
+        supabase.auth.set_session(access, refresh)
+        user_resp = supabase.auth.get_user()
+        user = user_resp.user
+
+        if not user:
+            raise HTTPException(status_code=401, detail="Unauthorized: No valid session")
+
+        delete_response = (
+            supabase.schema("finance")
+            .table("saving_goals")
+            .delete()
+            .eq("id", id)
+            .execute()
+        )
+
+        return {"user": user.model_dump(), "rows": delete_response.data}
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Add transaction failed: {e}")
+
+@router.patch("/{id}")
+async def update_saving_goal(
+        id: str,
+        request: SavingGoalRequest,
+        supabase=Depends(get_supabase),
+        tokens=Depends(get_user_token),
+):
+    try:
+        access = tokens.get("access_token")
+        refresh = tokens.get("refresh_token")
+        supabase.auth.set_session(access, refresh)
+        user_resp = supabase.auth.get_user()
+        user = user_resp.user
+
+        if not user:
+            raise HTTPException(status_code=401, detail="Unauthorized: No valid session")
+
+        payload = request.model_dump(exclude_none=True)
+
+        response = (
+            supabase.schema("finance")
+            .table("saving_goals")
+            .update(payload)
+            .eq("id", id)
+            .execute()
+        )
+
+        return {"user": user.model_dump(), "rows": response.data}
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Update transaction failed: {e}")
