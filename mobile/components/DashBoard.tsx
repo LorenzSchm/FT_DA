@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
 } from "react-native";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Card from "./Card";
 import {
   Carousel,
@@ -14,76 +14,16 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel";
 import AddAccountModal from "@/components/modals/AddAccountModal";
+import AddTransactionModal from "@/components/modals/AddTransactionModal";
+import { useAuthStore } from "@/utils/authStore";
+import { getAccounts, getTransactions } from "@/utils/db/finance/finance";
 
-// Mock data for development
-const mockUser = {
-  id: "user-001",
-  email: "lorenz.schmidt01@icloud.com",
-  display_name: "Lorenz",
-  user_metadata: {
-    display_name: "Lorenz Schmidt",
-  },
-};
-
-const mockAccounts = [
-  {
-    id: 1,
-    kind: "Checking Account",
-    currency: "EUR",
-    balance_minor: 325000, // 3250.00 EUR
-    user_id: "user-001",
-  },
-  {
-    id: 2,
-    kind: "Savings Account",
-    currency: "EUR",
-    balance_minor: 1500000, // 15000.00 EUR
-    user_id: "user-001",
-  },
-];
-
-const mockTransactions = [
-  {
-    id: 101,
-    account_id: 1,
-    txn_date: "2025-10-29",
-    amount_minor: -4599,
-    currency: "EUR",
-    description: "Coffee Shop",
-    category_id: "Food",
-  },
-  {
-    id: 102,
-    account_id: 1,
-    txn_date: "2025-10-28",
-    amount_minor: -18900,
-    currency: "EUR",
-    description: "Groceries",
-    category_id: "Supermarket",
-  },
-  {
-    id: 103,
-    account_id: 1,
-    txn_date: "2025-10-26",
-    amount_minor: 120000,
-    currency: "EUR",
-    description: "Salary Deposit",
-    category_id: "Income",
-  },
-  {
-    id: 201,
-    account_id: 2,
-    txn_date: "2025-10-01",
-    amount_minor: 50000,
-    currency: "EUR",
-    description: "Monthly Transfer",
-    category_id: "Savings",
-  },
-];
+// Mock data for development removed - using real data from API
 
 enum STATE {
   DEFAULT = "DEFAULT",
   ADD_ACCOUNT = "ADD_ACCOUNT",
+  ADD_TRANSACTION = "ADD_TRANSACTION",
 }
 
 export default function DashBoard() {
@@ -91,21 +31,70 @@ export default function DashBoard() {
   const [accountIndex, setAccountIndex] = useState(0);
   const [state, setState] = useState(STATE.DEFAULT);
   const [expanded, setExpanded] = useState(false);
+  const [accounts, setAccounts] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
 
   const contentWidth = (width - 60) * 0.9;
   const maxListHeight = height * 0.45;
 
-  const user = mockUser;
-  const accounts = mockAccounts;
-  const transactions = mockTransactions;
+  const { user, session } = useAuthStore();
 
+  const loadAccounts = async () => {
+    if (!session?.access_token) return;
+    try {
+      const data = await getAccounts(session.access_token, session.refresh_token);
+      setAccounts(data.rows || data);
+      return data.rows || data;
+    } catch (e: any) {
+      console.error("Failed to load accounts:", e?.message || "Unknown error");
+      return [];
+    }
+  };
+
+  const loadTransactions = async (accounts: any[]) => {
+    if (!session?.access_token || !accounts.length) return;
+    try {
+      const allTransactions: any[] = [];
+      for (const account of accounts) {
+        const data = await getTransactions(session.access_token, session.refresh_token, account.id);
+        const transactions = data.rows || data;
+        allTransactions.push(...transactions);
+      }
+      setTransactions(allTransactions);
+    } catch (e: any) {
+      console.error("Failed to load transactions:", e?.message || "Unknown error");
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const loadedAccounts = await loadAccounts();
+      if (loadedAccounts && loadedAccounts.length > 0) {
+        await loadTransactions(loadedAccounts);
+      }
+    };
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.access_token]);
   const openAddAccountModal = () => {
     setState(STATE.ADD_ACCOUNT);
     setExpanded(false);
   };
 
+  const openAddTransactionModal = () => {
+    setState(STATE.ADD_TRANSACTION);
+    setExpanded(false);
+  }
+
   const handleModalClose = () => {
     setState(STATE.DEFAULT);
+  };
+
+  const handleTransactionAdded = async () => {
+    // Reload transactions after a new one is added
+    if (accounts.length > 0) {
+      await loadTransactions(accounts);
+    }
   };
 
   const toggleExpanded = () => {
@@ -126,9 +115,7 @@ export default function DashBoard() {
       <View className="flex-1 items-center justify-center">
         <View className="gap-3 items-center">
           <Text className="text-center text-2xl font-bold">
-            {`Good morning ${
-              user?.user_metadata?.display_name || user?.display_name || "there"
-            }!`}
+            {`Good morning ${user?.display_name || "there"}!`}
           </Text>
 
           {/* Accounts Carousel */}
@@ -140,14 +127,14 @@ export default function DashBoard() {
             ) : (
               <Carousel onIndexChange={setAccountIndex}>
                 <CarouselContent>
-                  {accounts.map((account) => (
+                  {accounts.map((account: any) => (
                     <CarouselItem
                       key={account.id}
                       className="items-center justify-center"
                     >
                       <Card
                         kind={account.kind || "Account"}
-                        amount={(account.balance_minor / 100).toFixed(2)}
+                        amount={parseFloat((account.balance_minor / 100).toFixed(2))}
                         currency={account.currency || "EUR"}
                       />
                     </CarouselItem>
@@ -155,7 +142,7 @@ export default function DashBoard() {
                 </CarouselContent>
                 {/* Pagination Dots */}
                 <View className="flex-row mt-4 gap-1 justify-center">
-                  {accounts.map((_, index) => (
+                  {accounts.map((_: any, index: number) => (
                     <View
                       key={index}
                       className={`w-2 h-2 rounded-full ${
@@ -243,7 +230,7 @@ export default function DashBoard() {
 
               <TouchableOpacity
                 className="flex-row justify-between items-center"
-                onPress={() => setExpanded(false)}
+                onPress={openAddTransactionModal}
               >
                 <Text className="text-white text-3xl font-semibold">
                   Transaction
@@ -258,6 +245,14 @@ export default function DashBoard() {
       <AddAccountModal
         isVisible={state === STATE.ADD_ACCOUNT}
         onClose={handleModalClose}
+      />
+
+      <AddTransactionModal
+        isVisible={state === STATE.ADD_TRANSACTION}
+        onClose={handleModalClose}
+        accounts={accounts}
+        selectedAccountId={accounts[accountIndex]?.id}
+        onTransactionAdded={handleTransactionAdded}
       />
     </View>
   );
