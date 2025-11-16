@@ -8,7 +8,6 @@ logger = logging.getLogger("app.dependencies")
 
 
 def get_supabase(request: Request):
-    """Return the shared supabase client stored on app.state."""
     return request.app.state.supabase
 
 
