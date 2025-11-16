@@ -1,66 +1,35 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   FlatList,
   TextInput,
   Pressable,
-  Modal,
-  Animated,
-  PanResponder,
-  Dimensions,
-  TouchableOpacity,
 } from "react-native";
 import axios from "axios";
 import { Skeleton } from "@/components/ui/skeleton";
-
-const { height: SCREEN_HEIGHT } = Dimensions.get("window");
-
+import StockModal from "@/components/modals/StockModal";
+import {useAuthStore} from "@/utils/authStore";
+import {getInvestments} from "@/utils/db/invest/invest";
 export default function InvestmentView() {
-  const [trending, setTrending] = useState([]);
-  const [prices, setPrices] = useState({});
-  const [changes, setChanges] = useState({});
-
+  const [trending, setTrending] = useState<any[]>([]);
+  const [prices, setPrices] = useState<Record<string, number>>({});
+  const [changes, setChanges] = useState<Record<string, number>>({});
   const [selectedStock, setSelectedStock] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const translateY = useRef(new Animated.Value(0)).current;
+  const [positions, setPositions] = useState<any[]>([]);
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onPanResponderMove: (_, gesture) => {
-        if (gesture.dy > 0) {
-          translateY.setValue(gesture.dy);
-        }
-      },
-      onPanResponderRelease: (_, gesture) => {
-        if (gesture.dy > 150 || gesture.vy > 0.5) {
-          closeModal();
-        } else {
-          Animated.spring(translateY, {
-            toValue: 0,
-            useNativeDriver: true,
-          }).start();
-        }
-      },
-    }),
-  ).current;
+
+  const {user, session} = useAuthStore();
 
   const openModal = (item: any) => {
     setSelectedStock(item);
     setModalVisible(true);
-    translateY.setValue(0);
   };
 
   const closeModal = () => {
-    Animated.timing(translateY, {
-      toValue: SCREEN_HEIGHT,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => {
-      setModalVisible(false);
-      setSelectedStock(null);
-    });
+    setModalVisible(false);
+    setSelectedStock(null);
   };
 
   // ---- Data fetching (unchanged) ----
@@ -73,7 +42,7 @@ export default function InvestmentView() {
         const quotes =
           resp.data.finance?.result?.[0]?.quotes.slice(0, 10) || [];
         setTrending(quotes);
-
+        console.log(trending);
         const symbols = quotes.map((q: any) => q.symbol);
 
         const priceResponses = await Promise.all(
@@ -107,8 +76,19 @@ export default function InvestmentView() {
         console.error("Error fetching trending stocks:", err);
       }
     };
-
+    const fetchpositions = async () => {
+        try {
+            const data = await getInvestments(session.access_token, session.refresh_token).then(
+                (res) => res.positions,
+            );
+            setPositions(data);
+            console.log(data);
+        } catch (error) {
+            console.error("Error fetching positions:", error);
+        }
+    }
     fetchTrending();
+    fetchpositions();
   }, []);
 
   return (
@@ -119,7 +99,32 @@ export default function InvestmentView() {
       />
 
       <View>
-        <Text className="text-2xl font-bold mb-2">Your investments</Text>
+        <Text className="text-2xl font-bold mb-2">You investments</Text>
+          {positions.length === 0 ? (
+              <Text>No investments found</Text>
+          ):(
+              <FlatList
+                  data={positions}
+                  keyExtractor={(item) => item.ticker}
+                  ItemSeparatorComponent={() => <View className="h-1" />}
+            renderItem={({ item }) => (
+              <Pressable onPress={() => openModal(item)}>
+                <View className="flex-row justify-between items-center py-2">
+                  {/* Left side: stock info */}
+                  <View>
+                    <Text className="text-lg font-bold">{item.ticker}</Text>
+                    <Text className="text-gray-400 font-bold text-xs">
+                        {item.avg_entry_price.toFixed(2)}
+                    </Text>
+                  </View>
+
+
+                </View>
+              </Pressable>
+            )}
+          />
+        )}
+
       </View>
 
       <View className="mt-4 flex-1">
@@ -172,42 +177,12 @@ export default function InvestmentView() {
         )}
       </View>
 
-      {/* ================== SWIPEABLE MODAL ================== */}
-      <Modal
-        visible={modalVisible}
-        transparent
-        animationType="none"
-        onRequestClose={closeModal}
-      >
-        <View className="flex-1  justify-end ">
-          {/* Tap outside to close */}
-          <Pressable className="flex-1" onPress={closeModal} />
-
-          <Animated.View
-            {...panResponder.panHandlers}
-            style={{
-              transform: [{ translateY }],
-              backgroundColor: "white",
-              borderTopLeftRadius: 20,
-              borderTopRightRadius: 20,
-              padding: 20,
-              paddingBottom: 40,
-              minHeight: SCREEN_HEIGHT,
-            }}
-          >
-            {/* Drag handle */}
-            <View className="items-center mb-4 mt-20">
-              <View className="w-12 h-1 bg-gray-400 rounded-full" />
-            </View>
-
-            {selectedStock && (
-              <>
-                <Text>Drag</Text>
-              </>
-            )}
-          </Animated.View>
-        </View>
-      </Modal>
+      {/* ================== STOCK MODAL ================== */}
+      <StockModal
+        isVisible={modalVisible}
+        onClose={closeModal}
+        selectedStock={selectedStock}
+      />
     </View>
   );
 }

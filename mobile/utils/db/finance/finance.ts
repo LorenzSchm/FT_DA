@@ -22,7 +22,11 @@ export const getAccounts = async (accessToken, refreshToken) => {
   return res.json();
 };
 
-export const getTransactions = async (accessToken, refreshToken, account_id) => {
+export const getTransactions = async (
+  accessToken,
+  refreshToken,
+  account_id,
+) => {
   if (!accessToken) {
     throw new Error("Missing access token");
   }
@@ -44,8 +48,12 @@ export const getTransactions = async (accessToken, refreshToken, account_id) => 
   return res.json();
 };
 
-
-export const addTransaction = async (accessToken, refreshToken, data, account_id) => {
+export const addTransaction = async (
+  accessToken,
+  refreshToken,
+  data,
+  account_id,
+) => {
   if (!accessToken) {
     throw new Error("Missing access token");
   }
@@ -53,9 +61,10 @@ export const addTransaction = async (accessToken, refreshToken, data, account_id
   // Convert BigInt to string before JSON serialization
   const serializedData = {
     ...data,
-    amount_minor: typeof data.amount_minor === "bigint"
-      ? data.amount_minor.toString()
-      : String(data.amount_minor),
+    amount_minor:
+      typeof data.amount_minor === "bigint"
+        ? data.amount_minor.toString()
+        : String(data.amount_minor),
   };
 
   const res = await fetch(`${BASE_URL}/finance/transactions/${account_id}`, {

@@ -20,7 +20,13 @@ import { useAuthStore } from "@/utils/authStore";
 type Props = {
   isVisible: boolean;
   onClose: () => void;
-  accounts: { id: number; kind: string; currency: string; balance_minor: number; user_id: string }[];
+  accounts: {
+    id: number;
+    kind: string;
+    currency: string;
+    balance_minor: number;
+    user_id: string;
+  }[];
   selectedAccountId: number;
   onTransactionAdded: () => Promise<void>;
 };
@@ -30,7 +36,7 @@ export default function AddTransactionModal({
   onClose,
   accounts,
   selectedAccountId,
-  onTransactionAdded
+  onTransactionAdded,
 }: Props) {
   const [isModalVisible, setIsModalVisible] = useState(isVisible);
   const [state, setState] = useState("expense");
@@ -143,7 +149,7 @@ export default function AddTransactionModal({
       const transactionData = {
         type: state,
         amount_minor: state === "expense" ? -amountMinor : amountMinor,
-        currency: "EUR",
+        currency: accounts.find((acc: any) => acc.id === selectedAccount)?.currency,
         description: description,
         merchant: merchant,
       };
@@ -152,11 +158,11 @@ export default function AddTransactionModal({
         session.access_token,
         session.refresh_token,
         transactionData,
-        selectedAccount
+        selectedAccount,
       );
 
       handleClose();
-    }  finally {
+    } finally {
       setIsLoading(false);
     }
   };
@@ -232,13 +238,16 @@ export default function AddTransactionModal({
               </TouchableOpacity>
             </View>
             {/* Account selection */}
-            <Text className="text-lg font-semibold text-black mb-2">Account</Text>
+            <Text className="text-lg font-semibold text-black mb-2">
+              Account
+            </Text>
             <TouchableOpacity
               onPress={() => setShowAccountPicker(!showAccountPicker)}
               className="bg-neutral-100 rounded-2xl px-5 py-4 mb-4 flex-row justify-between items-center"
             >
               <Text className="text-neutral-500">
-                {accounts.find((acc: any) => acc.id === selectedAccount)?.kind || "Select account"}
+                {accounts.find((acc: any) => acc.id === selectedAccount)
+                  ?.kind || "Select account"}
               </Text>
               <ChevronDown className="text-neutral-500" />
             </TouchableOpacity>
@@ -258,7 +267,9 @@ export default function AddTransactionModal({
                   >
                     <Text
                       className={`${
-                        selectedAccount === account.id ? "text-white font-semibold" : "text-neutral-700"
+                        selectedAccount === account.id
+                          ? "text-white font-semibold"
+                          : "text-neutral-700"
                       }`}
                     >
                       {account.kind}
@@ -268,7 +279,9 @@ export default function AddTransactionModal({
               </View>
             )}
             {/* Amount */}
-            <Text className="text-lg font-semibold text-black mb-2">Amount</Text>
+            <Text className="text-lg font-semibold text-black mb-2">
+              Amount
+            </Text>
             <View className="bg-neutral-100 rounded-2xl px-5 py-4 mb-4">
               <TextInput
                 className="text-black"
@@ -279,11 +292,15 @@ export default function AddTransactionModal({
               />
             </View>
 
-            <Text className="text-lg font-semibold text-black mb-2">{state === "income" ? "Sender" : "Recipient"}</Text>
+            <Text className="text-lg font-semibold text-black mb-2">
+              {state === "income" ? "Sender" : "Recipient"}
+            </Text>
             <View className="bg-neutral-100 rounded-2xl px-5 py-4 mb-4">
               <TextInput
                 className="text-black"
-                placeholder={state === "income" ? "e.g. Employer" : "e.g. Grocery Store"}
+                placeholder={
+                  state === "income" ? "e.g. Employer" : "e.g. Grocery Store"
+                }
                 value={merchant}
                 onChangeText={setMerchant}
               />
