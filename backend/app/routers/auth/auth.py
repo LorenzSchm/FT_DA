@@ -128,3 +128,14 @@ async def refresh_access_token(
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Refresh failed: {e}")
+
+@router.get("/otp")
+async def get_otp(
+        supabase=Depends(get_supabase),
+        credentials: HTTPAuthorizationCredentials = Depends(auth_scheme),):
+    try:
+        response = supabase.auth.get_otp(credentials.credentials)
+        if not response or not response.user:
+            raise HTTPException(status_code=400, detail="Get OTP failed")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Get OTP failed: {e}")
