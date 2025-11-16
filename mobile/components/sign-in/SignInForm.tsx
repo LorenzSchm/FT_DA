@@ -1,6 +1,7 @@
 import { View, Text, TextInput, TouchableOpacity } from "react-native";
 import { useState } from "react";
 import { useAuthStore } from "@/utils/authStore";
+import ResetPasswordModal from "@/components/modals/ResetPasswordModal";
 
 type Props = {
   isVisible: boolean;
@@ -10,6 +11,7 @@ type Props = {
 export default function SignInForm({ isVisible, email }: Props) {
   const [password, setPassword] = useState<string>("");
   const { signIn } = useAuthStore();
+  const [showResetModal, setShowResetModal] = useState<boolean>(false);
 
   const handleSubmit = async () => {
     if (email && password) {
@@ -25,6 +27,10 @@ export default function SignInForm({ isVisible, email }: Props) {
 
   return isVisible ? (
     <View>
+      <ResetPasswordModal
+        isVisible={showResetModal}
+        onClose={() => setShowResetModal(false)}
+      />
       <View className={"flex flex-col gap-[25px]"}>
         <View className={"flex flex-col gap-[20px]"}>
           <TextInput
@@ -45,7 +51,7 @@ export default function SignInForm({ isVisible, email }: Props) {
               secureTextEntry={true}
               onChangeText={setPassword}
             />
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowResetModal(true)}>
               <Text className={"text-gray-400 text-[15px] pl-2 pt-1"}>
                 Forgot your Password?
               </Text>
