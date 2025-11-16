@@ -3,6 +3,13 @@ services:
     build: ./backend
     ports:
       - "8000:8000"
+    environment:
+      # Set these in your shell or a .env file used by Docker Compose
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+    volumes:
+      - ./backend:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
   frontend:
     build: ./webapp
