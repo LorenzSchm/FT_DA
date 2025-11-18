@@ -149,7 +149,8 @@ export default function AddTransactionModal({
       const transactionData = {
         type: state,
         amount_minor: state === "expense" ? -amountMinor : amountMinor,
-        currency: accounts.find((acc: any) => acc.id === selectedAccount)?.currency,
+        currency: accounts.find((acc: any) => acc.id === selectedAccount)
+          ?.currency,
         description: description,
         merchant: merchant,
       };
@@ -249,7 +250,17 @@ export default function AddTransactionModal({
                 {accounts.find((acc: any) => acc.id === selectedAccount)
                   ?.kind || "Select account"}
               </Text>
-              <ChevronDown className="text-neutral-500" />
+              <Animated.View
+                style={{
+                  transform: [
+                    {
+                      rotate: showAccountPicker ? "180deg" : "0deg",
+                    },
+                  ],
+                }}
+              >
+                <ChevronDown className="text-neutral-500" />
+              </Animated.View>
             </TouchableOpacity>
 
             {showAccountPicker && (

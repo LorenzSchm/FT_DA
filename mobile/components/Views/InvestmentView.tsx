@@ -1,16 +1,10 @@
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  TextInput,
-  Pressable,
-} from "react-native";
+import { View, Text, FlatList, TextInput, Pressable } from "react-native";
 import axios from "axios";
 import { Skeleton } from "@/components/ui/skeleton";
 import StockModal from "@/components/modals/StockModal";
-import {useAuthStore} from "@/utils/authStore";
-import {getInvestments} from "@/utils/db/invest/invest";
+import { useAuthStore } from "@/utils/authStore";
+import { getInvestments } from "@/utils/db/invest/invest";
 export default function InvestmentView() {
   const [trending, setTrending] = useState<any[]>([]);
   const [prices, setPrices] = useState<Record<string, number>>({});
@@ -19,8 +13,7 @@ export default function InvestmentView() {
   const [modalVisible, setModalVisible] = useState(false);
   const [positions, setPositions] = useState<any[]>([]);
 
-
-  const {user, session} = useAuthStore();
+  const { user, session } = useAuthStore();
 
   const openModal = (item: any) => {
     setSelectedStock(item);
@@ -42,7 +35,6 @@ export default function InvestmentView() {
         const quotes =
           resp.data.finance?.result?.[0]?.quotes.slice(0, 10) || [];
         setTrending(quotes);
-        console.log(trending);
         const symbols = quotes.map((q: any) => q.symbol);
 
         const priceResponses = await Promise.all(
@@ -77,16 +69,17 @@ export default function InvestmentView() {
       }
     };
     const fetchpositions = async () => {
-        try {
-            const data = await getInvestments(session.access_token, session.refresh_token).then(
-                (res) => res.positions,
-            );
-            setPositions(data);
-            console.log(data);
-        } catch (error) {
-            console.error("Error fetching positions:", error);
-        }
-    }
+      try {
+        const data = await getInvestments(
+          session.access_token,
+          session.refresh_token,
+        ).then((res) => res.positions);
+        setPositions(data);
+        console.log(data);
+      } catch (error) {
+        console.error("Error fetching positions:", error);
+      }
+    };
     fetchTrending();
     fetchpositions();
   }, []);
@@ -99,14 +92,14 @@ export default function InvestmentView() {
       />
 
       <View>
-        <Text className="text-2xl font-bold mb-2">You investments</Text>
-          {positions.length === 0 ? (
-              <Text>No investments found</Text>
-          ):(
-              <FlatList
-                  data={positions}
-                  keyExtractor={(item) => item.ticker}
-                  ItemSeparatorComponent={() => <View className="h-1" />}
+        <Text className="text-2xl font-bold mb-2">Your investments</Text>
+        {positions.length === 0 ? (
+          <Text>No investments found</Text>
+        ) : (
+          <FlatList
+            data={positions}
+            keyExtractor={(item) => item.ticker}
+            ItemSeparatorComponent={() => <View className="h-1" />}
             renderItem={({ item }) => (
               <Pressable onPress={() => openModal(item)}>
                 <View className="flex-row justify-between items-center py-2">
@@ -114,17 +107,14 @@ export default function InvestmentView() {
                   <View>
                     <Text className="text-lg font-bold">{item.ticker}</Text>
                     <Text className="text-gray-400 font-bold text-xs">
-                        {item.avg_entry_price.toFixed(2)}
+                      {item.avg_entry_price.toFixed(2)}
                     </Text>
                   </View>
-
-
                 </View>
               </Pressable>
             )}
           />
         )}
-
       </View>
 
       <View className="mt-4 flex-1">

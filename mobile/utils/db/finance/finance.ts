@@ -58,7 +58,6 @@ export const addTransaction = async (
     throw new Error("Missing access token");
   }
 
-  // Convert BigInt to string before JSON serialization
   const serializedData = {
     ...data,
     amount_minor:

@@ -21,22 +21,21 @@ import { getAccounts, getTransactions } from "@/utils/db/finance/finance";
 function calculateAccountBalances(accounts: any[], transactions: any[]) {
   const totals: Record<number, number> = {};
 
-  accounts.forEach(acc => {
+  accounts.forEach((acc) => {
     totals[acc.id] = 0;
   });
 
-  transactions.forEach(txn => {
+  transactions.forEach((txn) => {
     if (totals.hasOwnProperty(txn.account_id)) {
       totals[txn.account_id] += txn.amount_minor;
     }
   });
 
-  return accounts.map(acc => ({
+  return accounts.map((acc) => ({
     ...acc,
     balance_minor: totals[acc.id] ?? 0,
   }));
 }
-
 
 enum STATE {
   DEFAULT = "DEFAULT",
@@ -54,7 +53,7 @@ export default function DashBoard() {
   const [transactions, setTransactions] = useState<any[]>([]);
 
   const contentWidth = (width - 60) * 0.9;
-  const maxListHeight = height * 0.45;
+  const maxListHeight = height * 0.35;
 
   const { user, session } = useAuthStore();
 
@@ -73,7 +72,6 @@ export default function DashBoard() {
       return [];
     }
   };
-
 
   const loadTransactions = async (accs: any[]) => {
     if (!session?.access_token || !accs.length) return;
@@ -96,9 +94,8 @@ export default function DashBoard() {
 
       const updatedAccounts = calculateAccountBalances(accs, all);
       setAccounts(updatedAccounts);
-
     } catch (e: any) {
-      console.error("Failed to load transactions:", e?.message || "Unknown error");
+
     }
   };
 
@@ -111,7 +108,6 @@ export default function DashBoard() {
     };
     loadAll();
   }, [session?.access_token]);
-
 
   const openAddAccountModal = () => {
     setState(STATE.ADD_ACCOUNT);
@@ -140,10 +136,8 @@ export default function DashBoard() {
     (tx) => tx.account_id === accounts[accountIndex]?.id,
   );
 
-
   return (
     <View className="flex-1 mt-20 w-full bg-white">
-
       {/* Greeting + Accounts */}
       <View className="flex-1 items-center justify-center">
         <View className="gap-3 items-center">
@@ -167,7 +161,9 @@ export default function DashBoard() {
                     >
                       <Card
                         kind={account.kind}
-                        amount={parseFloat((account.balance_minor / 100).toFixed(2))}
+                        amount={parseFloat(
+                          (account.balance_minor / 100).toFixed(2),
+                        )}
                         currency={account.currency}
                       />
                     </CarouselItem>
@@ -231,7 +227,7 @@ export default function DashBoard() {
       </View>
 
       {/* Floating Add Button */}
-      <View className="absolute bottom-24 right-5">
+      <View className="absolute bottom-12 right-5">
         {expanded && (
           <TouchableWithoutFeedback onPress={handleOutsidePress}>
             <View className="absolute inset-0" />

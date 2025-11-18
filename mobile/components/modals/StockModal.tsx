@@ -14,20 +14,22 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import axios from "axios";
 import { Skeleton } from "@/components/ui/skeleton";
 
-
 type Props = {
   isVisible: boolean;
   onClose: () => void;
   selectedStock: any;
 };
 
-export default function StockModal({ isVisible, onClose, selectedStock }: Props) {
+export default function StockModal({
+  isVisible,
+  onClose,
+  selectedStock,
+}: Props) {
   const [isModalVisible, setIsModalVisible] = useState(isVisible);
   const [price, setPrice] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const SCREEN_HEIGHT = Dimensions.get("window").height;
   const sheetPosition = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
-
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -60,6 +62,8 @@ export default function StockModal({ isVisible, onClose, selectedStock }: Props)
       // Fetch real-time price
       if (selectedStock?.symbol) {
         fetchPrice(selectedStock.symbol);
+      } else if(selectedStock?.ticker){
+        fetchPrice(selectedStock.ticker);
       }
     } else {
       Animated.timing(sheetPosition, {
@@ -77,7 +81,9 @@ export default function StockModal({ isVisible, onClose, selectedStock }: Props)
   const fetchPrice = async (symbol: string) => {
     try {
       setLoading(true);
-      const res = await axios.get(`http://localhost:8000/stock/${symbol}/price`);
+      const res = await axios.get(
+        `http://localhost:8000/stock/${symbol}/price`,
+      );
       setPrice(res.data.price);
     } catch (error) {
       console.error("Failed to fetch price:", error);
@@ -144,11 +150,11 @@ export default function StockModal({ isVisible, onClose, selectedStock }: Props)
                   Current Price
                 </Text>
                 {loading ? (
-                 <Skeleton
-                     mode="light"
-                     className="h-4 w-[50px]"
-                     animated={true}
-                        />
+                  <Skeleton
+                    mode="light"
+                    className="h-4 w-[50px]"
+                    animated={true}
+                  />
                 ) : (
                   <Text className="text-4xl font-bold text-black">
                     ${price !== null ? price.toFixed(2) : "—"}
@@ -162,4 +168,3 @@ export default function StockModal({ isVisible, onClose, selectedStock }: Props)
     </Modal>
   );
 }
-
