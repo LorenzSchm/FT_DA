@@ -136,11 +136,10 @@ export default function DashBoard() {
 
   return (
     <View className="flex-1 mt-20 w-full bg-white">
-      {/* Greeting + Accounts */}
       <View className="flex-1 items-center justify-center">
         <View className="gap-3 items-center">
           <Text className="text-center text-2xl font-bold">
-            {`Good morning ${user?.display_name || "there"}!`}
+            {`Good morning ${user?.user_metadata?.display_name || "there"}!`}
           </Text>
 
           {/* Accounts Carousel */}
