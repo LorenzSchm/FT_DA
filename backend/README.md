@@ -54,6 +54,41 @@ app/
     └── external/               # API client stubs (OpenAI, BrandFetch, FX, etc.)
 ```
 
+## OpenAPI documentation (for frontend)
+
+This service exposes a complete OpenAPI schema that can be exported to a JSON
+file with request/response examples for convenient consumption by frontend
+developers.
+
+How to export/update the spec file:
+
+1. Ensure dependencies are installed:
+
+   ```bash
+   uv sync
+   ```
+
+2. Run the export tool (no server required):
+
+   ```bash
+   uv run python backend/tools/export_openapi.py
+   ```
+
+3. The command writes a pretty-printed file at:
+
+   - `backend/openapi.json`
+
+Notes:
+
+- The tool enriches schemas with synthetic example request bodies and
+  example responses for common 200/201 cases by inspecting the generated JSON
+  Schema. If your endpoint requires more specific examples, add explicit
+  `example`/`examples` metadata to request models or responses in the routers;
+  FastAPI will include them automatically in the generated schema.
+- You can also view the interactive docs when running the server at:
+  - Swagger UI: `http://localhost:8000/docs`
+  - ReDoc: `http://localhost:8000/redoc`
+
 ## Development Tasks
 
 1. Flesh out each router with concrete request/response models, validation,
