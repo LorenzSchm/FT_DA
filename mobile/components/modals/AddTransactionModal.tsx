@@ -273,13 +273,13 @@ export default function AddTransactionModal({
                       setShowAccountPicker(false);
                     }}
                     className={`py-3 px-3 rounded-lg ${
-                      selectedAccount === account.id ? "bg-black" : ""
+                      selectedAccount === account.id ? "" : ""
                     }`}
                   >
                     <Text
                       className={`${
                         selectedAccount === account.id
-                          ? "text-white font-semibold"
+                          ? "text-gray font-semibold"
                           : "text-neutral-700"
                       }`}
                     >

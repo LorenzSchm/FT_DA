@@ -94,9 +94,7 @@ export default function DashBoard() {
 
       const updatedAccounts = calculateAccountBalances(accs, all);
       setAccounts(updatedAccounts);
-    } catch (e: any) {
-
-    }
+    } catch (e: any) {}
   };
 
   useEffect(() => {

@@ -62,7 +62,7 @@ export default function StockModal({
       // Fetch real-time price
       if (selectedStock?.symbol) {
         fetchPrice(selectedStock.symbol);
-      } else if(selectedStock?.ticker){
+      } else if (selectedStock?.ticker) {
         fetchPrice(selectedStock.ticker);
       }
     } else {
