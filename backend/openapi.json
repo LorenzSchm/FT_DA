@@ -7,9 +7,7 @@
   "paths": {
     "/account/": {
       "get": {
-        "tags": [
-          "account"
-        ],
+        "tags": ["account"],
         "summary": "Get User",
         "operationId": "get_user_account__get",
         "responses": {
@@ -32,9 +30,7 @@
         ]
       },
       "patch": {
-        "tags": [
-          "account"
-        ],
+        "tags": ["account"],
         "summary": "Update User",
         "operationId": "update_user_account__patch",
         "requestBody": {
@@ -80,9 +76,7 @@
     },
     "/auth/sign-in": {
       "post": {
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "summary": "Sign In",
         "operationId": "sign_in_auth_sign_in_post",
         "requestBody": {
@@ -123,9 +117,7 @@
     },
     "/auth/sign-up": {
       "post": {
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "summary": "Sign Up",
         "operationId": "sign_up_auth_sign_up_post",
         "requestBody": {
@@ -166,9 +158,7 @@
     },
     "/auth/sign-out": {
       "post": {
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "summary": "Sign Out",
         "operationId": "sign_out_auth_sign_out_post",
         "requestBody": {
@@ -207,9 +197,7 @@
     },
     "/auth/refresh-token": {
       "get": {
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "summary": "Refresh Access Token",
         "operationId": "refresh_access_token_auth_refresh_token_get",
         "responses": {
@@ -234,9 +222,7 @@
     },
     "/auth/otp/{email}": {
       "get": {
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "summary": "Get Otp",
         "operationId": "get_otp_auth_otp__email__get",
         "parameters": [
@@ -275,9 +261,7 @@
     },
     "/auth/verify-otp": {
       "post": {
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "summary": "Verify Otp",
         "operationId": "verify_otp_auth_verify_otp_post",
         "requestBody": {
@@ -316,9 +300,7 @@
     },
     "/auth/reset-password": {
       "post": {
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "summary": "Reset Password",
         "operationId": "reset_password_auth_reset_password_post",
         "requestBody": {
@@ -362,9 +344,7 @@
     },
     "/investments/": {
       "get": {
-        "tags": [
-          "investments"
-        ],
+        "tags": ["investments"],
         "summary": "Get Investments",
         "operationId": "get_investments_investments__get",
         "responses": {
@@ -385,9 +365,7 @@
         ]
       },
       "post": {
-        "tags": [
-          "investments"
-        ],
+        "tags": ["investments"],
         "summary": "Create Trade",
         "operationId": "create_trade_investments__post",
         "requestBody": {
@@ -431,9 +409,7 @@
     },
     "/investments/{id}": {
       "delete": {
-        "tags": [
-          "investments"
-        ],
+        "tags": ["investments"],
         "summary": "Delete Trade",
         "operationId": "delete_trade_investments__id__delete",
         "security": [
@@ -477,9 +453,7 @@
     },
     "/stock/{ticker_symbol}/price": {
       "get": {
-        "tags": [
-          "stock"
-        ],
+        "tags": ["stock"],
         "summary": "Get Stock Price",
         "operationId": "get_stock_price_stock__ticker_symbol__price_get",
         "parameters": [
@@ -518,10 +492,7 @@
     },
     "/finance/transactions/{account_id}": {
       "post": {
-        "tags": [
-          "finance",
-          "finance-transactions"
-        ],
+        "tags": ["finance", "finance-transactions"],
         "summary": "Add Transactions",
         "operationId": "add_transactions_finance_transactions__account_id__post",
         "security": [
@@ -574,10 +545,7 @@
         }
       },
       "get": {
-        "tags": [
-          "finance",
-          "finance-transactions"
-        ],
+        "tags": ["finance", "finance-transactions"],
         "summary": "Get Transactions",
         "operationId": "get_transactions_finance_transactions__account_id__get",
         "security": [
@@ -628,10 +596,7 @@
     },
     "/finance/transactions/{account_id}/{id}": {
       "delete": {
-        "tags": [
-          "finance",
-          "finance-transactions"
-        ],
+        "tags": ["finance", "finance-transactions"],
         "summary": "Delete Transaction",
         "operationId": "delete_transaction_finance_transactions__account_id___id__delete",
         "security": [
@@ -678,10 +643,7 @@
     },
     "/finance/subscriptions/": {
       "get": {
-        "tags": [
-          "finance",
-          "finance-subscriptions"
-        ],
+        "tags": ["finance", "finance-subscriptions"],
         "summary": "Get Subscriptions",
         "operationId": "get_subscriptions_finance_subscriptions__get",
         "responses": {
@@ -702,10 +664,7 @@
         ]
       },
       "post": {
-        "tags": [
-          "finance",
-          "finance-subscriptions"
-        ],
+        "tags": ["finance", "finance-subscriptions"],
         "summary": "Add Subscription",
         "operationId": "add_subscription_finance_subscriptions__post",
         "requestBody": {
@@ -749,10 +708,7 @@
     },
     "/finance/subscriptions/{id}": {
       "delete": {
-        "tags": [
-          "finance",
-          "finance-subscriptions"
-        ],
+        "tags": ["finance", "finance-subscriptions"],
         "summary": "Delete Subscription",
         "operationId": "delete_subscription_finance_subscriptions__id__delete",
         "security": [
@@ -788,10 +744,7 @@
         }
       },
       "patch": {
-        "tags": [
-          "finance",
-          "finance-subscriptions"
-        ],
+        "tags": ["finance", "finance-subscriptions"],
         "summary": "Patch Subscription",
         "operationId": "patch_subscription_finance_subscriptions__id__patch",
         "security": [
@@ -846,11 +799,7 @@
     },
     "/finance/saving-goals/contributions/": {
       "post": {
-        "tags": [
-          "finance",
-          "finance",
-          "finance"
-        ],
+        "tags": ["finance", "finance", "finance"],
         "summary": "Add Contribution",
         "operationId": "add_contribution_finance_saving_goals_contributions__post",
         "requestBody": {
@@ -894,11 +843,7 @@
     },
     "/finance/saving-goals/contributions/{id}": {
       "delete": {
-        "tags": [
-          "finance",
-          "finance",
-          "finance"
-        ],
+        "tags": ["finance", "finance", "finance"],
         "summary": "Delete Contribution",
         "operationId": "delete_contribution_finance_saving_goals_contributions__id__delete",
         "security": [
@@ -936,10 +881,7 @@
     },
     "/finance/saving-goals/": {
       "get": {
-        "tags": [
-          "finance",
-          "finance"
-        ],
+        "tags": ["finance", "finance"],
         "summary": "Get Saving Goals",
         "operationId": "get_saving_goals_finance_saving_goals__get",
         "responses": {
@@ -960,10 +902,7 @@
         ]
       },
       "post": {
-        "tags": [
-          "finance",
-          "finance"
-        ],
+        "tags": ["finance", "finance"],
         "summary": "Add Saving Goal",
         "operationId": "add_saving_goal_finance_saving_goals__post",
         "requestBody": {
@@ -1007,10 +946,7 @@
     },
     "/finance/saving-goals/{id}": {
       "delete": {
-        "tags": [
-          "finance",
-          "finance"
-        ],
+        "tags": ["finance", "finance"],
         "summary": "Delete Saving Goal",
         "operationId": "delete_saving_goal_finance_saving_goals__id__delete",
         "security": [
@@ -1052,10 +988,7 @@
         }
       },
       "patch": {
-        "tags": [
-          "finance",
-          "finance"
-        ],
+        "tags": ["finance", "finance"],
         "summary": "Update Saving Goal",
         "operationId": "update_saving_goal_finance_saving_goals__id__patch",
         "security": [
@@ -1110,9 +1043,7 @@
     },
     "/finance/": {
       "get": {
-        "tags": [
-          "finance"
-        ],
+        "tags": ["finance"],
         "summary": "Get Finance",
         "operationId": "get_finance_finance__get",
         "responses": {
@@ -1133,9 +1064,7 @@
         ]
       },
       "post": {
-        "tags": [
-          "finance"
-        ],
+        "tags": ["finance"],
         "summary": "Post Finance",
         "operationId": "post_finance_finance__post",
         "requestBody": {
@@ -1179,9 +1108,7 @@
     },
     "/finance/{id}": {
       "delete": {
-        "tags": [
-          "finance"
-        ],
+        "tags": ["finance"],
         "summary": "Delete Finance",
         "operationId": "delete_finance_finance__id__delete",
         "security": [
@@ -1217,9 +1144,7 @@
         }
       },
       "patch": {
-        "tags": [
-          "finance"
-        ],
+        "tags": ["finance"],
         "summary": "Patch Finance",
         "operationId": "patch_finance_finance__id__patch",
         "security": [
@@ -1337,12 +1262,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "merchant",
-          "amount_minor",
-          "currency",
-          "start_date"
-        ],
+        "required": ["merchant", "amount_minor", "currency", "start_date"],
         "title": "AddSubscriptionRequest"
       },
       "ContributionRequest": {
@@ -1357,10 +1277,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "goal_id",
-          "contributed_minor"
-        ],
+        "required": ["goal_id", "contributed_minor"],
         "title": "ContributionRequest"
       },
       "CreateFinanceAccountRequest": {
@@ -1423,11 +1340,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "name",
-          "currency",
-          "kind"
-        ],
+        "required": ["name", "currency", "kind"],
         "title": "CreateFinanceAccountRequest"
       },
       "HTTPValidationError": {
@@ -1466,11 +1379,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "access_token",
-          "refresh_token",
-          "expires_at"
-        ],
+        "required": ["access_token", "refresh_token", "expires_at"],
         "title": "RefreshAccessTokenResponse"
       },
       "ResetPasswordRequest": {
@@ -1481,9 +1390,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "password"
-        ],
+        "required": ["password"],
         "title": "ResetPasswordRequest"
       },
       "SavingGoalRequest": {
@@ -1502,11 +1409,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "name",
-          "target_minor",
-          "currency"
-        ],
+        "required": ["name", "target_minor", "currency"],
         "title": "SavingGoalRequest"
       },
       "SignInRequest": {
@@ -1522,10 +1425,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "email",
-          "password"
-        ],
+        "required": ["email", "password"],
         "title": "SignInRequest"
       },
       "SignInResponse": {
@@ -1553,11 +1453,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "user",
-          "session",
-          "message"
-        ],
+        "required": ["user", "session", "message"],
         "title": "SignInResponse"
       },
       "SignOutRequest": {
@@ -1572,10 +1468,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "access_token",
-          "refresh_token"
-        ],
+        "required": ["access_token", "refresh_token"],
         "title": "SignOutRequest"
       },
       "SignUpRequest": {
@@ -1602,10 +1495,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "email",
-          "password"
-        ],
+        "required": ["email", "password"],
         "title": "SignUpRequest"
       },
       "SignUpResponse": {
@@ -1633,11 +1523,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "user",
-          "session",
-          "message"
-        ],
+        "required": ["user", "session", "message"],
         "title": "SignUpResponse"
       },
       "TransactionRequest": {
@@ -1685,11 +1571,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "type",
-          "amount_minor",
-          "currency"
-        ],
+        "required": ["type", "amount_minor", "currency"],
         "title": "TransactionRequest"
       },
       "UpdateUserRequest": {
@@ -1723,9 +1605,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "refresh_token"
-        ],
+        "required": ["refresh_token"],
         "title": "UpdateUserRequest"
       },
       "UserResponse": {
@@ -1781,11 +1661,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "id",
-          "email",
-          "created_at"
-        ],
+        "required": ["id", "email", "created_at"],
         "title": "UserResponse"
       },
       "ValidationError": {
@@ -1814,11 +1690,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "loc",
-          "msg",
-          "type"
-        ],
+        "required": ["loc", "msg", "type"],
         "title": "ValidationError"
       },
       "VerifyRequest": {
@@ -1833,10 +1705,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "otp",
-          "email"
-        ],
+        "required": ["otp", "email"],
         "title": "VerifyRequest"
       }
     },
