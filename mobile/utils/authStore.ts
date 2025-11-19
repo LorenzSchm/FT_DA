@@ -16,7 +16,9 @@ type Session = {
 type User = {
   id: string;
   email: string;
-  display_name?: string;
+  user_metadata?: {
+      "display_name"?: string;
+  };
 };
 
 type AuthState = {

@@ -3,7 +3,7 @@ import InvestmentView from "@/components/Views/InvestmentView";
 
 export default function Investments() {
   return (
-    <View className="flex-1 justify-center items-center bg-white">
+    <View className="w-full h-full justify-center bg-white ">
       <InvestmentView />
     </View>
   );
