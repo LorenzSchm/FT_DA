@@ -1,4 +1,10 @@
-import { TextInput, View, TouchableOpacity, Animated, useWindowDimensions } from "react-native";
+import {
+  TextInput,
+  View,
+  TouchableOpacity,
+  Animated,
+  useWindowDimensions,
+} from "react-native";
 import { Bell, Search, User, X } from "lucide-react-native";
 import { useState, useRef, useEffect } from "react";
 
@@ -96,11 +102,15 @@ export default function NavBar() {
         style={{
           opacity: leftIconOpacity,
           width: leftIconWidth,
-          overflow: 'hidden'
+          overflow: "hidden",
         }}
         pointerEvents={isSearchExpanded ? "none" : "auto"}
       >
-        <View className={"bg-[#F1F1F2] rounded-full p-2 w-[40px] h-[40px] flex justify-center items-center "}>
+        <View
+          className={
+            "bg-[#F1F1F2] rounded-full p-2 w-[40px] h-[40px] flex justify-center items-center "
+          }
+        >
           <User />
         </View>
       </Animated.View>
@@ -129,11 +139,15 @@ export default function NavBar() {
         style={{
           opacity: rightIconOpacity,
           width: rightIconWidth,
-          overflow: 'hidden'
+          overflow: "hidden",
         }}
         pointerEvents={isSearchExpanded ? "none" : "auto"}
       >
-        <View className={"bg-[#F1F1F2] rounded-full p-2 w-[40px] h-[40px] flex justify-center items-center "}>
+        <View
+          className={
+            "bg-[#F1F1F2] rounded-full p-2 w-[40px] h-[40px] flex justify-center items-center "
+          }
+        >
           <Bell />
         </View>
       </Animated.View>
