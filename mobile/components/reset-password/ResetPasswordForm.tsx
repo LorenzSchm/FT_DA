@@ -1,4 +1,3 @@
-
 // `mobile/components/reset-password/ResetPasswordForm.tsx`
 import { View, Text, TextInput, TouchableOpacity } from "react-native";
 import { useState, useRef, useEffect } from "react";
@@ -48,7 +47,9 @@ export default function ResetPasswordForm({
     <View className="px-6 pt-6">
       <View className="mb-4">
         <Text className="text-black font-bold text-2xl">You got Mail!</Text>
-        <Text className="text-black text-2xl mt-1">Insert the code received</Text>
+        <Text className="text-black text-2xl mt-1">
+          Insert the code received
+        </Text>
       </View>
 
       <View className="flex-row items-center justify-start mb-4">

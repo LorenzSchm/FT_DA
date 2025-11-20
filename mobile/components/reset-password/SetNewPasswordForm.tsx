@@ -32,14 +32,13 @@ export default function SetNewPasswordForm({
     if (password.length < 8) return "Password must be at least 8 characters";
     if (!/[A-Z]/.test(password))
       return "Password must contain an uppercase letter";
-    if (!/[0-9]/.test(password))
-      return "Password must contain a number";
+    if (!/[0-9]/.test(password)) return "Password must contain a number";
     return undefined;
   };
 
   const validateRepeatPassword = (
     password: string,
-    repeat: string
+    repeat: string,
   ): string | undefined => {
     if (!repeat) return "Please repeat your password";
     if (password !== repeat) return "Passwords do not match";
@@ -70,9 +69,9 @@ export default function SetNewPasswordForm({
         {
           headers: {
             Authorization: `Bearer ${session.access_token}`,
-            "X-Refresh-Token": session.refresh_token
-          }
-        }
+            "X-Refresh-Token": session.refresh_token,
+          },
+        },
       );
 
       Toast.show({
@@ -87,7 +86,10 @@ export default function SetNewPasswordForm({
       setRepeatPassword("");
       setErrors({});
     } catch (err: any) {
-      console.error("Password reset failed:", err.response?.data?.detail || err.message);
+      console.error(
+        "Password reset failed:",
+        err.response?.data?.detail || err.message,
+      );
       Toast.show({
         type: "error",
         text1: "Something went wrong",
@@ -119,7 +121,9 @@ export default function SetNewPasswordForm({
           }}
         />
         {errors.password && (
-          <Text className="text-red-500 text-[14px] mt-1">{errors.password}</Text>
+          <Text className="text-red-500 text-[14px] mt-1">
+            {errors.password}
+          </Text>
         )}
       </View>
 

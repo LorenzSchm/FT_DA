@@ -1,4 +1,11 @@
-import { Modal, Text, TextInput, TouchableOpacity, View, Animated } from "react-native";
+import {
+  Modal,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  Animated,
+} from "react-native";
 import { useEffect, useState, useRef } from "react";
 import ResetPasswordForm from "@/components/reset-password/ResetPasswordForm";
 import SetNewPasswordForm from "@/components/reset-password/SetNewPasswordForm";
@@ -21,7 +28,10 @@ export default function ResetPasswordModal({ isVisible, onClose }: Props) {
   const [email, setEmail] = useState<string>("");
   const [emailError, setEmailError] = useState<string>("");
   const [step, setStep] = useState<"email" | "otp" | "setPassword">("email");
-  const [session, setSession] = useState<{ access_token: string; refresh_token: string } | null>(null);
+  const [session, setSession] = useState<{
+    access_token: string;
+    refresh_token: string;
+  } | null>(null);
 
   const modalContentAnim = useRef(new Animated.Value(0)).current;
   const formContentAnim = useRef(new Animated.Value(1)).current;
@@ -77,7 +87,9 @@ export default function ResetPasswordModal({ isVisible, onClose }: Props) {
       setEmailError("");
       setStep("otp");
     } catch (error: any) {
-      setEmailError(error.response?.data?.detail || "Failed to send OTP. Please try again.");
+      setEmailError(
+        error.response?.data?.detail || "Failed to send OTP. Please try again.",
+      );
     }
   };
 
@@ -93,20 +105,23 @@ export default function ResetPasswordModal({ isVisible, onClose }: Props) {
       // Call the API to verify OTP
       const response = await axios.post(`${API_URL}/auth/verify-otp`, {
         email,
-        otp
+        otp,
       });
 
       // Store the session for later use in password reset
       if (response.data && response.data.session) {
         setSession({
           access_token: response.data.session.access_token,
-          refresh_token: response.data.session.refresh_token
+          refresh_token: response.data.session.refresh_token,
         });
       }
 
       setStep("setPassword");
     } catch (error: any) {
-      console.error("OTP verification failed:", error.response?.data?.detail || error.message);
+      console.error(
+        "OTP verification failed:",
+        error.response?.data?.detail || error.message,
+      );
       // We could show an error message here, but for now we'll just log it
     }
   };
@@ -117,7 +132,10 @@ export default function ResetPasswordModal({ isVisible, onClose }: Props) {
       await axios.get(`${API_URL}/auth/otp/${email}`);
       console.log("OTP resent to:", email);
     } catch (error: any) {
-      console.error("Failed to resend OTP:", error.response?.data?.detail || error.message);
+      console.error(
+        "Failed to resend OTP:",
+        error.response?.data?.detail || error.message,
+      );
     }
   };
 
@@ -172,7 +190,9 @@ export default function ResetPasswordModal({ isVisible, onClose }: Props) {
                   autoCorrect={false}
                 />
                 {emailError ? (
-                  <Text className="text-red-500 text-sm ml-4">{emailError}</Text>
+                  <Text className="text-red-500 text-sm ml-4">
+                    {emailError}
+                  </Text>
                 ) : null}
                 <TouchableOpacity
                   className="bg-black shadow-md rounded-full h-[50px] mt-[20px] flex items-center justify-center"
