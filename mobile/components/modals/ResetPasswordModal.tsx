@@ -2,6 +2,9 @@ import { Modal, Text, TextInput, TouchableOpacity, View, Animated } from "react-
 import { useEffect, useState, useRef } from "react";
 import ResetPasswordForm from "@/components/reset-password/ResetPasswordForm";
 import SetNewPasswordForm from "@/components/reset-password/SetNewPasswordForm";
+import axios from "axios";
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
 
 const isValidEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -18,6 +21,7 @@ export default function ResetPasswordModal({ isVisible, onClose }: Props) {
   const [email, setEmail] = useState<string>("");
   const [emailError, setEmailError] = useState<string>("");
   const [step, setStep] = useState<"email" | "otp" | "setPassword">("email");
+  const [session, setSession] = useState<{ access_token: string; refresh_token: string } | null>(null);
 
   const modalContentAnim = useRef(new Animated.Value(0)).current;
   const formContentAnim = useRef(new Animated.Value(1)).current;
@@ -56,7 +60,7 @@ export default function ResetPasswordModal({ isVisible, onClose }: Props) {
     onClose();
   };
 
-  const handleFormOpen = () => {
+  const handleFormOpen = async () => {
     if (!email.trim()) {
       setEmailError("Please enter an email address");
       return;
@@ -67,8 +71,14 @@ export default function ResetPasswordModal({ isVisible, onClose }: Props) {
       return;
     }
 
-    setEmailError("");
-    setStep("otp");
+    try {
+      // Call the API to send OTP to the email
+      await axios.get(`${API_URL}/auth/otp/${email}`);
+      setEmailError("");
+      setStep("otp");
+    } catch (error: any) {
+      setEmailError(error.response?.data?.detail || "Failed to send OTP. Please try again.");
+    }
   };
 
   const handleEmailChange = (text: string) => {
@@ -79,12 +89,36 @@ export default function ResetPasswordModal({ isVisible, onClose }: Props) {
   };
 
   const handleVerify = async (otp: string) => {
-    console.log("Received OTP:", otp);
-    setStep("setPassword");
+    try {
+      // Call the API to verify OTP
+      const response = await axios.post(`${API_URL}/auth/verify-otp`, {
+        email,
+        otp
+      });
+
+      // Store the session for later use in password reset
+      if (response.data && response.data.session) {
+        setSession({
+          access_token: response.data.session.access_token,
+          refresh_token: response.data.session.refresh_token
+        });
+      }
+
+      setStep("setPassword");
+    } catch (error: any) {
+      console.error("OTP verification failed:", error.response?.data?.detail || error.message);
+      // We could show an error message here, but for now we'll just log it
+    }
   };
 
-  const handleResend = () => {
-    console.log("Resend requested for:", email);
+  const handleResend = async () => {
+    try {
+      // Call the API to resend OTP to the email
+      await axios.get(`${API_URL}/auth/otp/${email}`);
+      console.log("OTP resent to:", email);
+    } catch (error: any) {
+      console.error("Failed to resend OTP:", error.response?.data?.detail || error.message);
+    }
   };
 
   const handleResetComplete = () => {
@@ -181,6 +215,7 @@ export default function ResetPasswordModal({ isVisible, onClose }: Props) {
                 <SetNewPasswordForm
                   isVisible={true}
                   email={email}
+                  session={session}
                   onResetComplete={handleResetComplete}
                 />
               )}

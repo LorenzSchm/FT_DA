@@ -1,10 +1,14 @@
 import { View, Text, TextInput, TouchableOpacity } from "react-native";
 import { useState } from "react";
 import Toast from "react-native-toast-message";
+import axios from "axios";
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
 
 type Props = {
   isVisible: boolean;
   email: string;
+  session?: { access_token: string; refresh_token: string } | null;
   onResetComplete: () => void;
 };
 
@@ -16,6 +20,7 @@ type Errors = {
 export default function SetNewPasswordForm({
   isVisible,
   email,
+  session,
   onResetComplete,
 }: Props) {
   const [password, setPassword] = useState("");
@@ -54,7 +59,21 @@ export default function SetNewPasswordForm({
     if (passwordErr || repeatErr) return;
 
     try {
-      // TODO: Call API for password reset
+      if (!session) {
+        throw new Error("No session available. Please try again.");
+      }
+
+      // Call API for password reset
+      await axios.post(
+        `${API_URL}/auth/reset-password`,
+        { password },
+        {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            "X-Refresh-Token": session.refresh_token
+          }
+        }
+      );
 
       Toast.show({
         type: "success",
@@ -67,11 +86,12 @@ export default function SetNewPasswordForm({
       setPassword("");
       setRepeatPassword("");
       setErrors({});
-    } catch (err) {
+    } catch (err: any) {
+      console.error("Password reset failed:", err.response?.data?.detail || err.message);
       Toast.show({
         type: "error",
         text1: "Something went wrong",
-        text2: "Could not reset your password.",
+        text2: err.response?.data?.detail || "Could not reset your password.",
       });
     }
   };
