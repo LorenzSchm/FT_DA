@@ -183,6 +183,7 @@ export default function SignUpForm({ isVisible, email }: Props) {
                 }));
               }}
               secureTextEntry
+              textContentType="oneTimeCode"
             />
             {errors.password && (
               <Text className="text-red-500 text-[14px] mt-1">
@@ -206,6 +207,7 @@ export default function SignUpForm({ isVisible, email }: Props) {
                 }));
               }}
               secureTextEntry
+              textContentType="oneTimeCode"
             />
             {errors.repeatPassword && (
               <Text className="text-red-500 text-[14px] mt-1">

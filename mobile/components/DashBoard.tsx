@@ -48,7 +48,6 @@ export default function DashBoard() {
   const [accountIndex, setAccountIndex] = useState(0);
   const [state, setState] = useState(STATE.DEFAULT);
   const [expanded, setExpanded] = useState(false);
-  const test = useAuthStore();
   const [accounts, setAccounts] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
 

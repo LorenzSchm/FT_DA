@@ -1,11 +1,10 @@
 import React, {useEffect, useState} from "react";
-import {View, Text, ScrollView, TextInput, Pressable} from "react-native";
+import {View, Text, ScrollView, Pressable} from "react-native";
 import axios from "axios";
 import {Skeleton} from "@/components/ui/skeleton";
 import StockModal from "@/components/modals/StockModal";
 import {useAuthStore} from "@/utils/authStore";
 import {getInvestments} from "@/utils/db/invest/invest";
-import {SearchIcon} from "lucide-react-native";
 
 export default function InvestmentView() {
     const [trending, setTrending] = useState<any[]>([]);
@@ -85,14 +84,7 @@ export default function InvestmentView() {
     }, []);
 
     return (
-        <ScrollView  className="p-7 bg-white mt-20">
-            <View className="bg-[#F1F1F2] mb-4 h-[42px] rounded-full flex items-center justify-start flex-row gap-2 pl-2 pb-1">
-                <SearchIcon width={24} height={24} color="#9FA1A4"/>
-                <TextInput
-                    placeholder="Search investments"
-                    className={"text-[20px] "}
-                />
-            </View>
+        <ScrollView className="p-7 bg-white">
 
             <View>
                 <Text className="text-2xl font-bold mb-2">Your investments</Text>
