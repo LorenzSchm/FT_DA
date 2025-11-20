@@ -34,5 +34,16 @@ export const addAccount = async (
     throw new Error(error.detail || "Failed to fetch accounts");
   }
 
-  return res.json();
+  const text = await res.text();
+
+  if (!text) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    console.warn("Failed to parse addAccount response", error);
+    return null;
+  }
 };
