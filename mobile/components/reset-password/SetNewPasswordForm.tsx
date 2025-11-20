@@ -128,7 +128,7 @@ export default function SetNewPasswordForm({
           className={`text-black text-[20px] border rounded-full h-[50px] px-4 ${
             errors.repeatPassword ? "border-red-500" : "border-black"
           }`}
-          placeholder="Repeat your new password"
+          placeholder="Repeat new password"
           placeholderTextColor="#999"
           secureTextEntry
           value={repeatPassword}
