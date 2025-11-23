@@ -20,6 +20,10 @@ const CustomPicker = ({
   options = [],
   disabled = false,
   className = "",
+  // variant controls visual style of the closed trigger to match different input styles
+  // - "default": white background with black border (current default)
+  // - "input": matches rounded-full neutral input fields used in forms
+  variant = "default",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -107,23 +111,36 @@ const CustomPicker = ({
     outputRange: ["0deg", "180deg"],
   });
 
+  const isInput = variant === "input";
+
+  // Trigger container styles vary by variant to integrate with different form aesthetics
+  const triggerClass = `${
+    isInput
+      ? "bg-neutral-100 rounded-full px-5 py-4 h-fit"
+      : "bg-white border border-black rounded-full px-4 h-[50px]"
+  } flex-row items-center justify-between ${disabled ? "opacity-50" : ""}`;
+
+  // Text colors for placeholder vs selected, adapt per variant
+  const textClass = isInput
+    ? `text-[20px] ${selectedOption ? "text-black" : "text-[#9FA1A4] font-bold"}`
+    : `text-[20px] ${selectedOption ? "text-black" : "text-gray-400"}`;
+
+  // Chevron color per variant
+  const chevronColor = isInput ? "#9FA1A4" : "#000";
+
   return (
     <View className={className}>
       <TouchableOpacity
         onPress={handleOpen}
         disabled={disabled}
         activeOpacity={0.7}
-        className={`flex-row items-center justify-between h-[50px] border rounded-full px-4 ${"border-black"} ${disabled ? "opacity-50 bg-gray-100" : "bg-white"}`}
+        className={triggerClass}
       >
-        <Text
-          className={`text-[20px] ${
-            selectedOption ? "text-black" : "text-gray-400"
-          }`}
-        >
+        <Text className={textClass}>
           {selectedOption ? selectedOption.label : placeholder}
         </Text>
         <Animated.View style={{ transform: [{ rotate }] }}>
-          <ChevronDown size={24} color={"#000"} />
+          <ChevronDown size={24} color={chevronColor} />
         </Animated.View>
       </TouchableOpacity>
 
@@ -139,7 +156,6 @@ const CustomPicker = ({
               style={{
                 opacity: fadeAnim,
                 flex: 1,
-                backgroundColor: "rgba(0, 0, 0, 0.5)",
               }}
             />
           </Pressable>
@@ -150,9 +166,9 @@ const CustomPicker = ({
             }}
             className="bg-white rounded-t-3xl max-h-[70%] shadow-2xl"
           >
-            <View className="items-center py-3">
+            <TouchableOpacity className="items-center py-3" onPress={handleClose} activeOpacity={0.6}>
               <View className="w-12 h-1 bg-gray-300 rounded-full" />
-            </View>
+            </TouchableOpacity>
 
             <View className="px-6 py-4">
               <Text className="text-[22px] font-semibold text-black">

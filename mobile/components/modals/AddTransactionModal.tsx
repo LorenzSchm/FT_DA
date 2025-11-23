@@ -13,9 +13,9 @@ import {
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ChevronDown } from "lucide-react-native";
 import { addTransaction } from "@/utils/db/finance/finance";
 import { useAuthStore } from "@/utils/authStore";
+import CustomPicker from "@/components/ui/CustomPicker";
 
 type Props = {
   isVisible: boolean;
@@ -44,11 +44,9 @@ export default function AddTransactionModal({
   const [amount, setAmount] = useState("");
   const [merchant, setMerchant] = useState("");
   const [description, setDescription] = useState("");
-  const [showAccountPicker, setShowAccountPicker] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const SCREEN_HEIGHT = Dimensions.get("window").height;
-  const sheetPosition = useRef(new Animated.Value(SCREEN_HEIGHT)).current; // start hidden
-
+  const sheetPosition = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const { session } = useAuthStore();
 
   const iosShadow = {
@@ -105,7 +103,6 @@ export default function AddTransactionModal({
         setIsModalVisible(false);
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isVisible, selectedAccountId]);
 
   const handleClose = () => {
@@ -128,7 +125,7 @@ export default function AddTransactionModal({
 
   const handleAddTransaction = async () => {
     if (!amount || !merchant || !description) {
-      Alert.alert("Error", "Please fill in all fields");
+      Alert.alert("Error", "Please fill in all fields!");
       return;
     }
 
@@ -186,13 +183,10 @@ export default function AddTransactionModal({
             transform: [{ translateY: sheetPosition }],
             backgroundColor: "white",
             padding: 24,
-            borderTopLeftRadius: 16,
-            borderTopRightRadius: 16,
             minHeight: SCREEN_HEIGHT,
-            ...shadowStyle,
           }}
         >
-          <SafeAreaView style={{ flex: 1 }} className={"rounded-2xl"}>
+          <SafeAreaView style={{ flex: 1 }}>
             <View className={"flex items-center"}>
               <View
                 {...panResponder.panHandlers}
@@ -239,63 +233,29 @@ export default function AddTransactionModal({
               </TouchableOpacity>
             </View>
             {/* Account selection */}
-            <Text className="text-lg font-semibold text-black mb-2">
+            <Text className="font-semibold text-black mb-2 text-[20px]">
               Account
             </Text>
-            <TouchableOpacity
-              onPress={() => setShowAccountPicker(!showAccountPicker)}
-              className="bg-neutral-100 rounded-2xl px-5 py-4 mb-4 flex-row justify-between items-center"
-            >
-              <Text className="text-neutral-500">
-                {accounts.find((acc: any) => acc.id === selectedAccount)
-                  ?.kind || "Select account"}
-              </Text>
-              <Animated.View
-                style={{
-                  transform: [
-                    {
-                      rotate: showAccountPicker ? "180deg" : "0deg",
-                    },
-                  ],
-                }}
-              >
-                <ChevronDown className="text-neutral-500" />
-              </Animated.View>
-            </TouchableOpacity>
+            <CustomPicker
+              placeholder="Select Account"
+              value={selectedAccount}
+              onValueChange={setSelectedAccount}
+              options={accounts.map((acc) => ({
+                label: `${acc.kind} (${acc.currency})`,
+                value: acc.id,
+              }))}
+              className="mb-4"
+              variant="input"
+            />
 
-            {showAccountPicker && (
-              <View className="bg-neutral-50 rounded-2xl px-5 py-3 mb-4 border border-neutral-200">
-                {accounts.map((account: any) => (
-                  <TouchableOpacity
-                    key={account.id}
-                    onPress={() => {
-                      setSelectedAccount(account.id);
-                      setShowAccountPicker(false);
-                    }}
-                    className={`py-3 px-3 rounded-lg ${
-                      selectedAccount === account.id ? "" : ""
-                    }`}
-                  >
-                    <Text
-                      className={`${
-                        selectedAccount === account.id
-                          ? "text-gray font-semibold"
-                          : "text-neutral-700"
-                      }`}
-                    >
-                      {account.kind}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
+
             {/* Amount */}
-            <Text className="text-lg font-semibold text-black mb-2">
+            <Text className="font-semibold text-black mb-2 text-[20px]">
               Amount
             </Text>
-            <View className="bg-neutral-100 rounded-2xl px-5 py-4 mb-4">
+            <View className="bg-neutral-100 rounded-full px-5 py-4 mb-4 h-fit">
               <TextInput
-                className="text-black"
+                className="text-black text-[20px]"
                 placeholder="e.g. € 0.00"
                 keyboardType="numbers-and-punctuation"
                 value={amount}
@@ -303,12 +263,12 @@ export default function AddTransactionModal({
               />
             </View>
 
-            <Text className="text-lg font-semibold text-black mb-2">
+            <Text className="font-semibold text-black mb-2 text-[20px]">
               {state === "income" ? "Sender" : "Recipient"}
             </Text>
-            <View className="bg-neutral-100 rounded-2xl px-5 py-4 mb-4">
+            <View className="bg-neutral-100 rounded-full px-5 py-4 mb-4 h-fit">
               <TextInput
-                className="text-black"
+                className="text-black text-[20px]"
                 placeholder={
                   state === "income" ? "e.g. Employer" : "e.g. Grocery Store"
                 }
@@ -317,10 +277,10 @@ export default function AddTransactionModal({
               />
             </View>
 
-            <Text className="text-lg font-semibold text-black mb-2">Usage</Text>
-            <View className="bg-neutral-100 rounded-2xl px-5 py-4 mb-8">
+            <Text className="font-semibold text-black mb-2 text-[20px]">Usage</Text>
+            <View className="bg-neutral-100 rounded-full px-5 py-4 mb-8 h-fit">
               <TextInput
-                className="text-black"
+                className="text-black text-[20px]"
                 placeholder="e.g. Groceries, Rent, Salary..."
                 value={description}
                 onChangeText={setDescription}
