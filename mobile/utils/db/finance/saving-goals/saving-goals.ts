@@ -1,7 +1,6 @@
 import axios from "axios";
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
 
-// Helper: normalize a goal object from the backend into consistent frontend shape
 const normalizeGoal = (g: any) => {
   const contributed_minor =
     g.contributed_minor ??

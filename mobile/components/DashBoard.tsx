@@ -15,10 +15,16 @@ import {
 } from "@/components/ui/carousel";
 import AddAccountModal from "@/components/modals/AddAccountModal";
 import AddTransactionModal from "@/components/modals/AddTransactionModal";
+import AddSubscriptionModal from "@/components/modals/AddSubscriptionModal";
 import { useAuthStore } from "@/utils/authStore";
 import { getAccounts, getTransactions } from "@/utils/db/finance/finance";
+import {getSubscriptions} from "@/utils/db/finance/subscriptions/subscriptions";
 
-function calculateAccountBalances(accounts: any[], transactions: any[]) {
+function calculateAccountBalances(
+  accounts: any[],
+  transactions: any[],
+  subscriptions: any[]
+) {
   const totals: Record<number, number> = {};
 
   accounts.forEach((acc) => {
@@ -31,16 +37,24 @@ function calculateAccountBalances(accounts: any[], transactions: any[]) {
     }
   });
 
+  subscriptions.forEach((sub) => {
+    if (sub.active && totals.hasOwnProperty(sub.account_id)) {
+      totals[sub.account_id] -= sub.amount_minor;
+    }
+  });
+
   return accounts.map((acc) => ({
     ...acc,
     balance_minor: totals[acc.id] ?? 0,
   }));
 }
 
+
 enum STATE {
   DEFAULT = "DEFAULT",
   ADD_ACCOUNT = "ADD_ACCOUNT",
   ADD_TRANSACTION = "ADD_TRANSACTION",
+  ADD_SUBSCRIPTION = "ADD_SUBSCRIPTION",
 }
 
 export default function DashBoard() {
@@ -50,6 +64,7 @@ export default function DashBoard() {
   const [expanded, setExpanded] = useState(false);
   const [accounts, setAccounts] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
+  const [subscriptions, setSubscriptions] = useState<any[]>([]);
 
   const contentWidth = (width - 60) * 0.9;
   const maxListHeight = height * 0.35;
@@ -91,7 +106,31 @@ export default function DashBoard() {
       all.reverse();
       setTransactions(all);
 
-      const updatedAccounts = calculateAccountBalances(accs, all);
+      const updatedAccounts = calculateAccountBalances(accs, all, transactions);
+      setAccounts(updatedAccounts);
+    } catch (e: any) {}
+  };
+
+    const loadSubscriptions = async (accs: any[]) => {
+    if (!session?.access_token || !accs.length) return;
+
+    try {
+      const all: any[] = [];
+
+      for (const acc of accs) {
+        const data = await getSubscriptions(
+          session.access_token,
+          session.refresh_token,
+          acc.id,
+        );
+        const t = data.rows || data;
+        all.push(...t);
+      }
+
+      all.reverse();
+      setSubscriptions(all);
+
+      const updatedAccounts = calculateAccountBalances(accs, all, subscriptions);
       setAccounts(updatedAccounts);
     } catch (e: any) {}
   };
@@ -115,6 +154,9 @@ export default function DashBoard() {
     setState(STATE.ADD_TRANSACTION);
     setExpanded(false);
   };
+    const openAddSubscriptionModal = () => {
+    setState(STATE.ADD_SUBSCRIPTION);
+    }
 
   const handleModalClose = () => {
     setState(STATE.DEFAULT);
@@ -123,6 +165,11 @@ export default function DashBoard() {
   const handleTransactionAdded = async () => {
     if (accounts.length > 0) {
       await loadTransactions(accounts);
+    }
+  };
+  const handleSubscriptionAdded = async () => {
+    if (accounts.length > 0) {
+      await loadSubscriptions(accounts);
     }
   };
 
@@ -183,44 +230,56 @@ export default function DashBoard() {
         </View>
       </View>
 
-      {/* Transactions */}
-      <View className="flex-1 items-center justify-start w-full pt-2">
-        <View className="gap-5" style={{ width: contentWidth }}>
-          <Text className="text-xl font-bold">Transactions</Text>
+     {/* Transactions + Subscriptions */}
+<View className="flex-1 items-center justify-start w-full pt-2">
+  <View className="gap-5" style={{ width: contentWidth }}>
+    <Text className="text-xl font-bold">Transactions</Text>
 
-          <ScrollView
-            style={{ maxHeight: maxListHeight }}
-            showsVerticalScrollIndicator={false}
+    <ScrollView
+      style={{ maxHeight: maxListHeight }}
+      showsVerticalScrollIndicator={false}
+    >
+      <View className="gap-5 pb-5">
+        {(filteredTransactions
+          .concat(
+            subscriptions
+              .filter((sub) => sub.account_id === accounts[accountIndex]?.id && sub.active)
+              .map((sub) => ({
+                id: `sub-${sub.id}`, // unique key for subscription
+                description: sub.merchant,
+                category_id: "Subscription",
+                amount_minor: -sub.amount_minor, // outgoing payment
+                currency: sub.currency,
+              }))
+          )
+          .sort((a, b) => b.id.localeCompare(a.id)) // optional: sort latest first
+        ).map((item) => (
+          <View
+            key={item.id}
+            className="flex flex-row justify-between"
+            style={{ width: contentWidth }}
           >
-            <View className="gap-5 pb-5">
-              {filteredTransactions.map((txn) => (
-                <View
-                  key={txn.id}
-                  className="flex flex-row justify-between"
-                  style={{ width: contentWidth }}
-                >
-                  <View>
-                    <Text className="text-xl font-bold">{txn.description}</Text>
-                    <Text className="text-gray-400 text-lg">
-                      {txn.category_id}
-                    </Text>
-                  </View>
-
-                  <Text
-                    className={`self-center font-bold ${
-                      txn.amount_minor < 0 ? "text-red-500" : "text-green-500"
-                    }`}
-                  >
-                    {txn.amount_minor < 0 ? "" : "+"}
-                    {(txn.amount_minor / 100).toFixed(2)}{" "}
-                    {txn.currency === "USD" ? "$" : "€"}
-                  </Text>
-                </View>
-              ))}
+            <View>
+              <Text className="text-xl font-bold">{item.description}</Text>
+              <Text className="text-gray-400 text-lg">{item.category_id}</Text>
             </View>
-          </ScrollView>
-        </View>
+
+            <Text
+              className={`self-center font-bold ${
+                item.amount_minor < 0 ? "text-red-500" : "text-green-500"
+              }`}
+            >
+              {item.amount_minor < 0 ? "" : "+"}
+              {(item.amount_minor / 100).toFixed(2)}{" "}
+              {item.currency === "USD" ? "$" : "€"}
+            </Text>
+          </View>
+        ))}
       </View>
+    </ScrollView>
+  </View>
+</View>
+
 
       {/* Floating Add Button */}
       <View className="absolute bottom-12 right-5">
@@ -256,11 +315,21 @@ export default function DashBoard() {
               </TouchableOpacity>
 
               <TouchableOpacity
-                className="flex-row justify-between items-center"
+                className="flex-row justify-between items-center pb-3"
                 onPress={openAddTransactionModal}
               >
                 <Text className="text-white text-3xl font-semibold">
                   Transaction
+                </Text>
+                <Text className="text-white text-3xl">›</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                className="flex-row justify-between items-center"
+                onPress={openAddSubscriptionModal}
+              >
+                <Text className="text-white text-3xl font-semibold">
+                    Subscription
                 </Text>
                 <Text className="text-white text-3xl">›</Text>
               </TouchableOpacity>
@@ -282,6 +351,8 @@ export default function DashBoard() {
         selectedAccountId={accounts[accountIndex]?.id}
         onTransactionAdded={handleTransactionAdded}
       />
+      <AddSubscriptionModal isVisible={state === STATE.ADD_SUBSCRIPTION} onClose={handleModalClose} accounts={accounts} selectedAccountId={accounts[accountIndex]?.id} onSubscriptionAdded={handleSubscriptionAdded} />
+
     </View>
   );
 }
