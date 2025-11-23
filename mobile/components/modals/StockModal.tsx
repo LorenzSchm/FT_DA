@@ -8,11 +8,11 @@ import {
   Animated,
   Dimensions,
   PanResponder,
-  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import axios from "axios";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PhantomChart } from "@/components/PhantomChart";
 
 type Props = {
   isVisible: boolean;
@@ -20,26 +20,26 @@ type Props = {
   selectedStock: any;
 };
 
-export default function StockModal({
-  isVisible,
-  onClose,
-  selectedStock,
-}: Props) {
+export default function StockModal({ isVisible, onClose, selectedStock }: Props) {
   const [isModalVisible, setIsModalVisible] = useState(isVisible);
-  const [price, setPrice] = useState<number | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [history, setHistory] = useState<any | null>(null);
+  const [chartLoading, setChartLoading] = useState(false);
+
   const SCREEN_HEIGHT = Dimensions.get("window").height;
   const sheetPosition = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
-      onPanResponderMove: (_, gesture) => {
-        if (gesture.dy > 0) {
-          sheetPosition.setValue(gesture.dy);
+      onMoveShouldSetPanResponder: (_, gestureState) =>
+        Math.abs(gestureState.dy) > Math.abs(gestureState.dx),
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dy > 0) {
+          sheetPosition.setValue(gestureState.dy);
         }
       },
-      onPanResponderRelease: (_, gesture) => {
-        if (gesture.dy > 150 || gesture.vy > 0.5) {
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dy > 120 || gestureState.vy > 0.5) {
           handleClose();
         } else {
           Animated.spring(sheetPosition, {
@@ -48,22 +48,21 @@ export default function StockModal({
           }).start();
         }
       },
-    }),
+    })
   ).current;
 
   useEffect(() => {
     if (isVisible) {
       setIsModalVisible(true);
+
       Animated.spring(sheetPosition, {
         toValue: 0,
         useNativeDriver: true,
       }).start();
 
-      // Fetch real-time price
-      if (selectedStock?.symbol) {
-        fetchPrice(selectedStock.symbol);
-      } else if (selectedStock?.ticker) {
-        fetchPrice(selectedStock.ticker);
+      if (selectedStock?.symbol || selectedStock?.ticker) {
+        const sym = selectedStock.symbol ?? selectedStock.ticker;
+        fetchHistory(sym);
       }
     } else {
       Animated.timing(sheetPosition, {
@@ -72,23 +71,30 @@ export default function StockModal({
         useNativeDriver: true,
       }).start(() => {
         setIsModalVisible(false);
-        setPrice(null);
+        setHistory(null);
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVisible, selectedStock?.symbol]);
+  }, [isVisible, selectedStock]);
 
-  const fetchPrice = async (symbol: string) => {
+  const fetchHistory = async (symbol: string) => {
     try {
-      setLoading(true);
+      setChartLoading(true);
+
       const res = await axios.get(
-        `http://localhost:8000/stock/${symbol}/price`,
+        `http://localhost:8000/stock/${symbol}/history`
       );
-      setPrice(res.data.price);
-    } catch (error) {
-      console.error("Failed to fetch price:", error);
+
+      setHistory({
+        "1D": res.data["1D"] ?? [],
+        "1W": res.data["1W"] ?? [],
+        "1M": res.data["1M"] ?? [],
+        "1Y": res.data["1Y"] ?? [],
+        "ALL": res.data["ALL"] ?? [],
+      });
+    } catch (err) {
+      console.error("Chart fetch error:", err);
     } finally {
-      setLoading(false);
+      setChartLoading(false);
     }
   };
 
@@ -107,64 +113,63 @@ export default function StockModal({
 
   return (
     <Modal visible={isModalVisible} transparent animationType="none">
-      <SafeAreaView className="flex-1 bg-black/50">
-        {/* Overlay to close on press outside */}
+      <View className="flex-1 justify-end bg-black/40">
+
+        {/* Tap outside to close */}
         <TouchableOpacity
+          className="flex-1"
           activeOpacity={1}
           onPress={handleClose}
-          className="flex-1"
         />
 
         {/* Bottom sheet */}
         <Animated.View
-          {...panResponder.panHandlers}
           style={{
             transform: [{ translateY: sheetPosition }],
             backgroundColor: "white",
-            borderTopLeftRadius: 25,
-            borderTopRightRadius: 25,
-            paddingHorizontal: 20,
-            paddingVertical: 20,
-            minHeight: SCREEN_HEIGHT * 0.5,
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            minHeight: SCREEN_HEIGHT,
+            paddingBottom: 24,
           }}
         >
-          {/* Drag handle */}
-          <View className="items-center mb-6">
-            <View className="w-12 h-1 bg-gray-300 rounded-full" />
-          </View>
+          <SafeAreaView className="flex-1 ">
 
-          {/* Stock Info */}
-          {selectedStock && (
-            <View className="gap-6">
-              <View>
+            {/* Drag handle */}
+            <View
+              {...panResponder.panHandlers}
+              className="w-full h-12 flex items-center justify-center"
+            >
+              <View className="w-14 h-1.5 bg-gray-300 rounded-full" />
+            </View>
+
+            {/* Header */}
+            {selectedStock && (
+              <View className="mb-4">
                 <Text className="text-3xl font-bold text-black">
                   {selectedStock.symbol}
                 </Text>
-                <Text className="text-gray-500 text-base mt-2">
+                <Text className="text-gray-500 text-base mt-1">
                   {selectedStock.display_name}
                 </Text>
               </View>
+            )}
 
-              <View>
-                <Text className="text-lg font-semibold text-gray-600 mb-2">
-                  Current Price
-                </Text>
-                {loading ? (
-                  <Skeleton
-                    mode="light"
-                    className="h-4 w-[50px]"
-                    animated={true}
-                  />
-                ) : (
-                  <Text className="text-4xl font-bold text-black">
-                    ${price !== null ? price.toFixed(2) : "—"}
-                  </Text>
-                )}
-              </View>
-            </View>
-          )}
+            {/* Chart */}
+            {chartLoading ? (
+              <Skeleton className="h-[260px] w-full rounded-2xl" />
+            ) : history ? (
+                <View className="">
+              <PhantomChart dataByTimeframe={history} />
+                </View>
+            ) : (
+              <Text className="text-center text-gray-500 mt-10">
+                No chart data
+              </Text>
+            )}
+          </SafeAreaView>
         </Animated.View>
-      </SafeAreaView>
+      </View>
     </Modal>
   );
 }
