@@ -241,13 +241,12 @@ export default function AddTransactionModal({
               value={selectedAccount}
               onValueChange={setSelectedAccount}
               options={accounts.map((acc) => ({
-                label: `${acc.kind} (${acc.currency})`,
+                label: `${acc.name} (${acc.currency})`,
                 value: acc.id,
               }))}
               className="mb-4"
               variant="input"
             />
-
 
             {/* Amount */}
             <Text className="font-semibold text-black mb-2 text-[20px]">
@@ -277,7 +276,9 @@ export default function AddTransactionModal({
               />
             </View>
 
-            <Text className="font-semibold text-black mb-2 text-[20px]">Usage</Text>
+            <Text className="font-semibold text-black mb-2 text-[20px]">
+              Usage
+            </Text>
             <View className="bg-neutral-100 rounded-full px-5 py-4 mb-8 h-fit">
               <TextInput
                 className="text-black text-[20px]"

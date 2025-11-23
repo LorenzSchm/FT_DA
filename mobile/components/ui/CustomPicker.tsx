@@ -166,7 +166,11 @@ const CustomPicker = ({
             }}
             className="bg-white rounded-t-3xl max-h-[70%] shadow-2xl"
           >
-            <TouchableOpacity className="items-center py-3" onPress={handleClose} activeOpacity={0.6}>
+            <TouchableOpacity
+              className="items-center py-3"
+              onPress={handleClose}
+              activeOpacity={0.6}
+            >
               <View className="w-12 h-1 bg-gray-300 rounded-full" />
             </TouchableOpacity>
 
