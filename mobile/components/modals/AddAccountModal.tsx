@@ -14,27 +14,40 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ChevronDown } from "lucide-react-native";
+import { addAccount } from "@/utils/db/account/account";
+import { useAuthStore } from "@/utils/authStore";
+import Toast from "react-native-toast-message";
 
 type Props = {
   isVisible: boolean;
   onClose: () => void;
+  onAccountAdded?: () => Promise<void> | void;
 };
 
-export default function AddAccountModal({ isVisible, onClose }: Props) {
-  const [isModalVisible, setIsModalVisible] = useState(isVisible);
-  const [state, setState] = useState("manual");
-  const SCREEN_HEIGHT = Dimensions.get("window").height;
-  const sheetPosition = useRef(new Animated.Value(SCREEN_HEIGHT)).current; // start hidden
-  const iosShadow = {
-    shadowColor: "#000",
-    shadowOffset: { width: 1, height: 1 },
-    shadowOpacity: 0.5,
-    shadowRadius: 5,
-  };
+type FormState = "manual" | "connect";
 
-  const shadowStyle = Platform.select({
-    ios: iosShadow,
-  });
+type FormErrors = {
+  name?: string;
+  initialAmount?: string;
+};
+
+export default function AddAccountModal({
+  isVisible,
+  onClose,
+  onAccountAdded,
+}: Props) {
+  const [isModalVisible, setIsModalVisible] = useState(isVisible);
+  const [state, setState] = useState<FormState>("manual");
+  const SCREEN_HEIGHT = Dimensions.get("window").height;
+  const sheetPosition = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+  const [name, setName] = useState("");
+  const [provider] = useState("FT");
+  const [initialAmount, setInitialAmount] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<FormErrors>({});
+
+  const { user, session } = useAuthStore();
+
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -80,24 +93,127 @@ export default function AddAccountModal({ isVisible, onClose }: Props) {
     }
   }, [isVisible]);
 
+  const resetForm = () => {
+    setName("");
+    setInitialAmount("");
+    setState("manual");
+    setErrors({});
+  };
+
   const handleClose = () => {
-    Animated.timing(sheetPosition, {
-      toValue: SCREEN_HEIGHT,
-      duration: 200,
-      useNativeDriver: true,
-    }).start(() => {
-      setIsModalVisible(false);
-      onClose();
+    return new Promise<void>((resolve) => {
+      Animated.timing(sheetPosition, {
+        toValue: SCREEN_HEIGHT,
+        duration: 200,
+        useNativeDriver: true,
+      }).start(() => {
+        setIsModalVisible(false);
+        resetForm();
+        onClose();
+        resolve();
+      });
     });
+  };
+
+  const validateForm = () => {
+    const newErrors: FormErrors = {};
+
+    if (!name.trim()) {
+      newErrors.name = "Account name is required";
+    }
+
+    if (state === "manual") {
+      const value = initialAmount.trim();
+      if (!value) {
+        newErrors.initialAmount = "Initial amount is required";
+      } else {
+        const normalized = value.replace(/[^0-9,.\-]+/g, "").replace(",", ".");
+        const numeric = Number(normalized);
+
+        if (Number.isNaN(numeric)) {
+          newErrors.initialAmount = "Initial amount must be a number";
+        } else if (numeric < 0) {
+          newErrors.initialAmount = "Initial amount cannot be negative";
+        }
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleAddAccount = async () => {
+    if (isSubmitting) return;
+
+    if (!session?.access_token || !user?.id) {
+      Toast.show({
+        type: "error",
+        text1: "Unable to add account",
+        text2: "Missing session information",
+        visibilityTime: 3000,
+      });
+      return;
+    }
+
+    const isValid = validateForm();
+    if (!isValid) {
+      Toast.show({
+        type: "error",
+        text1: "Please fix the errors in the form",
+        visibilityTime: 3000,
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await addAccount(
+        session.access_token,
+        session.refresh_token ?? "",
+        user.id,
+        name.trim(),
+        provider,
+        "EUR",
+        state,
+        initialAmount,
+      );
+      await handleClose();
+      Toast.show({
+        type: "success",
+        text1: "Account added successfully",
+        visibilityTime: 3000,
+      });
+
+      if (onAccountAdded) {
+        await onAccountAdded();
+      }
+    } catch (error) {
+      Toast.show({
+        type: "error",
+        text1: "Failed to add account",
+        text2: error instanceof Error ? error.message : undefined,
+        visibilityTime: 3000,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const setManual = () => {
     setState("manual");
+    setErrors((prev) => ({ ...prev, initialAmount: undefined }));
   };
 
   const setConnect = () => {
     setState("connect");
+    setErrors((prev) => ({ ...prev, initialAmount: undefined }));
   };
+
+  const isButtonDisabled =
+    isSubmitting ||
+    !name.trim() ||
+    (state === "manual" && !initialAmount.trim());
 
   return (
     <Modal
@@ -117,13 +233,10 @@ export default function AddAccountModal({ isVisible, onClose }: Props) {
             transform: [{ translateY: sheetPosition }],
             backgroundColor: "white",
             padding: 24,
-            borderTopLeftRadius: 16,
-            borderTopRightRadius: 16,
             minHeight: SCREEN_HEIGHT,
-            ...shadowStyle,
           }}
         >
-          <SafeAreaView style={{ flex: 1 }} className={"rounded-2xl"}>
+          <SafeAreaView style={{ flex: 1 }}>
             <View className={"flex items-center"}>
               <View
                 {...panResponder.panHandlers}
@@ -141,7 +254,6 @@ export default function AddAccountModal({ isVisible, onClose }: Props) {
             <Text className="text-3xl font-extrabold text-black mb-6">
               Account
             </Text>
-            {/* Type toggle */}
             <Text className="text-lg font-semibold text-black mb-3">Type</Text>
             <View className="flex-row justify-around items-center mb-6 bg-[#F1F1F2] w-full h-[40px] rounded-full">
               <TouchableOpacity
@@ -151,7 +263,9 @@ export default function AddAccountModal({ isVisible, onClose }: Props) {
                 }`}
               >
                 <Text
-                  className={`text-xl ${state === "manual" ? "text-white" : "text-neutral-500"}`}
+                  className={`text-xl ${
+                    state === "manual" ? "text-white" : "text-neutral-500"
+                  }`}
                 >
                   Manual
                 </Text>
@@ -163,41 +277,85 @@ export default function AddAccountModal({ isVisible, onClose }: Props) {
                 }`}
               >
                 <Text
-                  className={`text-xl ${state === "connect" ? "text-white" : "text-neutral-500"}`}
+                  className={`text-xl ${
+                    state === "connect" ? "text-white" : "text-neutral-500"
+                  }`}
                 >
                   Connect
                 </Text>
               </TouchableOpacity>
             </View>
-            <Text className="text-lg font-semibold text-black mb-2">Name</Text>
-            <View className="bg-neutral-100 rounded-2xl px-5 py-4 mb-4">
-              <TextInput className="text-black" placeholder="e.g. Savings" />
+
+            {/* NAME */}
+            <Text className="font-semibold text-black mb-2 text-[20px]">
+              Name
+            </Text>
+            <View className="bg-neutral-100 rounded-full px-5 py-4 mb-1 h-fit">
+              <TextInput
+                className="text-black text-[20px]"
+                placeholder="e.g. Savings"
+                value={name}
+                onChangeText={(text) => {
+                  setName(text);
+                  if (errors.name) {
+                    setErrors((prev) => ({ ...prev, name: undefined }));
+                  }
+                }}
+              />
             </View>
+            {errors.name && (
+              <Text className="text-red-500 mb-3 text-sm">{errors.name}</Text>
+            )}
+
             {state === "manual" ? (
               <>
-                <Text className="text-lg font-semibold text-black mb-2">
+                {/* PROVIDER */}
+                <Text className="font-semibold text-black mb-2 text-[20px]">
                   Provider
                 </Text>
-                <View className="bg-neutral-100 rounded-2xl px-5 py-4 mb-4 flex-row justify-between items-center">
-                  <Text className="text-neutral-900">FT</Text>
-                  <ChevronDown className="text-neutral-500" />
+                <View className="bg-neutral-100 rounded-full px-5 py-4 mb-4 flex-row justify-between items-center h-fit">
+                  <Text className="text-[#9FA1A4] font-bold text-[20px]">
+                    FT
+                  </Text>
+                  <ChevronDown className="text-[#9FA1A4]" />
                 </View>
-                <Text className="text-lg font-semibold text-black mb-2">
+
+                {/* INITIAL AMOUNT */}
+                <Text className="text-[20px] font-semibold text-black mb-2">
                   Initial Amount
                 </Text>
-                <View className="bg-neutral-100 rounded-2xl px-5 py-4 mb-8">
+                <View className="bg-neutral-100 rounded-full px-5 py-4 mb-1 h-fit">
                   <TextInput
-                    className="text-black"
+                    className="text-black text-[20px]"
                     placeholder="e.g. € 0.00"
                     keyboardType="numbers-and-punctuation"
+                    value={initialAmount}
+                    onChangeText={(text) => {
+                      setInitialAmount(text);
+                      if (errors.initialAmount) {
+                        setErrors((prev) => ({
+                          ...prev,
+                          initialAmount: undefined,
+                        }));
+                      }
+                    }}
                   />
                 </View>
+                {errors.initialAmount && (
+                  <Text className="text-red-500 mb-3 text-sm">
+                    {errors.initialAmount}
+                  </Text>
+                )}
+
                 <TouchableOpacity
-                  className="bg-black rounded-full py-4"
-                  onPress={handleClose}
+                  className={`bg-black rounded-full py-4 mt-2 ${
+                    isButtonDisabled ? "opacity-60" : ""
+                  }`}
+                  onPress={handleAddAccount}
+                  disabled={isButtonDisabled}
                 >
                   <Text className="text-center text-white font-semibold text-lg">
-                    Add Account
+                    {isSubmitting ? "Adding..." : "Add Account"}
                   </Text>
                 </TouchableOpacity>
               </>
@@ -213,11 +371,14 @@ export default function AddAccountModal({ isVisible, onClose }: Props) {
                   />
                 </View>
                 <TouchableOpacity
-                  className="bg-black rounded-full py-4"
-                  onPress={handleClose}
+                  className={`bg-black rounded-full py-4 ${
+                    isButtonDisabled ? "opacity-60" : ""
+                  }`}
+                  onPress={handleAddAccount}
+                  disabled={isButtonDisabled}
                 >
                   <Text className="text-center text-white font-semibold text-lg">
-                    Add Connection
+                    {isSubmitting ? "Adding..." : "Add Connection"}
                   </Text>
                 </TouchableOpacity>
               </View>

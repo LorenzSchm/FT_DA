@@ -173,6 +173,13 @@ export default function DashBoard() {
     }
   };
 
+  const handleAccountAdded = async () => {
+    const result = await loadAccounts();
+    if (result.length > 0) {
+      await loadTransactions(result);
+    }
+  };
+
   const toggleExpanded = () => setExpanded(!expanded);
   const handleOutsidePress = () => setExpanded(false);
 
@@ -181,8 +188,8 @@ export default function DashBoard() {
   );
 
   return (
-    <View className="flex-1 mt-20 w-full bg-white">
-      <View className="flex-1 items-center justify-center">
+    <View className="flex-1 w-full bg-white mt-5">
+      <View className=" items-center justify-center">
         <View className="gap-3 items-center">
           <Text className="text-center text-2xl font-bold">
             {`Good morning ${user?.user_metadata?.display_name || "there"}!`}
@@ -203,6 +210,8 @@ export default function DashBoard() {
                       className="items-center justify-center"
                     >
                       <Card
+                        provider={account.institution}
+                        name={account.name}
                         kind={account.kind}
                         amount={parseFloat(
                           (account.balance_minor / 100).toFixed(2),
@@ -215,14 +224,41 @@ export default function DashBoard() {
 
                 {/* Pagination dots */}
                 <View className="flex-row mt-4 gap-1 justify-center">
-                  {accounts.map((_, i) => (
-                    <View
-                      key={i}
-                      className={`w-2 h-2 rounded-full ${
-                        i === accountIndex ? "bg-black" : "bg-gray-300"
-                      }`}
-                    />
-                  ))}
+                  {(() => {
+                    const total = accounts.length;
+                    const maxDots = 5;
+
+                    let start = 0;
+                    let end = total;
+
+                    if (total > maxDots) {
+                      if (accountIndex <= 2) {
+                        start = 0;
+                        end = maxDots;
+                      } else if (accountIndex >= total - 3) {
+                        start = total - maxDots;
+                        end = total;
+                      } else {
+                        start = accountIndex - 2;
+                        end = accountIndex + 3;
+                      }
+                    }
+
+                    return accounts.slice(start, end).map((_, i) => {
+                      const realIndex = i + start;
+
+                      return (
+                        <View
+                          key={realIndex}
+                          className={`w-2 h-2 rounded-full ${
+                            realIndex === accountIndex
+                              ? "bg-black"
+                              : "bg-gray-300"
+                          }`}
+                        />
+                      );
+                    });
+                  })()}
                 </View>
               </Carousel>
             )}
@@ -342,6 +378,7 @@ export default function DashBoard() {
       <AddAccountModal
         isVisible={state === STATE.ADD_ACCOUNT}
         onClose={handleModalClose}
+        onAccountAdded={handleAccountAdded}
       />
 
       <AddTransactionModal

@@ -32,7 +32,7 @@ export default function RootLayout() {
           </Stack.Protected>
         </Stack.Protected>
       </Stack>
-      <Toast topOffset={50} />
+      <Toast topOffset={70} />
     </React.Fragment>
   );
 }

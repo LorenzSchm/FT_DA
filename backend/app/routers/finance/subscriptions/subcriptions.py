@@ -22,10 +22,11 @@ class AddSubscriptionRequest(BaseModel):
     next_due_date: Optional[str] = None
 
 
-@router.get("/")
+@router.get("/{account_id}")
 async def get_subscriptions(
         supabase=Depends(get_supabase),
         tokens=Depends(get_user_token),
+        account_id: str | None = None,
 ):
     try:
         access = tokens.get("access_token")
@@ -41,6 +42,7 @@ async def get_subscriptions(
             supabase.schema("finance")
             .table("subscriptions")
             .select("*")
+            .eq("account_id", account_id)
             .execute()
         )
         return {"user": user.model_dump(), "rows": response.data}
@@ -49,11 +51,12 @@ async def get_subscriptions(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@router.post("/")
+@router.post("/{account_id}")
 async def add_subscription(
         request: AddSubscriptionRequest,
         supabase=Depends(get_supabase),
         tokens=Depends(get_user_token),
+        account_id: str | None = None,
 ):
     try:
         access = tokens.get("access_token")
@@ -71,7 +74,7 @@ async def add_subscription(
             supabase.schema("finance")
             .table("subscriptions")
             .insert({
-                "user_id": user.id,
+                "account_id": account_id,
                 **payload,
                 "created_at": str(datetime.now()),
             })
