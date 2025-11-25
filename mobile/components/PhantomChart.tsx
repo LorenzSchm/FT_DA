@@ -142,9 +142,7 @@ const TimeframeRow = ({ active, onChange }: any) => (
       <Pressable
         key={tf}
         onPress={() => onChange(tf)}
-        className={`px-3 py-1 rounded-full ${
-          active === tf ? "" : ""
-        }`}
+        className={`px-3 py-1 rounded-full ${active === tf ? "" : ""}`}
       >
         <Text
           className={`text-l font-bold ${
