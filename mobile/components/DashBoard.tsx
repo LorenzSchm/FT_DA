@@ -19,35 +19,7 @@ import AddSubscriptionModal from "@/components/modals/AddSubscriptionModal";
 import { useAuthStore } from "@/utils/authStore";
 import { getAccounts, getTransactions } from "@/utils/db/finance/finance";
 import { getSubscriptions } from "@/utils/db/finance/subscriptions/subscriptions";
-
-function calculateAccountBalances(
-  accounts: any[],
-  transactions: any[],
-  subscriptions: any[],
-) {
-  const totals: Record<number, number> = {};
-
-  accounts.forEach((acc) => {
-    totals[acc.id] = 0;
-  });
-
-  transactions.forEach((txn) => {
-    if (totals.hasOwnProperty(txn.account_id)) {
-      totals[txn.account_id] += txn.amount_minor;
-    }
-  });
-
-  subscriptions.forEach((sub) => {
-    if (sub.active && totals.hasOwnProperty(sub.account_id)) {
-      totals[sub.account_id] -= sub.amount_minor;
-    }
-  });
-
-  return accounts.map((acc) => ({
-    ...acc,
-    balance_minor: totals[acc.id] ?? 0,
-  }));
-}
+import { Skeleton } from "@/components/ui/skeleton";
 
 enum STATE {
   DEFAULT = "DEFAULT",
@@ -59,11 +31,28 @@ enum STATE {
 export default function DashBoard() {
   const { width, height } = useWindowDimensions();
   const [accountIndex, setAccountIndex] = useState(0);
-  const [state, setState] = useState(STATE.DEFAULT);
+  const [state, setState] = useState<STATE>(STATE.DEFAULT);
   const [expanded, setExpanded] = useState(false);
+
   const [accounts, setAccounts] = useState<any[]>([]);
-  const [transactions, setTransactions] = useState<any[]>([]);
-  const [subscriptions, setSubscriptions] = useState<any[]>([]);
+
+  // Per-account cached data
+  const [transactionsByAccount, setTransactionsByAccount] = useState<
+    Record<number, any[]>
+  >({});
+  const [subscriptionsByAccount, setSubscriptionsByAccount] = useState<
+    Record<number, any[]>
+  >({});
+
+  // Loading states
+  const [isFetchingAccounts, setIsFetchingAccounts] =
+    useState<boolean>(true);
+  const [loadingTxByAccount, setLoadingTxByAccount] = useState<
+    Record<number, boolean>
+  >({});
+  const [loadingSubsByAccount, setLoadingSubsByAccount] = useState<
+    Record<number, boolean>
+  >({});
 
   const contentWidth = (width - 60) * 0.9;
   const maxListHeight = height * 0.35;
@@ -73,6 +62,7 @@ export default function DashBoard() {
   const loadAccounts = async () => {
     if (!session?.access_token) return [];
     try {
+      setIsFetchingAccounts(true);
       const data = await getAccounts(
         session.access_token,
         session.refresh_token,
@@ -83,81 +73,102 @@ export default function DashBoard() {
     } catch (e: any) {
       console.error("Failed to load accounts:", e?.message || "Unknown error");
       return [];
+    } finally {
+      setIsFetchingAccounts(false);
     }
   };
 
-  const loadTransactions = async (accs: any[]) => {
-    if (!session?.access_token || !accs.length) return;
-
+  // Fetch transactions for a single account and cache them
+  const loadTransactionsForAccount = async (accountId: number) => {
+    if (!session?.access_token || !accountId) return;
     try {
-      const all: any[] = [];
-
-      for (const acc of accs) {
-        const data = await getTransactions(
-          session.access_token,
-          session.refresh_token,
-          acc.id,
-        );
-        const t = data.rows || data;
-        all.push(...t);
-      }
-
-      all.reverse();
-      setTransactions(all);
-
-      // Use the newly fetched transactions and the current subscriptions
-      const updatedAccounts = calculateAccountBalances(
-        accs,
-        all,
-        subscriptions,
+      setLoadingTxByAccount((prev) => ({ ...prev, [accountId]: true }));
+      const data = await getTransactions(
+        session.access_token,
+        session.refresh_token,
+        accountId,
       );
-      setAccounts(updatedAccounts);
+      const list = (data.rows || data) as any[];
+      const sorted = [...list].reverse();
+
+      setTransactionsByAccount((prev) => ({
+        ...prev,
+        [accountId]: sorted,
+      }));
     } catch (e: any) {
       console.error(
         "Failed to load transactions:",
         e?.message || "Unknown error",
       );
+    } finally {
+      setLoadingTxByAccount((prev) => ({ ...prev, [accountId]: false }));
     }
   };
 
-  const loadSubscriptions = async (accs: any[]) => {
-    if (!session?.access_token || !accs.length) return;
-
+  // Fetch subscriptions for a single account and cache them
+  const loadSubscriptionsForAccount = async (accountId: number) => {
+    if (!session?.access_token || !accountId) return;
     try {
-      const all: any[] = [];
+      setLoadingSubsByAccount((prev) => ({ ...prev, [accountId]: true }));
+      const data = await getSubscriptions(
+        session.access_token,
+        session.refresh_token,
+        accountId,
+      );
+      const list = (data.rows || data) as any[];
+      const sorted = [...list].reverse();
 
-      for (const acc of accs) {
-        const data = await getSubscriptions(
-          session.access_token,
-          session.refresh_token,
-          acc.id,
-        );
-        const t = data.rows || data;
-        all.push(...t);
-      }
-
-      all.reverse();
-      setSubscriptions(all);
-
-      const updatedAccounts = calculateAccountBalances(accs, transactions, all);
-      setAccounts(updatedAccounts);
+      setSubscriptionsByAccount((prev) => ({
+        ...prev,
+        [accountId]: sorted,
+      }));
     } catch (e: any) {
       console.error(
         "Failed to load subscriptions:",
         e?.message || "Unknown error",
       );
+    } finally {
+      setLoadingSubsByAccount((prev) => ({ ...prev, [accountId]: false }));
     }
   };
 
+  // Helper to compute balance from cached tx + subs
+  const computeAccountBalance = (
+    accountId: number,
+    txByAcc: Record<number, any[]>,
+    subsByAcc: Record<number, any[]>,
+  ) => {
+    const tx = txByAcc[accountId] || [];
+    const subs = subsByAcc[accountId] || [];
+
+    const txTotal = tx.reduce(
+      (sum, t) => sum + (t.amount_minor || 0),
+      0,
+    );
+    const subsTotal = subs
+      .filter((s) => s.active)
+      .reduce((sum, s) => sum + (s.amount_minor || 0), 0);
+
+    // Assuming:
+    // - transactions: income positive, expenses negative
+    // - subscriptions: amount_minor is positive recurring cost ->
+    //   we subtract them from balance
+    return txTotal - subsTotal;
+  };
+
   useEffect(() => {
-    const loadAll = async () => {
+    const init = async () => {
       const accs = await loadAccounts();
       if (accs.length > 0) {
-        await loadTransactions(accs);
-        await loadSubscriptions(accs);
+        // set to first account and lazy-load its data
+        setAccountIndex(0);
+        const firstId = accs[0].id;
+        await loadTransactionsForAccount(firstId);
+        await loadSubscriptionsForAccount(firstId);
       }
     };
-    loadAll();
+    init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.access_token]);
 
   const openAddAccountModal = () => {
@@ -169,6 +180,7 @@ export default function DashBoard() {
     setState(STATE.ADD_TRANSACTION);
     setExpanded(false);
   };
+
   const openAddSubscriptionModal = () => {
     setState(STATE.ADD_SUBSCRIPTION);
     setExpanded(false);
@@ -179,34 +191,83 @@ export default function DashBoard() {
   };
 
   const handleTransactionAdded = async () => {
-    if (accounts.length > 0) {
-      await loadTransactions(accounts);
-    }
+    const accId = accounts[accountIndex]?.id;
+    if (accId) await loadTransactionsForAccount(accId);
   };
+
   const handleSubscriptionAdded = async () => {
-    if (accounts.length > 0) {
-      await loadSubscriptions(accounts);
-    }
+    const accId = accounts[accountIndex]?.id;
+    if (accId) await loadSubscriptionsForAccount(accId);
   };
 
   const handleAccountAdded = async () => {
     const result = await loadAccounts();
     if (result.length > 0) {
-      await loadTransactions(result);
-      await loadSubscriptions(result);
+      // Select newest/first account and load its data
+      setAccountIndex(0);
+      const id = result[0].id;
+      await loadTransactionsForAccount(id);
+      await loadSubscriptionsForAccount(id);
     }
   };
 
   const toggleExpanded = () => setExpanded(!expanded);
   const handleOutsidePress = () => setExpanded(false);
 
-  const filteredTransactions = transactions.filter(
-    (tx) => tx.account_id === accounts[accountIndex]?.id,
-  );
+  const selectedAccountId = accounts[accountIndex]?.id;
+  const filteredTransactions = selectedAccountId
+    ? transactionsByAccount[selectedAccountId] || []
+    : [];
+  const activeSubscriptions = selectedAccountId
+    ? (subscriptionsByAccount[selectedAccountId] || []).filter(
+        (s) => s.active,
+      )
+    : [];
+  const isLoadingSelectedAccount = selectedAccountId
+    ? !!loadingTxByAccount[selectedAccountId] ||
+      !!loadingSubsByAccount[selectedAccountId]
+    : false;
+
+  // When the selected account changes, lazily fetch its data if not cached
+  useEffect(() => {
+    if (!selectedAccountId) return;
+    const hasTx = !!transactionsByAccount[selectedAccountId];
+    const hasSubs = !!subscriptionsByAccount[selectedAccountId];
+
+    if (!hasTx) {
+      loadTransactionsForAccount(selectedAccountId);
+    }
+    if (!hasSubs) {
+      loadSubscriptionsForAccount(selectedAccountId);
+    }
+    // We intentionally don't add transactionsByAccount / subscriptionsByAccount
+    // here to avoid re-fetch loops.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedAccountId]);
+
+  // Recompute balance for the selected account whenever its data changes
+  useEffect(() => {
+    if (!selectedAccountId) return;
+
+    setAccounts((prev) =>
+      prev.map((acc) =>
+        acc.id !== selectedAccountId
+          ? acc
+          : {
+              ...acc,
+              balance_minor: computeAccountBalance(
+                selectedAccountId,
+                transactionsByAccount,
+                subscriptionsByAccount,
+              ),
+            },
+      ),
+    );
+  }, [selectedAccountId, transactionsByAccount, subscriptionsByAccount]);
 
   return (
     <View className="flex-1 w-full bg-white mt-5">
-      <View className=" items-center justify-center">
+      <View className="items-center justify-center">
         <View className="gap-3 items-center">
           <Text className="text-center text-2xl font-bold">
             {`Good morning ${user?.user_metadata?.display_name || "there"}!`}
@@ -214,7 +275,32 @@ export default function DashBoard() {
 
           {/* Accounts Carousel */}
           <View className="w-full">
-            {accounts.length === 0 ? (
+            {isFetchingAccounts ? (
+              <View className="items-center justify-center">
+                {/* Accounts skeletons */}
+                <View className="w-full items-center">
+                  <View className="items-center justify-center">
+                    <View className="bg-white rounded-3xl p-6 w-[85%]">
+                      <Skeleton
+                        mode="light"
+                        className="h-6 w-40 mb-3"
+                        animated
+                      />
+                      <Skeleton
+                        mode="light"
+                        className="h-8 w-56 mb-2"
+                        animated
+                      />
+                      <Skeleton
+                        mode="light"
+                        className="h-4 w-24"
+                        animated
+                      />
+                    </View>
+                  </View>
+                </View>
+              </View>
+            ) : accounts.length === 0 ? (
               <Text className="text-center text-lg text-gray-500">
                 No accounts yet
               </Text>
@@ -293,51 +379,89 @@ export default function DashBoard() {
             showsVerticalScrollIndicator={false}
           >
             <View className="gap-5 pb-5">
-              {filteredTransactions
-                .concat(
-                  subscriptions
-                    .filter(
-                      (sub) =>
-                        sub.account_id === accounts[accountIndex]?.id &&
-                        sub.active,
+              {isLoadingSelectedAccount ? (
+                // Skeleton list while loading current account's activity
+                <View className="gap-4">
+                  {[...Array(4)].map((_, idx) => (
+                    <View
+                      key={idx}
+                      className="flex-row justify-between"
+                      style={{ width: contentWidth }}
+                    >
+                      <View>
+                        <Skeleton
+                          mode="light"
+                          className="h-5 w-44 mb-2"
+                          animated
+                        />
+                        <Skeleton
+                          mode="light"
+                          className="h-4 w-24"
+                          animated
+                        />
+                      </View>
+                      <Skeleton
+                        mode="light"
+                        className="h-5 w-16"
+                        animated
+                      />
+                    </View>
+                  ))}
+                </View>
+              ) : (
+                (() => {
+                  const combined = filteredTransactions
+                    .concat(
+                      activeSubscriptions.map((sub) => ({
+                        id: `sub-${sub.id}`,
+                        description: sub.merchant,
+                        category_id: "Subscription",
+                        amount_minor: -sub.amount_minor,
+                        currency: sub.currency,
+                      })),
                     )
-                    .map((sub) => ({
-                      id: `sub-${sub.id}`, // unique key for subscription
-                      description: sub.merchant,
-                      category_id: "Subscription",
-                      amount_minor: -sub.amount_minor, // outgoing payment
-                      currency: sub.currency,
-                    })),
-                )
-                .sort((a, b) => b.id.localeCompare(a.id)) // optional: sort latest first
-                .map((item) => (
-                  <View
-                    key={item.id}
-                    className="flex flex-row justify-between"
-                    style={{ width: contentWidth }}
-                  >
-                    <View>
-                      <Text className="text-xl font-bold">
-                        {item.description}
+                    .sort((a: any, b: any) =>
+                      `${b.id}`.localeCompare(`${a.id}`),
+                    );
+
+                  if (combined.length === 0) {
+                    return (
+                      <Text className="text-center text-neutral-500">
+                        No transactions found
                       </Text>
-                      <Text className="text-gray-400 text-lg">
-                        {item.category_id}
+                    );
+                  }
+
+                  return combined.map((item: any) => (
+                    <View
+                      key={item.id}
+                      className="flex flex-row justify-between"
+                      style={{ width: contentWidth }}
+                    >
+                      <View>
+                        <Text className="text-xl font-bold">
+                          {item.description}
+                        </Text>
+                        <Text className="text-gray-400 text-lg">
+                          {item.category_id}
+                        </Text>
+                      </View>
+
+                      <Text
+                        className={`self-center font-bold ${
+                          item.amount_minor < 0
+                            ? "text-red-500"
+                            : "text-green-500"
+                        }`}
+                      >
+                        {item.amount_minor < 0 ? "" : "+"}
+                        {(item.amount_minor / 100).toFixed(2)}{" "}
+                        {item.currency === "USD" ? "$" : "€"}
                       </Text>
                     </View>
-
-                    <Text
-                      className={`self-center font-bold ${
-                        item.amount_minor < 0
-                          ? "text-red-500"
-                          : "text-green-500"
-                      }`}
-                    >
-                      {item.amount_minor < 0 ? "" : "+"}
-                      {(item.amount_minor / 100).toFixed(2)}{" "}
-                      {item.currency === "USD" ? "$" : "€"}
-                    </Text>
-                  </View>
-                ))}
+                  ));
+                })()
+              )}
             </View>
           </ScrollView>
         </View>
@@ -362,7 +486,9 @@ export default function DashBoard() {
         >
           {!expanded ? (
             <View className="items-center justify-center">
-              <Text className="text-white text-3xl font-semibold">Add +</Text>
+              <Text className="text-white text-3xl font-semibold">
+                Add +
+              </Text>
             </View>
           ) : (
             <View className="flex-col justify-center px-6 space-y-3">
@@ -414,6 +540,7 @@ export default function DashBoard() {
         selectedAccountId={accounts[accountIndex]?.id}
         onTransactionAdded={handleTransactionAdded}
       />
+
       <AddSubscriptionModal
         isVisible={state === STATE.ADD_SUBSCRIPTION}
         onClose={handleModalClose}

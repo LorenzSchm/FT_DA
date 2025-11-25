@@ -18,6 +18,7 @@ import {
   handleAddAccount,
   handleAddTransaction,
 } from "@/utils/db/finance/saving-goals/saving-goals";
+import { Skeleton } from "@/components/ui/skeleton";
 const INITIAL_SAVINGS: any[] = [];
 
 type Transaction = {
@@ -38,6 +39,7 @@ export default function SavingGoals() {
   const [expanded, setExpanded] = useState(false);
   const [selectedSavingId, setSelectedSavingId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetchingAccounts, setIsFetchingAccounts] = useState(true);
   const { session } = useAuthStore();
 
   const handleSavingClick = (savingId: number) => {
@@ -52,9 +54,16 @@ export default function SavingGoals() {
 
   useEffect(() => {
     const fetchAccounts = async () => {
-      const accounts = await fetchSavingsAccounts(session);
-      if (accounts) {
-        setSavings(accounts);
+      setIsFetchingAccounts(true);
+      try {
+        const accounts = await fetchSavingsAccounts(session);
+        if (accounts) {
+          setSavings(accounts);
+        }
+      } catch (e) {
+        console.error("Failed to fetch savings accounts", e);
+      } finally {
+        setIsFetchingAccounts(false);
       }
     };
     fetchAccounts();
@@ -145,7 +154,16 @@ export default function SavingGoals() {
         {/* Savings Accounts List */}
         <View className="mb-20">
           <Text className="text-2xl font-bold mb-4">Savings</Text>
-          {savings.length === 0 ? (
+          {isFetchingAccounts ? (
+            <View className="gap-3">
+              {[...Array(3)].map((_, i) => (
+                <View key={i} className="mb-0.5 bg-white rounded-2xl p-4">
+                  <Skeleton mode="light" className="h-5 w-40 mb-2" animated />
+                  <Skeleton mode="light" className="h-3 w-24" animated />
+                </View>
+              ))}
+            </View>
+          ) : savings.length === 0 ? (
             <View className="py-8 items-center">
               <Text className="text-neutral-500 text-center">
                 No savings accounts yet.{"\n"}Create your first account to get

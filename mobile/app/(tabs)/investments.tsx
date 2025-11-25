@@ -11,14 +11,7 @@ export default function Investments() {
 
   return (
     <View className="w-full h-full bg-white">
-      {/* Search and Toggle Container */}
-      <View className="px-7 pt-20 pb-4">
-        {/* Search Bar */}
-        <View className="bg-[#F1F1F2] mb-4 h-[42px] rounded-full flex items-center justify-start flex-row gap-2 pl-2 pb-1">
-          <SearchIcon width={24} height={24} color="#9FA1A4" />
-          <TextInput placeholder="Search" className={"text-[20px] "} />
-        </View>
-
+      <View className="px-7  pb-4">
         {/* Toggle Button */}
         <View className="flex-row justify-around items-center bg-[#F1F1F2] w-full h-[40px] rounded-full mb-4">
           <TouchableOpacity

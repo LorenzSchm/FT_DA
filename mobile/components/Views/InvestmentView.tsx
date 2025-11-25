@@ -90,8 +90,7 @@ export default function InvestmentView() {
   }, []);
 
   return (
-    <ScrollView className="p-7 bg-white mt-20">
-
+    <ScrollView className="p-7 bg-white ">
       <View className="bg-[#F1F1F2] mb-4 h-[42px] rounded-full flex items-center justify-around flex-row gap-2 px-2">
         <SearchIcon width={24} height={24} color="#9FA1A4" />
         <View className={"flex-1 flex items-start justify-center"}>
