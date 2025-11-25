@@ -20,7 +20,11 @@ type Props = {
   selectedStock: any;
 };
 
-export default function StockModal({ isVisible, onClose, selectedStock }: Props) {
+export default function StockModal({
+  isVisible,
+  onClose,
+  selectedStock,
+}: Props) {
   const [isModalVisible, setIsModalVisible] = useState(isVisible);
   const [history, setHistory] = useState<any | null>(null);
   const [chartLoading, setChartLoading] = useState(false);
@@ -48,7 +52,7 @@ export default function StockModal({ isVisible, onClose, selectedStock }: Props)
           }).start();
         }
       },
-    })
+    }),
   ).current;
 
   useEffect(() => {
@@ -81,7 +85,7 @@ export default function StockModal({ isVisible, onClose, selectedStock }: Props)
       setChartLoading(true);
 
       const res = await axios.get(
-        `http://localhost:8000/stock/${symbol}/history`
+        `http://localhost:8000/stock/${symbol}/history`,
       );
 
       setHistory({
@@ -89,7 +93,7 @@ export default function StockModal({ isVisible, onClose, selectedStock }: Props)
         "1W": res.data["1W"] ?? [],
         "1M": res.data["1M"] ?? [],
         "1Y": res.data["1Y"] ?? [],
-        "ALL": res.data["ALL"] ?? [],
+        ALL: res.data["ALL"] ?? [],
       });
     } catch (err) {
       console.error("Chart fetch error:", err);
@@ -114,7 +118,6 @@ export default function StockModal({ isVisible, onClose, selectedStock }: Props)
   return (
     <Modal visible={isModalVisible} transparent animationType="none">
       <View className="flex-1 justify-end bg-black/40">
-
         {/* Tap outside to close */}
         <TouchableOpacity
           className="flex-1"
@@ -134,7 +137,6 @@ export default function StockModal({ isVisible, onClose, selectedStock }: Props)
           }}
         >
           <SafeAreaView className="flex-1 ">
-
             {/* Drag handle */}
             <View
               {...panResponder.panHandlers}
@@ -159,9 +161,9 @@ export default function StockModal({ isVisible, onClose, selectedStock }: Props)
             {chartLoading ? (
               <Skeleton className="h-[260px] w-full rounded-2xl" />
             ) : history ? (
-                <View className="">
-              <PhantomChart dataByTimeframe={history} />
-                </View>
+              <View className="">
+                <PhantomChart dataByTimeframe={history} />
+              </View>
             ) : (
               <Text className="text-center text-gray-500 mt-10">
                 No chart data

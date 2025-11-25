@@ -1,13 +1,13 @@
-import React from 'react';
-import { View, Text, Pressable } from 'react-native';
-import { LineChart } from 'react-native-wagmi-charts';
+import React from "react";
+import { View, Text, Pressable } from "react-native";
+import { LineChart } from "react-native-wagmi-charts";
 
 type Point = {
   timestamp: number;
   value: number;
 };
 
-type TimeframeKey = '1D' | '1W' | '1M' | '1Y' | 'ALL';
+type TimeframeKey = "1D" | "1W" | "1M" | "1Y" | "ALL";
 
 type Props = {
   dataByTimeframe: Record<TimeframeKey, Point[]>;
@@ -18,23 +18,24 @@ type Props = {
   backgroundColor?: string;
 };
 
-const TIMEFRAMES: TimeframeKey[] = ['1D', '1W', '1M', '1Y', 'ALL'];
+const TIMEFRAMES: TimeframeKey[] = ["1D", "1W", "1M", "1Y", "ALL"];
 
 export const PhantomChart: React.FC<Props> = ({
   dataByTimeframe,
-  initialTimeframe = '1D',
+  initialTimeframe = "1D",
   height = 220,
-  positiveColor = '#16a34a',
-  negativeColor = '#dc2626',
-  backgroundColor = '#FFFFFF',
+  positiveColor = "#16a34a",
+  negativeColor = "#dc2626",
+  backgroundColor = "#FFFFFF",
 }) => {
-  const [timeframe, setTimeframe] = React.useState<TimeframeKey>(initialTimeframe);
+  const [timeframe, setTimeframe] =
+    React.useState<TimeframeKey>(initialTimeframe);
   const [isCursorActive, setIsCursorActive] = React.useState(false);
 
-  const activeData = React.useMemo(() => dataByTimeframe[timeframe] ?? [], [
-    dataByTimeframe,
-    timeframe,
-  ]);
+  const activeData = React.useMemo(
+    () => dataByTimeframe[timeframe] ?? [],
+    [dataByTimeframe, timeframe],
+  );
 
   const firstValue = activeData[0]?.value ?? 0;
   const lastValue = activeData[activeData.length - 1]?.value ?? firstValue;
@@ -69,33 +70,36 @@ export const PhantomChart: React.FC<Props> = ({
 
         <View
           className={`rounded-full px-2 py-1 ${
-            isUp ? 'bg-green-100' : 'bg-red-100'
+            isUp ? "bg-green-100" : "bg-red-100"
           }`}
         >
           <Text
             className={`text-xs font-medium ${
-              isUp ? 'text-green-600' : 'text-red-600'
+              isUp ? "text-green-600" : "text-red-600"
             }`}
           >
-            {isUp ? '+' : ''}
-            {diff.toFixed(2)} ({isUp ? '+' : ''}
+            {isUp ? "+" : ""}
+            {diff.toFixed(2)} ({isUp ? "+" : ""}
             {diffPct.toFixed(2)}%)
           </Text>
         </View>
       </View>
 
       <Text className="text-gray-500 text-xs px-4 mt-1">
-        {timeframe} · {isUp ? 'Performance' : 'Loss'}
+        {timeframe} · {isUp ? "Performance" : "Loss"}
       </Text>
+
+      <TimeframeRow active={timeframe} onChange={setTimeframe} />
+
       <LineChart.Provider
         data={activeData}
-        onCurrentIndexChange={index => {
+        onCurrentIndexChange={(index) => {
           if (index == null) return;
           const point = activeData[index];
           if (point) setDisplayValue(point.value);
         }}
       >
-        <LineChart height={height} className="mt-4">
+        <LineChart height={height} className="mt-6">
           <LineChart.Path color="#000" width={2} />
 
           <LineChart.CursorCrosshair
@@ -103,45 +107,48 @@ export const PhantomChart: React.FC<Props> = ({
             onActivated={() => setIsCursorActive(true)}
             onEnded={() => setIsCursorActive(false)}
           >
-
             <LineChart.Tooltip
               position="bottom"
               cursorGutter={24}
               xGutter={16}
               yGutter={200}
-              textStyle={{ backgroundColor: '#000', color: '#fff', fontSize: 11, padding: 2, borderRadius: 2 }}
+              textStyle={{
+                backgroundColor: "#000",
+                color: "#fff",
+                fontSize: 11,
+                padding: 2,
+                borderRadius: 2,
+              }}
             >
               <LineChart.DatetimeText
                 options={{
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  day: '2-digit',
-                  month: 'short',
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  day: "2-digit",
+                  month: "short",
                 }}
               />
             </LineChart.Tooltip>
           </LineChart.CursorCrosshair>
         </LineChart>
       </LineChart.Provider>
-
-      <TimeframeRow active={timeframe} onChange={setTimeframe} />
     </View>
   );
 };
 
 const TimeframeRow = ({ active, onChange }: any) => (
-  <View className="flex-row justify-between px-4 mt-3">
-    {TIMEFRAMES.map(tf => (
+  <View className="flex-row justify-between px-4 mt-6">
+    {TIMEFRAMES.map((tf) => (
       <Pressable
         key={tf}
         onPress={() => onChange(tf)}
         className={`px-3 py-1 rounded-full ${
-          active === tf ? 'bg-black/10' : ''
+          active === tf ? "" : ""
         }`}
       >
         <Text
-          className={`text-xs ${
-            active === tf ? 'font-semibold text-black' : 'text-gray-400'
+          className={`text-l font-bold ${
+            active === tf ? " text-black" : "text-gray-400"
           }`}
         >
           {tf}

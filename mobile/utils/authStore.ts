@@ -17,7 +17,7 @@ type User = {
   id: string;
   email: string;
   user_metadata?: {
-      "display_name"?: string;
+    display_name?: string;
   };
 };
 
