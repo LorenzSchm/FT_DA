@@ -45,8 +45,7 @@ export default function DashBoard() {
   >({});
 
   // Loading states
-  const [isFetchingAccounts, setIsFetchingAccounts] =
-    useState<boolean>(true);
+  const [isFetchingAccounts, setIsFetchingAccounts] = useState<boolean>(true);
   const [loadingTxByAccount, setLoadingTxByAccount] = useState<
     Record<number, boolean>
   >({});
@@ -141,10 +140,7 @@ export default function DashBoard() {
     const tx = txByAcc[accountId] || [];
     const subs = subsByAcc[accountId] || [];
 
-    const txTotal = tx.reduce(
-      (sum, t) => sum + (t.amount_minor || 0),
-      0,
-    );
+    const txTotal = tx.reduce((sum, t) => sum + (t.amount_minor || 0), 0);
     const subsTotal = subs
       .filter((s) => s.active)
       .reduce((sum, s) => sum + (s.amount_minor || 0), 0);
@@ -219,9 +215,7 @@ export default function DashBoard() {
     ? transactionsByAccount[selectedAccountId] || []
     : [];
   const activeSubscriptions = selectedAccountId
-    ? (subscriptionsByAccount[selectedAccountId] || []).filter(
-        (s) => s.active,
-      )
+    ? (subscriptionsByAccount[selectedAccountId] || []).filter((s) => s.active)
     : [];
   const isLoadingSelectedAccount = selectedAccountId
     ? !!loadingTxByAccount[selectedAccountId] ||
@@ -291,11 +285,7 @@ export default function DashBoard() {
                         className="h-8 w-56 mb-2"
                         animated
                       />
-                      <Skeleton
-                        mode="light"
-                        className="h-4 w-24"
-                        animated
-                      />
+                      <Skeleton mode="light" className="h-4 w-24" animated />
                     </View>
                   </View>
                 </View>
@@ -394,17 +384,9 @@ export default function DashBoard() {
                           className="h-5 w-44 mb-2"
                           animated
                         />
-                        <Skeleton
-                          mode="light"
-                          className="h-4 w-24"
-                          animated
-                        />
+                        <Skeleton mode="light" className="h-4 w-24" animated />
                       </View>
-                      <Skeleton
-                        mode="light"
-                        className="h-5 w-16"
-                        animated
-                      />
+                      <Skeleton mode="light" className="h-5 w-16" animated />
                     </View>
                   ))}
                 </View>
@@ -486,9 +468,7 @@ export default function DashBoard() {
         >
           {!expanded ? (
             <View className="items-center justify-center">
-              <Text className="text-white text-3xl font-semibold">
-                Add +
-              </Text>
+              <Text className="text-white text-3xl font-semibold">Add +</Text>
             </View>
           ) : (
             <View className="flex-col justify-center px-6 space-y-3">

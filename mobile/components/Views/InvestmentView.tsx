@@ -5,9 +5,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import StockModal from "@/components/modals/StockModal";
 import { useAuthStore } from "@/utils/authStore";
 import { getInvestments } from "@/utils/db/invest/invest";
-import {SearchIcon, X} from "lucide-react-native";
+import { SearchIcon, X } from "lucide-react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-
 
 export default function InvestmentView() {
   const [trending, setTrending] = useState<any[]>([]);
