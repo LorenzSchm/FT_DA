@@ -38,7 +38,7 @@ export default function SavingGoals() {
   const [expanded, setExpanded] = useState(false);
   const [selectedSavingId, setSelectedSavingId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { user, session } = useAuthStore();
+  const { session } = useAuthStore();
 
   const handleSavingClick = (savingId: number) => {
     setSelectedSavingId(savingId);
