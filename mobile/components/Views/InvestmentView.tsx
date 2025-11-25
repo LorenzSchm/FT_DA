@@ -5,7 +5,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import StockModal from "@/components/modals/StockModal";
 import { useAuthStore } from "@/utils/authStore";
 import { getInvestments } from "@/utils/db/invest/invest";
-import { SearchIcon, X } from "lucide-react-native";
+import {SearchIcon, X} from "lucide-react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+
 
 export default function InvestmentView() {
   const [trending, setTrending] = useState<any[]>([]);
@@ -15,7 +17,6 @@ export default function InvestmentView() {
   const [modalVisible, setModalVisible] = useState(false);
   const [positions, setPositions] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-
   const { user, session } = useAuthStore();
 
   const openModal = (item: any) => {
@@ -90,6 +91,7 @@ export default function InvestmentView() {
 
   return (
     <ScrollView className="p-7 bg-white mt-20">
+
       <View className="bg-[#F1F1F2] mb-4 h-[42px] rounded-full flex items-center justify-around flex-row gap-2 px-2">
         <SearchIcon width={24} height={24} color="#9FA1A4" />
         <View className={"flex-1 flex items-start justify-center"}>
@@ -173,12 +175,13 @@ export default function InvestmentView() {
           </View>
         )}
       </View>
-
-      <StockModal
-        isVisible={modalVisible}
-        onClose={closeModal}
-        selectedStock={selectedStock}
-      />
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <StockModal
+          isVisible={modalVisible}
+          onClose={closeModal}
+          selectedStock={selectedStock}
+        />
+      </GestureHandlerRootView>
     </ScrollView>
   );
 }
