@@ -126,9 +126,14 @@ export default function SavingsAddTransactionModal({
     });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (onSave) {
-      onSave(selectedAccount, transactionType, name, amount);
+      try {
+        await onSave(selectedAccount, transactionType, name, amount);
+      } catch (error) {
+        console.error("Error saving transaction:", error);
+        return; // Don't close if there was an error
+      }
     } else {
       console.log("Saving Savings Transaction:", {
         savingId: selectedAccount,

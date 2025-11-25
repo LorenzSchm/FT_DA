@@ -97,7 +97,7 @@ export default function SavingsAddAccountModal({ isVisible, onClose, onSave }: P
     });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     console.log("handleSave called", { name, initialAmount, hasOnSave: !!onSave });
     if (!name.trim() || !initialAmount.trim()) {
       console.log("Form validation failed - empty fields");
@@ -106,7 +106,7 @@ export default function SavingsAddAccountModal({ isVisible, onClose, onSave }: P
     if (onSave) {
       console.log("Calling onSave with:", { name, initialAmount });
       try {
-        onSave(name, initialAmount);
+        await onSave(name, initialAmount);
         console.log("onSave completed successfully");
       } catch (error) {
         console.error("Error in onSave:", error);

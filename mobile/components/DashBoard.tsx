@@ -106,9 +106,12 @@ export default function DashBoard() {
       all.reverse();
       setTransactions(all);
 
-      const updatedAccounts = calculateAccountBalances(accs, all, transactions);
+      // Use the newly fetched transactions and the current subscriptions
+      const updatedAccounts = calculateAccountBalances(accs, all, subscriptions);
       setAccounts(updatedAccounts);
-    } catch (e: any) {}
+    } catch (e: any) {
+      console.error("Failed to load transactions:", e?.message || "Unknown error");
+    }
   };
 
     const loadSubscriptions = async (accs: any[]) => {
@@ -130,9 +133,11 @@ export default function DashBoard() {
       all.reverse();
       setSubscriptions(all);
 
-      const updatedAccounts = calculateAccountBalances(accs, all, subscriptions);
+      const updatedAccounts = calculateAccountBalances(accs, transactions, all);
       setAccounts(updatedAccounts);
-    } catch (e: any) {}
+    } catch (e: any) {
+      console.error("Failed to load subscriptions:", e?.message || "Unknown error");
+    }
   };
 
   useEffect(() => {
@@ -140,6 +145,7 @@ export default function DashBoard() {
       const accs = await loadAccounts();
       if (accs.length > 0) {
         await loadTransactions(accs);
+        await loadSubscriptions(accs);
       }
     };
     loadAll();
@@ -156,7 +162,8 @@ export default function DashBoard() {
   };
     const openAddSubscriptionModal = () => {
     setState(STATE.ADD_SUBSCRIPTION);
-    }
+    setExpanded(false);
+  }
 
   const handleModalClose = () => {
     setState(STATE.DEFAULT);
@@ -177,6 +184,7 @@ export default function DashBoard() {
     const result = await loadAccounts();
     if (result.length > 0) {
       await loadTransactions(result);
+      await loadSubscriptions(result);
     }
   };
 

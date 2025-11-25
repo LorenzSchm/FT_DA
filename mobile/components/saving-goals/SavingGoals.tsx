@@ -33,6 +33,7 @@ export default function SavingGoals() {
   const [showDetailView, setShowDetailView] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [selectedSavingId, setSelectedSavingId] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const {user, session} = useAuthStore();
 
   const handleSavingClick = (savingId: number) => {
@@ -250,11 +251,11 @@ export default function SavingGoals() {
                       "Savings Account"
                   }
                   currentAmount={
-                      savings.find((s) => s.id === selectedSavingId)?.currentAmount ||
+                      savings.find((s) => s.id === selectedSavingId)?.contributed_minor ||
                       0
                   }
                   goalAmount={
-                      savings.find((s) => s.id === selectedSavingId)?.goalAmount || 0
+                      savings.find((s) => s.id === selectedSavingId)?.target_minor || 0
                   }
                   currency={
                       savings.find((s) => s.id === selectedSavingId)?.currency || "€"

@@ -35,11 +35,18 @@ const normalizeGoal = (g: any) => {
 export const fetchSavingsAccounts = async (session: any) => {
   if (!session?.access_token) return;
 
+  const url = `${API_URL}/finance/saving-goals/`;
+  const headers = {
+    Authorization: `Bearer ${session.access_token}`,
+    "x-refresh-token": session.refresh_token,
+  };
+
   try {
-    const response = await axios.get(`${API_URL}/finance/saving-goals/`, {
-      headers: {
-        Authorization: `Bearer ${session.access_token}`,
-        "x-refresh-token": session.refresh_token,
+    const response = await axios.get(url, {
+      headers,
+      maxRedirects: 5,
+      validateStatus: function (status) {
+        return status >= 200 && status < 400; // Accept status codes from 200 to 399
       },
     });
 
@@ -57,6 +64,13 @@ export const handleAddAccount = async (name: string, initialAmount: string, sess
     console.error("No access token available");
     return;
   }
+
+  const url = `${API_URL}/finance/saving-goals/`;
+  const headers = {
+    Authorization: `Bearer ${session.access_token}`,
+    "x-refresh-token": session.refresh_token,
+    "Content-Type": "application/json",
+  };
 
   try {
     const cleanAmount = (initialAmount || "").replace(/[€,\s]/g, "");
@@ -85,24 +99,21 @@ export const handleAddAccount = async (name: string, initialAmount: string, sess
       createBody.current_amount = (amountInCents / 100).toFixed(2);
     }
 
-    const response = await axios.post(
-      `${API_URL}/finance/saving-goals/`,
-      createBody,
-      {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-          "x-refresh-token": session.refresh_token,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await axios.post(url, createBody, {
+      headers,
+      maxRedirects: 5,
+      validateStatus: function (status) {
+        return status >= 200 && status < 400; // Accept status codes from 200 to 399
+      },
+    });
 
     if (response.data) {
       // Fetch updated accounts list and return normalized goals
-      const accountsResponse = await axios.get(`${API_URL}/finance/saving-goals/`, {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-          "x-refresh-token": session.refresh_token,
+      const accountsResponse = await axios.get(url, {
+        headers,
+        maxRedirects: 5,
+        validateStatus: function (status) {
+          return status >= 200 && status < 400; // Accept status codes from 200 to 399
         },
       });
 
@@ -152,32 +163,40 @@ export const handleAddTransaction = async (
     return;
   }
 
+  const url = `${API_URL}/finance/saving-goals/contributions/`;
+  const headers = {
+    Authorization: `Bearer ${session.access_token}`,
+    "x-refresh-token": session.refresh_token,
+    "Content-Type": "application/json",
+  };
+
   try {
     const amountInCents =
       Math.round(parseFloat((amount || "").replace(/[€,\s]/g, "")) * 100) || 0;
 
-    const response = await axios.post(
-      `${API_URL}/finance/saving-goals/contributions/`,
-      {
-        goal_id: savingId.toString(),
-        contributed_minor: type === "add" ? amountInCents : -amountInCents,
+    const requestBody = {
+      goal_id: savingId.toString(),
+      contributed_minor: type === "add" ? amountInCents : -amountInCents,
+    };
+
+    const response = await axios.post(url, requestBody, {
+      headers,
+      maxRedirects: 5,
+      validateStatus: function (status) {
+        return status >= 200 && status < 400; // Accept status codes from 200 to 399
       },
-      {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-          "x-refresh-token": session.refresh_token,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    });
 
     if (response.data) {
       console.log("Transaction added successfully:", response.data);
 
-      const accountsResponse = await axios.get(`${API_URL}/finance/saving-goals/`, {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-          "x-refresh-token": session.refresh_token,
+      const accountsUrl = `${API_URL}/finance/saving-goals/`;
+
+      const accountsResponse = await axios.get(accountsUrl, {
+        headers,
+        maxRedirects: 5,
+        validateStatus: function (status) {
+          return status >= 200 && status < 400; // Accept status codes from 200 to 399
         },
       });
 

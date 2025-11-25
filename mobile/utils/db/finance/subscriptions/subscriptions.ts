@@ -1,4 +1,5 @@
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
+
 export const addSubscription = async (
   accessToken,
   refreshToken,
@@ -9,6 +10,13 @@ export const addSubscription = async (
     throw new Error("Missing access token");
   }
 
+  const url = `${BASE_URL}/finance/subscriptions/${account_id}`;
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${accessToken}`,
+    "x-refresh-token": refreshToken,
+  };
+
   const serializedData = {
     ...data,
     amount_minor:
@@ -16,32 +24,30 @@ export const addSubscription = async (
         ? data.amount_minor.toString()
         : String(data.amount_minor),
 
-    // Ensure every_n is serialized properly
     every_n:
       typeof data.every_n === "bigint"
         ? data.every_n.toString()
         : String(data.every_n),
   };
 
-  const res = await fetch(
-    `${BASE_URL}/finance/subscriptions/${account_id}/`,
-    {
+  try {
+    const res = await fetch(url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-        "x-refresh-token": refreshToken,
-      },
+      headers,
       body: JSON.stringify(serializedData),
+      redirect: "follow",
+    });
+
+    const responseData = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      throw new Error(responseData.detail || "Failed to add subscription");
     }
-  );
 
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.detail || "Failed to add subscription");
+    return responseData;
+  } catch (error) {
+    throw error;
   }
-
-  return res.json();
 };
 
 
@@ -54,21 +60,27 @@ export const getSubscriptions = async (
     throw new Error("Missing access token");
   }
 
-  const res = await fetch(
-    `${BASE_URL}/finance/subscriptions/${account_id}/`,
-    {
+  const url = `${BASE_URL}/finance/subscriptions/${account_id}`;
+  const headers = {
+    Authorization: `Bearer ${accessToken}`,
+    "x-refresh-token": refreshToken,
+  };
+
+  try {
+    const res = await fetch(url, {
       method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "x-refresh-token": refreshToken,
-      },
+      headers,
+      redirect: "follow",
+    });
+
+    const responseData = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      throw new Error(responseData.detail || "Failed to fetch subscriptions");
     }
-  );
 
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.detail || "Failed to fetch subscriptions");
+    return responseData;
+  } catch (error) {
+    throw error;
   }
-
-  return res.json();
 };

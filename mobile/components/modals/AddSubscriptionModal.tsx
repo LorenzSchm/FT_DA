@@ -104,7 +104,7 @@ export default function AddSubscription({
     setUnit("month");
   };
 
-  const handleClose = () => {
+  const handleClose = (skipCallback = false) => {
     Animated.timing(sheetPosition, {
       toValue: SCREEN_HEIGHT,
       duration: 200,
@@ -112,7 +112,9 @@ export default function AddSubscription({
     }).start(async () => {
       setIsModalVisible(false);
       resetFields();
-      await onSubscriptionAdded();
+      if (!skipCallback) {
+        await onSubscriptionAdded();
+      }
       onClose();
     });
   };
@@ -153,7 +155,14 @@ export default function AddSubscription({
         selectedAccount
       );
 
-      handleClose();
+      // Call onSubscriptionAdded first and wait for it to complete
+      await onSubscriptionAdded();
+
+      // Then close the modal, skipping the callback since we already called it
+      handleClose(true);
+    } catch (error) {
+      console.error("Error adding subscription:", error);
+      Alert.alert("Error", "Failed to add subscription. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -183,23 +192,30 @@ export default function AddSubscription({
           }}
         >
           <SafeAreaView style={{ flex: 1 }}>
-            <View className="flex items-center mt-8">
+            <View className={"flex items-center"}>
               <View
                 {...panResponder.panHandlers}
-                className="bg-gray-400 w-[50px] h-[5px] rounded-full"
-              />
+                style={{
+                  height: 40,
+                  marginTop: 30,
+                  width: "100%",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <View className={"bg-gray-400 w-[50px] h-[5px] rounded-full"} />
+              </View>
             </View>
-
             <Text className="text-3xl font-extrabold text-black mb-6">
               Add Subscription
             </Text>
 
-            <Text className="font-semibold text-black mb-2">Account</Text>
+            <Text className="font-semibold text-black mb-2 text-[20px]">Account</Text>
             <TouchableOpacity
               onPress={() => setShowAccountPicker(!showAccountPicker)}
-              className="bg-neutral-100 rounded-2xl px-5 py-4 mb-4 flex-row justify-between items-center"
+              className="bg-neutral-100 rounded-full px-5 py-4 mb-4 flex-row justify-between items-center"
             >
-              <Text className="text-neutral-500">
+              <Text className="text-neutral-500 text-[20px]">
                 {accounts.find(a => a.id === selectedAccount)?.kind ??
                   "Select account"}
               </Text>
@@ -207,7 +223,7 @@ export default function AddSubscription({
             </TouchableOpacity>
 
             {showAccountPicker && (
-              <View className="bg-neutral-50 rounded-2xl px-5 py-3 mb-4 border border-neutral-200">
+              <View className="bg-neutral-50 rounded-full px-5 py-3 mb-4 border border-neutral-200">
                 {accounts.map(acc => (
                   <TouchableOpacity
                     key={acc.id}
@@ -221,8 +237,8 @@ export default function AddSubscription({
                     <Text
                       className={
                         selectedAccount === acc.id
-                          ? "font-semibold text-black"
-                          : "text-neutral-700"
+                          ? "font-semibold text-black text-[20px]"
+                          : "text-neutral-700 text-[20px]"
                       }
                     >
                       {acc.kind}
@@ -232,39 +248,39 @@ export default function AddSubscription({
               </View>
             )}
 
-            <Text className="font-semibold text-black mb-2">Merchant</Text>
-            <View className="bg-neutral-100 rounded-2xl px-5 py-4 mb-4">
+            <Text className="font-semibold text-black mb-2 text-[20px]">Merchant</Text>
+            <View className="bg-neutral-100 rounded-full px-5 py-4 mb-4">
               <TextInput
                 placeholder="e.g. Netflix"
                 value={merchant}
                 onChangeText={setMerchant}
-                className="text-black"
+                className="text-black text-[20px]"
               />
             </View>
 
-            <Text className="font-semibold text-black mb-2">Amount</Text>
-            <View className="bg-neutral-100 rounded-2xl px-5 py-4 mb-4">
+            <Text className="font-semibold text-black mb-2 text-[20px]">Amount</Text>
+            <View className="bg-neutral-100 rounded-full px-5 py-4 mb-4">
               <TextInput
                 placeholder="e.g. 9.99"
                 keyboardType="numeric"
                 value={amount}
                 onChangeText={setAmount}
-                className="text-black"
+                className="text-black text-[20px]"
               />
             </View>
 
-            <Text className="font-semibold text-black mb-2">Billing Period</Text>
+            <Text className="font-semibold text-black mb-2 text-[20px]">Billing Period</Text>
 
             <TouchableOpacity
               onPress={() => setShowUnitPicker(!showUnitPicker)}
-              className="bg-neutral-100 rounded-2xl px-5 py-4 mb-4 flex-row justify-between items-center"
+              className="bg-neutral-100 rounded-full px-5 py-4 mb-4 flex-row justify-between items-center"
             >
-              <Text className="text-black capitalize">{unit}</Text>
+              <Text className="text-black capitalize text-[20px]">{unit}</Text>
               <ChevronDown className="text-neutral-500" />
             </TouchableOpacity>
 
             {showUnitPicker && (
-              <View className="bg-neutral-50 rounded-2xl px-5 py-3 mb-4 border border-neutral-200">
+              <View className="bg-neutral-50 rounded-full px-5 py-3 mb-4 border border-neutral-200">
                 {["week", "month", "year"].map(u => (
                   <TouchableOpacity
                     key={u}
@@ -275,7 +291,7 @@ export default function AddSubscription({
                     className="py-3"
                   >
                     <Text
-                      className={unit === u ? "font-semibold text-black" : "text-neutral-700"}
+                      className={unit === u ? "font-semibold text-black text-[20px]" : "text-neutral-700 text-[20px]"}
                     >
                       {u}
                     </Text>
@@ -284,23 +300,23 @@ export default function AddSubscription({
               </View>
             )}
 
-            <Text className="font-semibold text-black mb-2">Start Date</Text>
-            <View className="bg-neutral-100 rounded-2xl px-5 py-4 mb-4">
+            <Text className="font-semibold text-black mb-2 text-[20px]">Start Date</Text>
+            <View className="bg-neutral-100 rounded-full px-5 py-4 mb-4">
               <TextInput
                 placeholder="YYYY-MM-DD"
                 value={startDate}
                 onChangeText={setStartDate}
-                className="text-black"
+                className="text-black text-[20px]"
               />
             </View>
 
             <TouchableOpacity
-              className="bg-black rounded-full py-4"
+              className="bg-black rounded-full py-4 mt-4"
               onPress={handleAddSubscription}
               disabled={isLoading}
             >
-              <Text className="text-center text-white font-semibold text-lg">
-                {isLoading ? "Adding..." : "Add Subscription"}
+              <Text className="text-center text-white font-semibold text-xl">
+                {isLoading ? "Adding..." : "Add"}
               </Text>
             </TouchableOpacity>
           </SafeAreaView>
