@@ -4,3 +4,4 @@
 .env
 backend/.env
 mobile/.env
+.idea

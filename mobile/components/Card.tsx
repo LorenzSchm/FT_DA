@@ -1,4 +1,5 @@
-import { View, Text, useWindowDimensions, Platform } from "react-native";
+import { View, Text, useWindowDimensions, Platform, Image } from "react-native";
+import Logo from "../assets/icons/icon.svg";
 
 const iosShadow = {
   shadowColor: "#000",
@@ -18,10 +19,14 @@ export default function Card({
   kind,
   amount,
   currency,
+  name,
+  provider,
 }: {
   kind: string;
   amount: number;
   currency: string;
+  name: string;
+  provider: string;
 }) {
   const { width } = useWindowDimensions();
 
@@ -36,13 +41,18 @@ export default function Card({
       className="bg-black gap-2 rounded-[25px] p-5"
       style={[{ width: 317, height: 181 }, shadowStyle]}
     >
-      <Text className="text-white font-bold">{kind}</Text>
-      <Text
-        className={`text-[24px] font-bold ${amount < 0 ? "text-red-500" : "text-green-500"}`}
-      >
-        {amount < 0 ? "-" : "+"}
-        {Math.abs(amount)} {currency === "USD" ? "$" : "€"}
-      </Text>
+      <View className={" flex-row justify-between items-center"}>
+        <View>
+          <Text className="text-white font-bold">{name}</Text>
+          <Text
+            className={`text-[24px] font-bold ${amount < 0 ? "text-red-500" : "text-green-500"}`}
+          >
+            {amount < 0 ? "-" : "+"}
+            {Math.abs(amount)} {currency === "USD" ? "$" : "€"}
+          </Text>
+        </View>
+        <View>{provider === "FT" && <Logo width={30} height={30} />}</View>
+      </View>
     </View>
   );
 }

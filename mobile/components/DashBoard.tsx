@@ -15,10 +15,16 @@ import {
 } from "@/components/ui/carousel";
 import AddAccountModal from "@/components/modals/AddAccountModal";
 import AddTransactionModal from "@/components/modals/AddTransactionModal";
+import AddSubscriptionModal from "@/components/modals/AddSubscriptionModal";
 import { useAuthStore } from "@/utils/authStore";
 import { getAccounts, getTransactions } from "@/utils/db/finance/finance";
+import { getSubscriptions } from "@/utils/db/finance/subscriptions/subscriptions";
 
-function calculateAccountBalances(accounts: any[], transactions: any[]) {
+function calculateAccountBalances(
+  accounts: any[],
+  transactions: any[],
+  subscriptions: any[],
+) {
   const totals: Record<number, number> = {};
 
   accounts.forEach((acc) => {
@@ -28,6 +34,12 @@ function calculateAccountBalances(accounts: any[], transactions: any[]) {
   transactions.forEach((txn) => {
     if (totals.hasOwnProperty(txn.account_id)) {
       totals[txn.account_id] += txn.amount_minor;
+    }
+  });
+
+  subscriptions.forEach((sub) => {
+    if (sub.active && totals.hasOwnProperty(sub.account_id)) {
+      totals[sub.account_id] -= sub.amount_minor;
     }
   });
 
@@ -41,6 +53,7 @@ enum STATE {
   DEFAULT = "DEFAULT",
   ADD_ACCOUNT = "ADD_ACCOUNT",
   ADD_TRANSACTION = "ADD_TRANSACTION",
+  ADD_SUBSCRIPTION = "ADD_SUBSCRIPTION",
 }
 
 export default function DashBoard() {
@@ -48,9 +61,9 @@ export default function DashBoard() {
   const [accountIndex, setAccountIndex] = useState(0);
   const [state, setState] = useState(STATE.DEFAULT);
   const [expanded, setExpanded] = useState(false);
-  const test = useAuthStore();
   const [accounts, setAccounts] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
+  const [subscriptions, setSubscriptions] = useState<any[]>([]);
 
   const contentWidth = (width - 60) * 0.9;
   const maxListHeight = height * 0.35;
@@ -92,9 +105,48 @@ export default function DashBoard() {
       all.reverse();
       setTransactions(all);
 
-      const updatedAccounts = calculateAccountBalances(accs, all);
+      // Use the newly fetched transactions and the current subscriptions
+      const updatedAccounts = calculateAccountBalances(
+        accs,
+        all,
+        subscriptions,
+      );
       setAccounts(updatedAccounts);
-    } catch (e: any) {}
+    } catch (e: any) {
+      console.error(
+        "Failed to load transactions:",
+        e?.message || "Unknown error",
+      );
+    }
+  };
+
+  const loadSubscriptions = async (accs: any[]) => {
+    if (!session?.access_token || !accs.length) return;
+
+    try {
+      const all: any[] = [];
+
+      for (const acc of accs) {
+        const data = await getSubscriptions(
+          session.access_token,
+          session.refresh_token,
+          acc.id,
+        );
+        const t = data.rows || data;
+        all.push(...t);
+      }
+
+      all.reverse();
+      setSubscriptions(all);
+
+      const updatedAccounts = calculateAccountBalances(accs, transactions, all);
+      setAccounts(updatedAccounts);
+    } catch (e: any) {
+      console.error(
+        "Failed to load subscriptions:",
+        e?.message || "Unknown error",
+      );
+    }
   };
 
   useEffect(() => {
@@ -102,6 +154,7 @@ export default function DashBoard() {
       const accs = await loadAccounts();
       if (accs.length > 0) {
         await loadTransactions(accs);
+        await loadSubscriptions(accs);
       }
     };
     loadAll();
@@ -116,6 +169,10 @@ export default function DashBoard() {
     setState(STATE.ADD_TRANSACTION);
     setExpanded(false);
   };
+  const openAddSubscriptionModal = () => {
+    setState(STATE.ADD_SUBSCRIPTION);
+    setExpanded(false);
+  };
 
   const handleModalClose = () => {
     setState(STATE.DEFAULT);
@@ -124,6 +181,19 @@ export default function DashBoard() {
   const handleTransactionAdded = async () => {
     if (accounts.length > 0) {
       await loadTransactions(accounts);
+    }
+  };
+  const handleSubscriptionAdded = async () => {
+    if (accounts.length > 0) {
+      await loadSubscriptions(accounts);
+    }
+  };
+
+  const handleAccountAdded = async () => {
+    const result = await loadAccounts();
+    if (result.length > 0) {
+      await loadTransactions(result);
+      await loadSubscriptions(result);
     }
   };
 
@@ -135,8 +205,8 @@ export default function DashBoard() {
   );
 
   return (
-    <View className="flex-1 mt-20 w-full bg-white">
-      <View className="flex-1 items-center justify-center">
+    <View className="flex-1 w-full bg-white mt-5">
+      <View className=" items-center justify-center">
         <View className="gap-3 items-center">
           <Text className="text-center text-2xl font-bold">
             {`Good morning ${user?.user_metadata?.display_name || "there"}!`}
@@ -157,6 +227,8 @@ export default function DashBoard() {
                       className="items-center justify-center"
                     >
                       <Card
+                        provider={account.institution}
+                        name={account.name}
                         kind={account.kind}
                         amount={parseFloat(
                           (account.balance_minor / 100).toFixed(2),
@@ -169,14 +241,41 @@ export default function DashBoard() {
 
                 {/* Pagination dots */}
                 <View className="flex-row mt-4 gap-1 justify-center">
-                  {accounts.map((_, i) => (
-                    <View
-                      key={i}
-                      className={`w-2 h-2 rounded-full ${
-                        i === accountIndex ? "bg-black" : "bg-gray-300"
-                      }`}
-                    />
-                  ))}
+                  {(() => {
+                    const total = accounts.length;
+                    const maxDots = 5;
+
+                    let start = 0;
+                    let end = total;
+
+                    if (total > maxDots) {
+                      if (accountIndex <= 2) {
+                        start = 0;
+                        end = maxDots;
+                      } else if (accountIndex >= total - 3) {
+                        start = total - maxDots;
+                        end = total;
+                      } else {
+                        start = accountIndex - 2;
+                        end = accountIndex + 3;
+                      }
+                    }
+
+                    return accounts.slice(start, end).map((_, i) => {
+                      const realIndex = i + start;
+
+                      return (
+                        <View
+                          key={realIndex}
+                          className={`w-2 h-2 rounded-full ${
+                            realIndex === accountIndex
+                              ? "bg-black"
+                              : "bg-gray-300"
+                          }`}
+                        />
+                      );
+                    });
+                  })()}
                 </View>
               </Carousel>
             )}
@@ -184,7 +283,7 @@ export default function DashBoard() {
         </View>
       </View>
 
-      {/* Transactions */}
+      {/* Transactions + Subscriptions */}
       <View className="flex-1 items-center justify-start w-full pt-2">
         <View className="gap-5" style={{ width: contentWidth }}>
           <Text className="text-xl font-bold">Transactions</Text>
@@ -194,30 +293,51 @@ export default function DashBoard() {
             showsVerticalScrollIndicator={false}
           >
             <View className="gap-5 pb-5">
-              {filteredTransactions.map((txn) => (
-                <View
-                  key={txn.id}
-                  className="flex flex-row justify-between"
-                  style={{ width: contentWidth }}
-                >
-                  <View>
-                    <Text className="text-xl font-bold">{txn.description}</Text>
-                    <Text className="text-gray-400 text-lg">
-                      {txn.category_id}
+              {filteredTransactions
+                .concat(
+                  subscriptions
+                    .filter(
+                      (sub) =>
+                        sub.account_id === accounts[accountIndex]?.id &&
+                        sub.active,
+                    )
+                    .map((sub) => ({
+                      id: `sub-${sub.id}`, // unique key for subscription
+                      description: sub.merchant,
+                      category_id: "Subscription",
+                      amount_minor: -sub.amount_minor, // outgoing payment
+                      currency: sub.currency,
+                    })),
+                )
+                .sort((a, b) => b.id.localeCompare(a.id)) // optional: sort latest first
+                .map((item) => (
+                  <View
+                    key={item.id}
+                    className="flex flex-row justify-between"
+                    style={{ width: contentWidth }}
+                  >
+                    <View>
+                      <Text className="text-xl font-bold">
+                        {item.description}
+                      </Text>
+                      <Text className="text-gray-400 text-lg">
+                        {item.category_id}
+                      </Text>
+                    </View>
+
+                    <Text
+                      className={`self-center font-bold ${
+                        item.amount_minor < 0
+                          ? "text-red-500"
+                          : "text-green-500"
+                      }`}
+                    >
+                      {item.amount_minor < 0 ? "" : "+"}
+                      {(item.amount_minor / 100).toFixed(2)}{" "}
+                      {item.currency === "USD" ? "$" : "€"}
                     </Text>
                   </View>
-
-                  <Text
-                    className={`self-center font-bold ${
-                      txn.amount_minor < 0 ? "text-red-500" : "text-green-500"
-                    }`}
-                  >
-                    {txn.amount_minor < 0 ? "" : "+"}
-                    {(txn.amount_minor / 100).toFixed(2)}{" "}
-                    {txn.currency === "USD" ? "$" : "€"}
-                  </Text>
-                </View>
-              ))}
+                ))}
             </View>
           </ScrollView>
         </View>
@@ -257,11 +377,21 @@ export default function DashBoard() {
               </TouchableOpacity>
 
               <TouchableOpacity
-                className="flex-row justify-between items-center"
+                className="flex-row justify-between items-center pb-3"
                 onPress={openAddTransactionModal}
               >
                 <Text className="text-white text-3xl font-semibold">
                   Transaction
+                </Text>
+                <Text className="text-white text-3xl">›</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                className="flex-row justify-between items-center"
+                onPress={openAddSubscriptionModal}
+              >
+                <Text className="text-white text-3xl font-semibold">
+                  Subscription
                 </Text>
                 <Text className="text-white text-3xl">›</Text>
               </TouchableOpacity>
@@ -274,6 +404,7 @@ export default function DashBoard() {
       <AddAccountModal
         isVisible={state === STATE.ADD_ACCOUNT}
         onClose={handleModalClose}
+        onAccountAdded={handleAccountAdded}
       />
 
       <AddTransactionModal
@@ -282,6 +413,13 @@ export default function DashBoard() {
         accounts={accounts}
         selectedAccountId={accounts[accountIndex]?.id}
         onTransactionAdded={handleTransactionAdded}
+      />
+      <AddSubscriptionModal
+        isVisible={state === STATE.ADD_SUBSCRIPTION}
+        onClose={handleModalClose}
+        accounts={accounts}
+        selectedAccountId={accounts[accountIndex]?.id}
+        onSubscriptionAdded={handleSubscriptionAdded}
       />
     </View>
   );

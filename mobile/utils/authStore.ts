@@ -158,7 +158,6 @@ export const useAuthStore = create(
 
           set({ session: newSession });
 
-          // Schedule next refresh
           const expiresIn = newSession.expires_at * 1000 - Date.now() - 60000;
           if (expiresIn > 0) {
             refreshTokenTimeout = setTimeout(() => {

@@ -13,40 +13,43 @@ import {
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { addTransaction } from "@/utils/db/finance/finance";
+import { ChevronDown } from "lucide-react-native";
 import { useAuthStore } from "@/utils/authStore";
+import { addSubscription } from "@/utils/db/finance/subscriptions/subscriptions";
 import CustomPicker from "@/components/ui/CustomPicker";
 
 type Props = {
   isVisible: boolean;
   onClose: () => void;
-  accounts: {
-    id: number;
-    kind: string;
-    currency: string;
-    balance_minor: number;
-    user_id: string;
-  }[];
+  accounts: any[];
   selectedAccountId: number;
-  onTransactionAdded: () => Promise<void>;
+  onSubscriptionAdded: () => Promise<void>;
 };
 
-export default function AddTransactionModal({
+export default function AddSubscription({
   isVisible,
   onClose,
   accounts,
   selectedAccountId,
-  onTransactionAdded,
+  onSubscriptionAdded,
 }: Props) {
   const [isModalVisible, setIsModalVisible] = useState(isVisible);
-  const [state, setState] = useState("expense");
   const [selectedAccount, setSelectedAccount] = useState(selectedAccountId);
-  const [amount, setAmount] = useState("");
+
   const [merchant, setMerchant] = useState("");
-  const [description, setDescription] = useState("");
+  const [amount, setAmount] = useState("");
+  const [currency, setCurrency] = useState("EUR");
+  const [startDate, setStartDate] = useState("");
+
+  const [unit, setUnit] = useState("month");
+  const [showUnitPicker, setShowUnitPicker] = useState(false);
+
+  const [showAccountPicker, setShowAccountPicker] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
   const SCREEN_HEIGHT = Dimensions.get("window").height;
   const sheetPosition = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+
   const { session } = useAuthStore();
 
   const iosShadow = {
@@ -55,33 +58,23 @@ export default function AddTransactionModal({
     shadowOpacity: 0.5,
     shadowRadius: 5,
   };
+  const shadowStyle = Platform.select({ ios: iosShadow });
 
-  const shadowStyle = Platform.select({
-    ios: iosShadow,
-  });
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        return (
-          Math.abs(gestureState.dy) > Math.abs(gestureState.dx) &&
-          Math.abs(gestureState.dy) > 2
-        );
+      onMoveShouldSetPanResponder: (_, g) =>
+        Math.abs(g.dy) > Math.abs(g.dx) && Math.abs(g.dy) > 2,
+      onPanResponderMove: (_, g) => {
+        if (g.dy > 0) sheetPosition.setValue(g.dy);
       },
-      onPanResponderMove: (_, gestureState) => {
-        if (gestureState.dy > 0) {
-          sheetPosition.setValue(gestureState.dy);
-        }
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dy > 100 || gestureState.vy > 0.5) {
-          handleClose();
-        } else {
+      onPanResponderRelease: (_, g) => {
+        if (g.dy > 100 || g.vy > 0.5) handleClose();
+        else
           Animated.spring(sheetPosition, {
             toValue: 0,
             useNativeDriver: true,
           }).start();
-        }
       },
     }),
   ).current;
@@ -90,6 +83,7 @@ export default function AddTransactionModal({
     if (isVisible) {
       setIsModalVisible(true);
       setSelectedAccount(selectedAccountId);
+
       Animated.spring(sheetPosition, {
         toValue: 0,
         useNativeDriver: true,
@@ -99,33 +93,36 @@ export default function AddTransactionModal({
         toValue: SCREEN_HEIGHT,
         duration: 200,
         useNativeDriver: true,
-      }).start(() => {
-        setIsModalVisible(false);
-      });
+      }).start(() => setIsModalVisible(false));
     }
   }, [isVisible, selectedAccountId]);
 
-  const handleClose = () => {
+  const resetFields = () => {
+    setMerchant("");
+    setAmount("");
+    setCurrency("EUR");
+    setStartDate("");
+    setUnit("month");
+  };
+
+  const handleClose = (skipCallback = false) => {
     Animated.timing(sheetPosition, {
       toValue: SCREEN_HEIGHT,
       duration: 200,
       useNativeDriver: true,
-    }).start(() => {
+    }).start(async () => {
       setIsModalVisible(false);
-      // Reset form fields
-      setAmount("");
-      setMerchant("");
-      setDescription("");
-      setState("expense");
-      onTransactionAdded().then(() => {
-        onClose();
-      });
+      resetFields();
+      if (!skipCallback) {
+        await onSubscriptionAdded();
+      }
+      onClose();
     });
   };
 
-  const handleAddTransaction = async () => {
-    if (!amount || !merchant || !description) {
-      Alert.alert("Error", "Please fill in all fields!");
+  const handleAddSubscription = async () => {
+    if (!merchant || !amount || !startDate) {
+      Alert.alert("Error", "Please fill in merchant, amount, and start date.");
       return;
     }
 
@@ -134,32 +131,36 @@ export default function AddTransactionModal({
       return;
     }
 
-    if (!selectedAccount) {
-      Alert.alert("Error", "Please select an account");
-      return;
-    }
+    const amountMinor = Math.round(parseFloat(amount) * 100);
 
     try {
       setIsLoading(true);
-      const amountMinor = Math.round(parseFloat(amount) * 100);
 
-      const transactionData = {
-        type: state,
-        amount_minor: state === "expense" ? -amountMinor : amountMinor,
-        currency: accounts.find((acc: any) => acc.id === selectedAccount)
-          ?.currency,
-        description: description,
-        merchant: merchant,
+      const subData = {
+        merchant,
+        amount_minor: amountMinor,
+        currency,
+        start_date: startDate,
+        unit,
+
+        every_n: 1,
+        active: true,
+        auto_detected: false,
       };
 
-      await addTransaction(
+      await addSubscription(
         session.access_token,
         session.refresh_token,
-        transactionData,
+        subData,
         selectedAccount,
       );
 
-      handleClose();
+      onSubscriptionAdded();
+
+      handleClose(true);
+    } catch (error) {
+      console.error("Error adding subscription:", error);
+      Alert.alert("Error", "Failed to add subscription. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -168,14 +169,13 @@ export default function AddTransactionModal({
   return (
     <Modal
       animationType="none"
-      transparent={true}
+      transparent
       visible={isModalVisible}
       onRequestClose={handleClose}
     >
       <View style={{ flex: 1, justifyContent: "flex-end" }}>
         <TouchableOpacity
           style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.3)" }}
-          activeOpacity={1}
           onPress={handleClose}
         />
         <Animated.View
@@ -183,7 +183,10 @@ export default function AddTransactionModal({
             transform: [{ translateY: sheetPosition }],
             backgroundColor: "white",
             padding: 24,
+            borderTopLeftRadius: 16,
+            borderTopRightRadius: 16,
             minHeight: SCREEN_HEIGHT,
+            ...shadowStyle,
           }}
         >
           <SafeAreaView style={{ flex: 1 }}>
@@ -202,98 +205,86 @@ export default function AddTransactionModal({
               </View>
             </View>
             <Text className="text-3xl font-extrabold text-black mb-6">
-              Transaction
+              Add Subscription
             </Text>
-            {/* Type toggle */}
-            <Text className="text-lg font-semibold text-black mb-3">Type</Text>
-            <View className="flex-row justify-around items-center mb-6 bg-[#F1F1F2] w-full h-[40px] rounded-full">
-              <TouchableOpacity
-                onPress={() => setState("expense")}
-                className={`w-1/2 h-full flex justify-center items-center ${
-                  state === "expense" ? "bg-black rounded-full" : ""
-                }`}
-              >
-                <Text
-                  className={`text-xl ${state === "expense" ? "text-white" : "text-neutral-500"}`}
-                >
-                  Expense
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setState("income")}
-                className={`w-1/2 h-full flex justify-center items-center ${
-                  state === "income" ? "bg-black rounded-full" : ""
-                }`}
-              >
-                <Text
-                  className={`text-xl ${state === "income" ? "text-white" : "text-neutral-500"}`}
-                >
-                  Income
-                </Text>
-              </TouchableOpacity>
-            </View>
-            {/* Account selection */}
+
             <Text className="font-semibold text-black mb-2 text-[20px]">
               Account
             </Text>
             <CustomPicker
-              placeholder="Select Account"
+              variant={"input"}
+              className={"mb-4"}
+              placeholder={"Select Account"}
               value={selectedAccount}
               onValueChange={setSelectedAccount}
               options={accounts.map((acc) => ({
                 label: `${acc.name} (${acc.currency})`,
                 value: acc.id,
               }))}
-              className="mb-4"
-              variant="input"
             />
 
-            {/* Amount */}
+            <Text className="font-semibold text-black mb-2 text-[20px]">
+              Merchant
+            </Text>
+            <View className="bg-neutral-100 rounded-full px-5 py-4 mb-4">
+              <TextInput
+                placeholder="e.g. Netflix"
+                value={merchant}
+                onChangeText={setMerchant}
+                className="text-black text-[20px]"
+              />
+            </View>
+
             <Text className="font-semibold text-black mb-2 text-[20px]">
               Amount
             </Text>
-            <View className="bg-neutral-100 rounded-full px-5 py-4 mb-4 h-fit">
+            <View className="bg-neutral-100 rounded-full px-5 py-4 mb-4">
               <TextInput
-                className="text-black text-[20px]"
-                placeholder="e.g. € 0.00"
-                keyboardType="numbers-and-punctuation"
+                placeholder="e.g. 9.99"
+                keyboardType="numeric"
                 value={amount}
                 onChangeText={setAmount}
+                className="text-black text-[20px]"
               />
             </View>
 
             <Text className="font-semibold text-black mb-2 text-[20px]">
-              {state === "income" ? "Sender" : "Recipient"}
+              Billing Period
             </Text>
-            <View className="bg-neutral-100 rounded-full px-5 py-4 mb-4 h-fit">
+            <CustomPicker
+              variant={"input"}
+              className={"mb-4"}
+              placeholder={"Select Unit"}
+              value={unit}
+              onValueChange={setUnit}
+              options={[
+                { label: "Day", value: "day" },
+                { label: "Week", value: "week" },
+                { label: "Month", value: "month" },
+                { label: "Quarter", value: "quarter" },
+                { label: "Year", value: "year" },
+              ]}
+            />
+
+            <Text className="font-semibold text-black mb-2 text-[20px]">
+              Start Date
+            </Text>
+            <View className="bg-neutral-100 rounded-full px-5 py-4 mb-4">
               <TextInput
+                placeholder="YYYY-MM-DD"
+                value={startDate}
+                onChangeText={setStartDate}
                 className="text-black text-[20px]"
-                placeholder={
-                  state === "income" ? "e.g. Employer" : "e.g. Grocery Store"
-                }
-                value={merchant}
-                onChangeText={setMerchant}
               />
             </View>
 
-            <Text className="font-semibold text-black mb-2 text-[20px]">
-              Usage
-            </Text>
-            <View className="bg-neutral-100 rounded-full px-5 py-4 mb-8 h-fit">
-              <TextInput
-                className="text-black text-[20px]"
-                placeholder="e.g. Groceries, Rent, Salary..."
-                value={description}
-                onChangeText={setDescription}
-              />
-            </View>
             <TouchableOpacity
-              className="bg-black rounded-full py-4"
-              onPress={handleAddTransaction}
+              className="bg-black rounded-full py-4 mt-4"
+              onPress={handleAddSubscription}
               disabled={isLoading}
             >
-              <Text className="text-center text-white font-semibold text-lg">
-                {isLoading ? "Adding..." : "Add Transaction"}
+              <Text className="text-center text-white font-semibold text-xl">
+                {isLoading ? "Adding..." : "Add"}
               </Text>
             </TouchableOpacity>
           </SafeAreaView>
