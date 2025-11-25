@@ -1,10 +1,21 @@
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
 
+interface SubscriptionData {
+  merchant: string;
+  amount_minor: number | bigint;
+  currency: string;
+  start_date: string;
+  unit: string;
+  every_n: number | bigint;
+  active: boolean;
+  auto_detected: boolean;
+}
+
 export const addSubscription = async (
-  accessToken,
-  refreshToken,
-  data,
-  account_id,
+  accessToken: string,
+  refreshToken: string,
+  data: SubscriptionData,
+  account_id: number,
 ) => {
   if (!accessToken) {
     throw new Error("Missing access token");
@@ -51,9 +62,9 @@ export const addSubscription = async (
 };
 
 export const getSubscriptions = async (
-  accessToken,
-  refreshToken,
-  account_id,
+  accessToken: string,
+  refreshToken: string,
+  account_id: number,
 ) => {
   if (!accessToken) {
     throw new Error("Missing access token");
