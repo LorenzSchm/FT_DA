@@ -19,7 +19,11 @@ type Props = {
   onSave?: (name: string, initialAmount: string) => void;
 };
 
-export default function SavingsAddAccountModal({ isVisible, onClose, onSave }: Props) {
+export default function SavingsAddAccountModal({
+  isVisible,
+  onClose,
+  onSave,
+}: Props) {
   const [isModalVisible, setIsModalVisible] = useState(isVisible);
   const [name, setName] = useState("");
   const [initialAmount, setInitialAmount] = useState("");
@@ -62,7 +66,7 @@ export default function SavingsAddAccountModal({ isVisible, onClose, onSave }: P
           }).start();
         }
       },
-    })
+    }),
   ).current;
 
   useEffect(() => {
@@ -98,7 +102,11 @@ export default function SavingsAddAccountModal({ isVisible, onClose, onSave }: P
   };
 
   const handleSave = async () => {
-    console.log("handleSave called", { name, initialAmount, hasOnSave: !!onSave });
+    console.log("handleSave called", {
+      name,
+      initialAmount,
+      hasOnSave: !!onSave,
+    });
     if (!name.trim() || !initialAmount.trim()) {
       console.log("Form validation failed - empty fields");
       return; // Don't save if fields are empty

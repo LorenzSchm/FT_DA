@@ -27,7 +27,12 @@ type Props = {
   isVisible: boolean;
   onClose: () => void;
   selectedSavingId?: number | null;
-  onSave?: (savingId: number, type: "add" | "subtract", name: string, amount: string) => void;
+  onSave?: (
+    savingId: number,
+    type: "add" | "subtract",
+    name: string,
+    amount: string,
+  ) => void;
   savings?: SavingsAccount[];
 };
 
@@ -40,10 +45,10 @@ export default function SavingsAddTransactionModal({
 }: Props) {
   const [isModalVisible, setIsModalVisible] = useState(isVisible);
   const [transactionType, setTransactionType] = useState<"add" | "subtract">(
-    "add"
+    "add",
   );
   const [selectedAccount, setSelectedAccount] = useState<number>(
-    selectedSavingId || 1
+    selectedSavingId || 1,
   );
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
@@ -87,7 +92,7 @@ export default function SavingsAddTransactionModal({
           }).start();
         }
       },
-    })
+    }),
   ).current;
 
   useEffect(() => {
@@ -147,8 +152,7 @@ export default function SavingsAddTransactionModal({
   };
 
   const selectedAccountName =
-    savings.find((acc) => acc.id === selectedAccount)?.name ||
-    "Select Account";
+    savings.find((acc) => acc.id === selectedAccount)?.name || "Select Account";
 
   return (
     <Modal
@@ -207,7 +211,9 @@ export default function SavingsAddTransactionModal({
               >
                 <Text
                   className={`text-xl ${
-                    transactionType === "add" ? "text-white" : "text-neutral-500"
+                    transactionType === "add"
+                      ? "text-white"
+                      : "text-neutral-500"
                   }`}
                 >
                   +
@@ -221,7 +227,9 @@ export default function SavingsAddTransactionModal({
               >
                 <Text
                   className={`text-xl ${
-                    transactionType === "subtract" ? "text-white" : "text-neutral-500"
+                    transactionType === "subtract"
+                      ? "text-white"
+                      : "text-neutral-500"
                   }`}
                 >
                   -

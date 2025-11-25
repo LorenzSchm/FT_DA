@@ -83,7 +83,7 @@ export default function SavingsDetailModal({
           }).start();
         }
       },
-    })
+    }),
   ).current;
 
   useEffect(() => {
@@ -193,14 +193,19 @@ export default function SavingsDetailModal({
                     </TouchableOpacity>
                   ))}
                 </View>
-
               </View>
 
               {/* Description Section */}
               <View className="mb-6">
                 <Text className="text-xl font-bold mb-3">Description</Text>
-                <TextInput className="text-neutral-600 text-base leading-6" placeholder="Add a description...">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                <TextInput
+                  className="text-neutral-600 text-base leading-6"
+                  placeholder="Add a description..."
+                >
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed
+                  do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                  Ut enim ad minim veniam, quis nostrud exercitation ullamco
+                  laboris nisi ut aliquip ex ea commodo consequat.
                 </TextInput>
               </View>
 
@@ -213,7 +218,10 @@ export default function SavingsDetailModal({
                   </Text>
                 ) : (
                   transactions
-                    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                    .sort(
+                      (a, b) =>
+                        new Date(b.date).getTime() - new Date(a.date).getTime(),
+                    )
                     .map((transaction) => (
                       <View
                         key={transaction.id}
@@ -224,7 +232,9 @@ export default function SavingsDetailModal({
                             {transaction.description}
                           </Text>
                           <Text className="text-neutral-500 text-sm">
-                            {new Date(transaction.date).toLocaleDateString("de-DE")}
+                            {new Date(transaction.date).toLocaleDateString(
+                              "de-DE",
+                            )}
                           </Text>
                         </View>
                         <Text

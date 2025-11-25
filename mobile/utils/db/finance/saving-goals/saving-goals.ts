@@ -6,16 +6,24 @@ const normalizeGoal = (g: any) => {
     g.contributed_minor ??
     g.contributedMinor ??
     g.current_minor ??
-    (typeof g.currentAmount === "number" ? Math.round(g.currentAmount * 100) : undefined) ??
-    (typeof g.current_amount === "number" ? Math.round(g.current_amount * 100) : undefined) ??
+    (typeof g.currentAmount === "number"
+      ? Math.round(g.currentAmount * 100)
+      : undefined) ??
+    (typeof g.current_amount === "number"
+      ? Math.round(g.current_amount * 100)
+      : undefined) ??
     0;
 
   const target_minor =
     g.target_minor ??
     g.targetMinor ??
     g.goal_minor ??
-    (typeof g.targetAmount === "number" ? Math.round(g.targetAmount * 100) : undefined) ??
-    (typeof g.target_amount === "number" ? Math.round(g.target_amount * 100) : undefined) ??
+    (typeof g.targetAmount === "number"
+      ? Math.round(g.targetAmount * 100)
+      : undefined) ??
+    (typeof g.target_amount === "number"
+      ? Math.round(g.target_amount * 100)
+      : undefined) ??
     0;
 
   // Normalize currency to a symbol if possible
@@ -59,7 +67,11 @@ export const fetchSavingsAccounts = async (session: any) => {
   }
 };
 
-export const handleAddAccount = async (name: string, initialAmount: string, session: any) => {
+export const handleAddAccount = async (
+  name: string,
+  initialAmount: string,
+  session: any,
+) => {
   if (!session?.access_token) {
     console.error("No access token available");
     return;
@@ -118,11 +130,17 @@ export const handleAddAccount = async (name: string, initialAmount: string, sess
       });
 
       if (accountsResponse.data && accountsResponse.data.goals) {
-        const normalized = accountsResponse.data.goals.map((g: any) => normalizeGoal(g));
+        const normalized = accountsResponse.data.goals.map((g: any) =>
+          normalizeGoal(g),
+        );
 
         // If server didn't persist the initial amount, patch the created goal locally
         // Prefer matching by returned created id from response.data, otherwise fallback to name matching
-        const createdId = response.data?.id ?? response.data?.goal_id ?? response.data?.goalId ?? null;
+        const createdId =
+          response.data?.id ??
+          response.data?.goal_id ??
+          response.data?.goalId ??
+          null;
         if (amountInCents > 0) {
           if (createdId) {
             const idx = normalized.findIndex((ng: any) => ng.id === createdId);
@@ -131,7 +149,11 @@ export const handleAddAccount = async (name: string, initialAmount: string, sess
             }
           } else {
             // fallback: find first account with same name and contributed_minor === 0 and set it
-            const idx = normalized.findIndex((ng: any) => ng.name === newAccount.name && (ng.contributed_minor ?? 0) === 0);
+            const idx = normalized.findIndex(
+              (ng: any) =>
+                ng.name === newAccount.name &&
+                (ng.contributed_minor ?? 0) === 0,
+            );
             if (idx !== -1) {
               normalized[idx].contributed_minor = amountInCents;
             }
@@ -156,7 +178,7 @@ export const handleAddTransaction = async (
   type: "add" | "subtract",
   name: string,
   amount: string,
-  session: any
+  session: any,
 ) => {
   if (!session?.access_token) {
     console.error("No access token available");
@@ -203,7 +225,9 @@ export const handleAddTransaction = async (
       if (accountsResponse.data && accountsResponse.data.goals) {
         return {
           transaction: response.data,
-          accounts: accountsResponse.data.goals.map((g: any) => normalizeGoal(g)),
+          accounts: accountsResponse.data.goals.map((g: any) =>
+            normalizeGoal(g),
+          ),
         };
       }
 

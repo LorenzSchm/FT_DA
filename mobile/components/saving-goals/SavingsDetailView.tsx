@@ -127,7 +127,8 @@ export default function SavingsDetailView({
           <View className="bg-neutral-100 rounded-2xl p-5">
             <Text className="text-neutral-700">
               Track your progress towards your {savingName.toLowerCase()} goal.
-              Regular contributions will help you reach your target of {currency}
+              Regular contributions will help you reach your target of{" "}
+              {currency}
               {(goalAmount / 100).toFixed(2)}.
             </Text>
           </View>

@@ -4,7 +4,7 @@ export const addSubscription = async (
   accessToken,
   refreshToken,
   data,
-  account_id
+  account_id,
 ) => {
   if (!accessToken) {
     throw new Error("Missing access token");
@@ -50,11 +50,10 @@ export const addSubscription = async (
   }
 };
 
-
 export const getSubscriptions = async (
   accessToken,
   refreshToken,
-  account_id
+  account_id,
 ) => {
   if (!accessToken) {
     throw new Error("Missing access token");

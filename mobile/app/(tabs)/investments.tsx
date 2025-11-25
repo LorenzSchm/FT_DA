@@ -5,7 +5,9 @@ import SavingGoals from "@/components/saving-goals/SavingGoals";
 import { SearchIcon } from "lucide-react-native";
 
 export default function Investments() {
-  const [activeTab, setActiveTab] = useState<"investments" | "savings">("investments");
+  const [activeTab, setActiveTab] = useState<"investments" | "savings">(
+    "investments",
+  );
 
   return (
     <View className="w-full h-full bg-white">
@@ -13,11 +15,8 @@ export default function Investments() {
       <View className="px-7 pt-20 pb-4">
         {/* Search Bar */}
         <View className="bg-[#F1F1F2] mb-4 h-[42px] rounded-full flex items-center justify-start flex-row gap-2 pl-2 pb-1">
-          <SearchIcon width={24} height={24} color="#9FA1A4"/>
-          <TextInput
-            placeholder="Search"
-            className={"text-[20px] "}
-          />
+          <SearchIcon width={24} height={24} color="#9FA1A4" />
+          <TextInput placeholder="Search" className={"text-[20px] "} />
         </View>
 
         {/* Toggle Button */}
@@ -54,11 +53,7 @@ export default function Investments() {
       </View>
 
       {/* Content */}
-      {activeTab === "investments" ? (
-        <InvestmentView />
-      ) : (
-        <SavingGoals />
-      )}
+      {activeTab === "investments" ? <InvestmentView /> : <SavingGoals />}
     </View>
   );
 }
