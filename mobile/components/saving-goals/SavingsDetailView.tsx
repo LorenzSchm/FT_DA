@@ -53,7 +53,6 @@ export default function SavingsDetailView({
   currency,
   onBack,
 }: Props) {
-  // Simple line chart data points
   const chartPoints = "0,80 50,60 100,50 150,40 200,35 250,30";
   const progress = (currentAmount / goalAmount) * 100;
 

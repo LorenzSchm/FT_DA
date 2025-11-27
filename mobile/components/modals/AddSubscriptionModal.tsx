@@ -241,7 +241,7 @@ export default function AddSubscription({
             <View className="bg-neutral-100 rounded-full px-5 py-4 mb-4">
               <TextInput
                 placeholder="e.g. 9.99"
-                keyboardType="numeric"
+                keyboardType="numbers-and-punctuation"
                 value={amount}
                 onChangeText={setAmount}
                 className="text-black text-[20px]"
@@ -283,7 +283,7 @@ export default function AddSubscription({
               onPress={handleAddSubscription}
               disabled={isLoading}
             >
-              <Text className="text-center text-white font-semibold text-xl">
+              <Text className="text-center text-white font-semibold text-lg">
                 {isLoading ? "Adding..." : "Add"}
               </Text>
             </TouchableOpacity>

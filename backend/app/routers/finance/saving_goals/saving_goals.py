@@ -44,12 +44,13 @@ async def get_saving_goals(
                 contributions = (
                     supabase.schema("finance")
                     .table("saving_contributions")
-                    .select("contributed_minor")
+                    .select("*")
                     .eq("goal_id", goal["id"])
                     .execute()
                 )
                 total_contributed = sum(c["contributed_minor"] for c in contributions.data) if contributions.data else 0
                 goal["contributed_minor"] = total_contributed
+                goal["contributions"] = contributions.data
 
         return {"user": user.model_dump(), "goals": response.data}
     except Exception as e:

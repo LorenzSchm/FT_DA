@@ -12,7 +12,7 @@ import {
   PanResponder,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ChevronDown } from "lucide-react-native";
+import CustomPicker from "@/components/ui/CustomPicker";
 
 type SavingsAccount = {
   id: number;
@@ -52,7 +52,7 @@ export default function SavingsAddTransactionModal({
   );
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
-  const [showAccountPicker, setShowAccountPicker] = useState(false);
+  // using CustomPicker for account selection for visual consistency
 
   const SCREEN_HEIGHT = Dimensions.get("window").height;
   const sheetPosition = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
@@ -201,7 +201,7 @@ export default function SavingsAddTransactionModal({
             </Text>
 
             {/* Type Toggle */}
-            <Text className="text-lg font-semibold text-black mb-2">Type</Text>
+            <Text className="font-semibold text-black mb-2 text-[20px]">Type</Text>
             <View className="flex-row justify-around items-center bg-[#F1F1F2] w-full h-[40px] rounded-full mb-6">
               <TouchableOpacity
                 onPress={() => setTransactionType("add")}
@@ -238,42 +238,23 @@ export default function SavingsAddTransactionModal({
             </View>
 
             {/* Account Selector */}
-            <Text className="text-lg font-semibold text-black mb-2">
+            <Text className="font-semibold text-black mb-2 text-[20px]">
               Account
             </Text>
-            <TouchableOpacity
-              className="bg-neutral-100 rounded-full px-5 py-4 mb-4 flex-row justify-between items-center"
-              onPress={() => setShowAccountPicker(!showAccountPicker)}
-            >
-              <Text className="text-black">{selectedAccountName}</Text>
-              <ChevronDown color="#000" size={20} />
-            </TouchableOpacity>
-
-            {/* Account Picker Dropdown */}
-            {showAccountPicker && (
-              <View className="bg-white border border-neutral-200 rounded-2xl mb-4 overflow-hidden">
-                {savings.map((account) => (
-                  <TouchableOpacity
-                    key={account.id}
-                    className="px-5 py-4 border-b border-neutral-100"
-                    onPress={() => {
-                      setSelectedAccount(account.id);
-                      setShowAccountPicker(false);
-                    }}
-                  >
-                    <Text className="text-black font-medium">
-                      {account.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
+            <CustomPicker
+              variant="input"
+              className="mb-4"
+              placeholder="Select Account"
+              value={selectedAccount}
+              onValueChange={setSelectedAccount}
+              options={savings.map((acc) => ({ label: acc.name, value: acc.id }))}
+            />
 
             {/* Name Field */}
-            <Text className="text-lg font-semibold text-black mb-2">Name</Text>
+            <Text className="font-semibold text-black mb-2 text-[20px]">Name</Text>
             <View className="bg-neutral-100 rounded-full px-5 py-4 mb-4">
               <TextInput
-                className="text-black"
+                className="text-black text-[20px]"
                 placeholder="e.g. DCIP"
                 value={name}
                 onChangeText={setName}
@@ -281,12 +262,12 @@ export default function SavingsAddTransactionModal({
             </View>
 
             {/* Amount Field */}
-            <Text className="text-lg font-semibold text-black mb-2">
+            <Text className="font-semibold text-black mb-2 text-[20px]">
               Amount
             </Text>
             <View className="bg-neutral-100 rounded-full px-5 py-4 mb-8">
               <TextInput
-                className="text-black"
+                className="text-black text-[20px]"
                 placeholder="e.g. € 100.00"
                 keyboardType="numbers-and-punctuation"
                 value={amount}

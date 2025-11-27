@@ -1,74 +1,158 @@
 import React from "react";
 import { View, Text } from "react-native";
-import Svg, { Circle } from "react-native-svg";
+import Svg, { Path } from "react-native-svg";
 
-type Props = {
-  size?: number;
-  strokeWidth?: number;
-  progress?: number;
-  totalAmount: number;
-  currency?: string;
+type Saving = {
+    id: number;
+    contributed_minor?: number;
+    target_minor?: number;
 };
 
-export default function CircularProgress({
-  size = 200,
-  strokeWidth = 12,
-  progress = 0,
-  totalAmount,
-  currency = "€",
-}: Props) {
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const progressOffset = circumference - (progress / 100) * circumference;
+type Props = {
+    size?: number;
+    strokeWidth?: number;
+    savings: Saving[];
+    totalAmount: number;
+    currency?: string;
+};
 
-  return (
-    <View
-      style={{
-        width: size,
-        height: size,
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <Svg width={size} height={size}>
-        {/* Background Circle */}
-        <Circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke="#F1F1F2"
-          strokeWidth={strokeWidth}
-          fill="none"
-        />
-        {/* Progress Circle */}
-        <Circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke="#000000"
-          strokeWidth={strokeWidth}
-          fill="none"
-          strokeDasharray={circumference}
-          strokeDashoffset={progressOffset}
-          strokeLinecap="round"
-          transform={`rotate(-90 ${size / 2} ${size / 2})`}
-        />
-      </Svg>
-      <View
-        style={{
-          position: "absolute",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Text className="text-3xl font-bold text-black">
-          {currency}
-          {totalAmount.toLocaleString("de-DE", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          })}
-        </Text>
-      </View>
-    </View>
-  );
+const COLORS = [
+  "#1F2937", // dark slate
+  "#1E40AF", // cobalt
+  "#0E7490", // cyan-teal
+  "#047857", // emerald green
+  "#A16207", // golden brown
+  "#B91C1C", // red
+  "#BE185D", // raspberry
+  "#6D28D9", // purple
+  "#7C3AED", // violet
+  "#4B5563", // dark gray
+];
+
+function polarToCartesian(
+    centerX: number,
+    centerY: number,
+    radius: number,
+    angleInDegrees: number
+) {
+    const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0;
+    return {
+        x: centerX + radius * Math.cos(angleInRadians),
+        y: centerY + radius * Math.sin(angleInRadians),
+    };
+}
+
+function describeArc(
+    x: number,
+    y: number,
+    radius: number,
+    startAngle: number,
+    endAngle: number
+) {
+    const start = polarToCartesian(x, y, radius, startAngle);
+    const end = polarToCartesian(x, y, radius, endAngle);
+    const sweep = endAngle - startAngle;
+
+    const largeArcFlag = sweep <= 180 ? "0" : "1";
+
+    return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${end.x} ${end.y}`;
+}
+
+export default function CircularProgress({
+    size = 200,
+    strokeWidth = 20,
+    savings,
+    totalAmount,
+    currency = "€",
+}: Props) {
+    const radius = (size - strokeWidth) / 2;
+    const center = size / 2;
+
+    // Filter out savings with no contributions
+    const savingsWithContributions = savings.filter(
+        (s) => (s.contributed_minor || 0) > 0
+    );
+
+    // Calculate total contributions
+    const total = savingsWithContributions.reduce(
+        (sum, s) => sum + (s.contributed_minor || 0),
+        0
+    );
+
+    return (
+        <View
+            style={{
+                width: size,
+                height: size,
+                alignItems: "center",
+                justifyContent: "center",
+            }}
+        >
+            <Svg width={size} height={size}>
+                {total === 0 ? (
+                    // Show gray circle if no contributions
+                    <Path
+                        d={describeArc(center, center, radius, 0, 359.999)}
+                        stroke="#F1F1F2"
+                        strokeWidth={strokeWidth}
+                        fill="none"
+                    />
+                ) : (
+                    // Draw pie chart segments
+                    savingsWithContributions.map((saving, index) => {
+                        const contributed = saving.contributed_minor || 0;
+                        const percentage = contributed / total;
+                        const segmentAngle = 360 * percentage;
+
+                        // Calculate cumulative angle (where this segment starts)
+                        let cumulativeAngle = 0;
+                        for (let i = 0; i < index; i++) {
+                            const prevContributed =
+                                savingsWithContributions[i].contributed_minor || 0;
+                            const prevPercentage = prevContributed / total;
+                            cumulativeAngle += 360 * prevPercentage;
+                        }
+
+                        const startAngle = cumulativeAngle;
+                        const endAngle = startAngle + segmentAngle;
+
+                        const d = describeArc(
+                            center,
+                            center,
+                            radius,
+                            startAngle,
+                            endAngle
+                        );
+                        const color = COLORS[index % COLORS.length];
+
+                        return (
+                            <Path
+                                key={saving.id}
+                                d={d}
+                                stroke={color}
+                                strokeWidth={strokeWidth}
+                                fill="none"
+                            />
+                        );
+                    })
+                )}
+            </Svg>
+
+            <View
+                style={{
+                    position: "absolute",
+                    alignItems: "center",
+                    justifyContent: "center",
+                }}
+            >
+                <Text className="text-3xl font-bold text-black">
+                    {currency}
+                    {(totalAmount / 100).toLocaleString("de-DE", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                    })}
+                </Text>
+            </View>
+        </View>
+    );
 }
