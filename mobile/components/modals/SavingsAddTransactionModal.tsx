@@ -201,7 +201,9 @@ export default function SavingsAddTransactionModal({
             </Text>
 
             {/* Type Toggle */}
-            <Text className="font-semibold text-black mb-2 text-[20px]">Type</Text>
+            <Text className="font-semibold text-black mb-2 text-[20px]">
+              Type
+            </Text>
             <View className="flex-row justify-around items-center bg-[#F1F1F2] w-full h-[40px] rounded-full mb-6">
               <TouchableOpacity
                 onPress={() => setTransactionType("add")}
@@ -247,11 +249,16 @@ export default function SavingsAddTransactionModal({
               placeholder="Select Account"
               value={selectedAccount}
               onValueChange={setSelectedAccount}
-              options={savings.map((acc) => ({ label: acc.name, value: acc.id }))}
+              options={savings.map((acc) => ({
+                label: acc.name,
+                value: acc.id,
+              }))}
             />
 
             {/* Name Field */}
-            <Text className="font-semibold text-black mb-2 text-[20px]">Name</Text>
+            <Text className="font-semibold text-black mb-2 text-[20px]">
+              Name
+            </Text>
             <View className="bg-neutral-100 rounded-full px-5 py-4 mb-4">
               <TextInput
                 className="text-black text-[20px]"
