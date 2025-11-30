@@ -12,6 +12,7 @@ import {
   PanResponder,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import CustomPicker from "@/components/ui/CustomPicker";
 
 type Props = {
   isVisible: boolean;
@@ -109,7 +110,7 @@ export default function SavingsAddAccountModal({
     });
     if (!name.trim() || !initialAmount.trim()) {
       console.log("Form validation failed - empty fields");
-      return; // Don't save if fields are empty
+      return;
     }
     if (onSave) {
       console.log("Calling onSave with:", { name, initialAmount });
@@ -118,7 +119,7 @@ export default function SavingsAddAccountModal({
         console.log("onSave completed successfully");
       } catch (error) {
         console.error("Error in onSave:", error);
-        return; // Don't close if there was an error
+        return;
       }
     } else {
       console.log("No onSave handler provided. Saving Savings Account:", {
@@ -127,7 +128,6 @@ export default function SavingsAddAccountModal({
         provider: "FT",
       });
     }
-    // Reset form before closing
     setName("");
     setInitialAmount("");
     handleClose();
@@ -180,10 +180,12 @@ export default function SavingsAddAccountModal({
             </Text>
 
             {/* Name Field */}
-            <Text className="text-lg font-semibold text-black mb-2">Name</Text>
+            <Text className="font-semibold text-black mb-2 text-[20px]">
+              Name
+            </Text>
             <View className="bg-neutral-100 rounded-full px-5 py-4 mb-4">
               <TextInput
-                className="text-black"
+                className="text-black text-[20px]"
                 placeholder="e.g. Emergency Fund"
                 value={name}
                 onChangeText={setName}
@@ -191,20 +193,23 @@ export default function SavingsAddAccountModal({
             </View>
 
             {/* Provider (Static) */}
-            <Text className="text-lg font-semibold text-black mb-2">
+            <Text className="font-semibold text-black mb-2 text-[20px]">
               Provider
             </Text>
-            <View className="bg-neutral-100 rounded-full px-5 py-4 mb-4">
-              <Text className="text-neutral-900">FT</Text>
-            </View>
+            <CustomPicker
+              variant="input"
+              className={"mb-4"}
+              placeholder="FT"
+              value={"FT"}
+              disabled={true}
+            />
 
-            {/* Initial Amount Field */}
-            <Text className="text-lg font-semibold text-black mb-2">
+            <Text className="font-semibold text-black mb-2 text-[20px]">
               Initial Amount
             </Text>
             <View className="bg-neutral-100 rounded-full px-5 py-4 mb-8">
               <TextInput
-                className="text-black"
+                className="text-black text-[20px]"
                 placeholder="e.g. € 0.00"
                 keyboardType="numbers-and-punctuation"
                 value={initialAmount}

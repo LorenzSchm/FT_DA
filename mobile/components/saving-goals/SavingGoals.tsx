@@ -19,6 +19,8 @@ import {
   handleAddTransaction,
 } from "@/utils/db/finance/saving-goals/saving-goals";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ChevronRight } from "lucide-react-native";
+
 const INITIAL_SAVINGS: any[] = [];
 
 type Transaction = {
@@ -143,10 +145,8 @@ export default function SavingGoals() {
       <ScrollView className="flex-1 px-7 pt-4">
         <View className="mb-8 items-center justify-center py-8">
           <CircularProgress
-            size={220}
-            strokeWidth={16}
-            progress={overallProgress}
-            totalAmount={totalAmount / 100}
+            savings={savings}
+            totalAmount={totalAmount}
             currency="€"
           />
         </View>
@@ -187,7 +187,8 @@ export default function SavingGoals() {
                       </Text>
                     </View>
                     <View className="items-end">
-                      <Text className="text-lg font-bold">
+                      <ChevronRight size={20} />
+                      <Text className="text-lg font-bold text-green-500">
                         {saving.currency || "€"}
                         {((saving.contributed_minor || 0) / 100).toFixed(2)}
                       </Text>
@@ -273,6 +274,7 @@ export default function SavingGoals() {
           isVisible={showDetailView}
           onClose={handleCloseDetailView}
           savingId={selectedSavingId}
+          savingObject={savings.find((s) => s.id === selectedSavingId)}
           savingName={
             savings.find((s) => s.id === selectedSavingId)?.name ||
             "Savings Account"

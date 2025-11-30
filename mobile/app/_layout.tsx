@@ -8,6 +8,7 @@ import React, { useEffect } from "react";
 import { Stack } from "expo-router";
 import { useAuthStore } from "@/utils/authStore";
 import Toast from "react-native-toast-message";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export default function RootLayout() {
   const { isLoggedIn, _hasHydrated, signOut } = useAuthStore();
@@ -15,7 +16,7 @@ export default function RootLayout() {
   const shouldCreateAccount = false;
 
   return (
-    <React.Fragment>
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar />
       <Stack>
         <Stack.Protected guard={isLoggedIn}>
@@ -33,6 +34,6 @@ export default function RootLayout() {
         </Stack.Protected>
       </Stack>
       <Toast topOffset={70} />
-    </React.Fragment>
+    </GestureHandlerRootView>
   );
 }

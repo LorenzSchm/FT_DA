@@ -13,7 +13,8 @@ import {
   TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Svg, { Polyline } from "react-native-svg";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { PhantomChart } from "../PhantomChart";
 
 type Transaction = {
   id: number;
@@ -21,6 +22,15 @@ type Transaction = {
   amount: number;
   date: string;
   type: "add" | "subtract";
+};
+
+type Contribution = {
+  id: string;
+  amount_minor?: number;
+  contributed_minor?: number;
+  created_at: string;
+  description?: string;
+  note?: string;
 };
 
 type Props = {
@@ -32,6 +42,19 @@ type Props = {
   goalAmount: number;
   currency: string;
   transactions?: Transaction[];
+  savingObject?: {
+    contributions: Contribution[];
+    created_at: string;
+  };
+};
+
+// Timeframe keys used by PhantomChart
+type TimeframeKey = "1D" | "1W" | "1M" | "1Y" | "ALL";
+
+const parseBackendDate = (value: string): Date => {
+  if (!value) return new Date();
+  console.log(value);
+  return new Date(value);
 };
 
 export default function SavingsDetailModal({
@@ -43,21 +66,11 @@ export default function SavingsDetailModal({
   goalAmount,
   currency,
   transactions = [],
+  savingObject,
 }: Props) {
   const [isModalVisible, setIsModalVisible] = useState(isVisible);
   const SCREEN_HEIGHT = Dimensions.get("window").height;
   const sheetPosition = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
-
-  const iosShadow = {
-    shadowColor: "#000",
-    shadowOffset: { width: 1, height: 1 },
-    shadowOpacity: 0.5,
-    shadowRadius: 5,
-  };
-
-  const shadowStyle = Platform.select({
-    ios: iosShadow,
-  });
 
   const panResponder = useRef(
     PanResponder.create({
@@ -115,8 +128,64 @@ export default function SavingsDetailModal({
     });
   };
 
-  const chartPoints = "0,80 50,60 100,50 150,40 200,35 250,30";
-  const progress = (currentAmount / goalAmount) * 100;
+  // Build data for PhantomChart: cumulative amounts within different timeframes
+  const dataByTimeframe = React.useMemo(() => {
+    const result: Record<TimeframeKey, { timestamp: number; value: number }[]> =
+      {
+        "1D": [],
+        "1W": [],
+        "1M": [],
+        "1Y": [],
+        ALL: [],
+      };
+
+    if (
+      !savingObject?.contributions ||
+      savingObject.contributions.length === 0
+    ) {
+      return result;
+    }
+
+    const sorted = [...savingObject.contributions].sort(
+      (a, b) =>
+        parseBackendDate(a.created_at).getTime() -
+        parseBackendDate(b.created_at).getTime(),
+    );
+
+    const now = Date.now();
+    const ranges: Record<TimeframeKey, number> = {
+      "1D": 24 * 60 * 60 * 1000,
+      "1W": 7 * 24 * 60 * 60 * 1000,
+      "1M": 30 * 24 * 60 * 60 * 1000,
+      "1Y": 365 * 24 * 60 * 60 * 1000,
+      ALL: now - parseBackendDate(savingObject.created_at).getTime(),
+    };
+
+    (Object.keys(ranges) as TimeframeKey[]).forEach((key) => {
+      const windowStart =
+        key === "ALL"
+          ? parseBackendDate(savingObject.created_at).getTime()
+          : now - ranges[key];
+      let cumulative = 0;
+      const series: { timestamp: number; value: number }[] = [];
+
+      series.push({ timestamp: windowStart, value: 0 });
+
+      sorted.forEach((c) => {
+        const ts = parseBackendDate(c.created_at).getTime();
+        if (ts >= windowStart) {
+          const amount = c.amount_minor ?? c.contributed_minor ?? 0;
+          cumulative += amount / 100; // convert from minor to major for display alignment with PhantomChart
+          series.push({ timestamp: ts, value: cumulative });
+        }
+      });
+
+      result[key] = series.length > 1 ? series : [];
+    });
+
+    return result;
+  }, [savingObject?.contributions, savingObject?.created_at]);
+  const progress = goalAmount > 0 ? (currentAmount / goalAmount) * 100 : 0;
 
   return (
     <Modal
@@ -125,7 +194,7 @@ export default function SavingsDetailModal({
       visible={isModalVisible}
       onRequestClose={handleClose}
     >
-      <View style={{ flex: 1, justifyContent: "flex-end" }}>
+      <GestureHandlerRootView style={{ flex: 1, justifyContent: "flex-end" }}>
         <TouchableOpacity
           style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.3)" }}
           activeOpacity={1}
@@ -139,7 +208,6 @@ export default function SavingsDetailModal({
             borderTopLeftRadius: 16,
             borderTopRightRadius: 16,
             minHeight: SCREEN_HEIGHT,
-            ...shadowStyle,
           }}
         >
           <SafeAreaView style={{ flex: 1 }}>
@@ -166,32 +234,27 @@ export default function SavingsDetailModal({
               </View>
 
               {/* Chart Section */}
+              {/* Replaced custom SVG chart with reusable PhantomChart */}
               <View className="mb-6">
                 <View className="mb-4">
                   <Text className="text-3xl font-bold">
                     {currency}
                     {(currentAmount / 100).toFixed(2)}
                   </Text>
-                  <Text className="text-neutral-500 mt-1">
-                    of {currency}
-                    {(goalAmount / 100).toFixed(2)} ({progress.toFixed(0)}%)
-                  </Text>
+                  {goalAmount > 0 && (
+                    <Text className="text-neutral-500 mt-1">
+                      of {currency}
+                      {(goalAmount / 100).toFixed(2)} ({progress.toFixed(0)}%)
+                    </Text>
+                  )}
                 </View>
-
-                {/* Time Period Selector */}
-                <View className="flex-row justify-around mb-4">
-                  {["1D", "1W", "1M", "1Y", "MAX"].map((period, index) => (
-                    <TouchableOpacity
-                      key={period}
-                      className={`px-3 py-1 ${index === 1 ? "border-b-2 border-black" : ""}`}
-                    >
-                      <Text
-                        className={`${index === 1 ? "font-bold" : "text-neutral-500"}`}
-                      >
-                        {period}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                {/* Chart */}
+                <View className="rounded-2xl p-2" style={{ minHeight: 180 }}>
+                  <PhantomChart
+                    dataByTimeframe={dataByTimeframe}
+                    initialTimeframe={"1W"}
+                    height={180}
+                  />
                 </View>
               </View>
 
@@ -201,6 +264,7 @@ export default function SavingsDetailModal({
                 <TextInput
                   className="text-neutral-600 text-base leading-6"
                   placeholder="Add a description..."
+                  multiline
                 >
                   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed
                   do eiusmod tempor incididunt ut labore et dolore magna aliqua.
@@ -212,50 +276,54 @@ export default function SavingsDetailModal({
               {/* Transactions Section */}
               <View className="mb-20">
                 <Text className="text-xl font-bold mb-3">Transactions</Text>
-                {transactions.length === 0 ? (
+                {!savingObject?.contributions ||
+                savingObject.contributions.length === 0 ? (
                   <Text className="text-neutral-500 text-center py-8">
                     No transactions yet
                   </Text>
                 ) : (
-                  transactions
+                  [...savingObject.contributions]
                     .sort(
                       (a, b) =>
-                        new Date(b.date).getTime() - new Date(a.date).getTime(),
+                        parseBackendDate(b.created_at).getTime() -
+                        parseBackendDate(a.created_at).getTime(),
                     )
-                    .map((transaction) => (
-                      <View
-                        key={transaction.id}
-                        className="bg-white rounded-2xl p-4 mb-1 flex-row justify-between items-center"
-                      >
-                        <View>
-                          <Text className="text-base font-semibold">
-                            {transaction.description}
-                          </Text>
-                          <Text className="text-neutral-500 text-sm">
-                            {new Date(transaction.date).toLocaleDateString(
-                              "de-DE",
-                            )}
+                    .map((contribution) => {
+                      const amount =
+                        contribution.amount_minor ??
+                        contribution.contributed_minor ??
+                        0;
+                      const date = parseBackendDate(contribution.created_at);
+                      const isValidDate = !isNaN(date.getTime());
+
+                      return (
+                        <View
+                          key={contribution.id}
+                          className="bg-white rounded-2xl p-4 mb-1 flex-row justify-between items-center"
+                        >
+                          <View>
+                            <Text className="text-base font-semibold">
+                              {contribution.description ||
+                                contribution.note ||
+                                "Contribution"}
+                            </Text>
+                            <Text className="text-neutral-500 text-sm">
+                              {date.toLocaleDateString("de-DE")}
+                            </Text>
+                          </View>
+                          <Text className="text-lg font-bold text-green-600">
+                            +{currency}
+                            {(amount / 100).toFixed(2)}
                           </Text>
                         </View>
-                        <Text
-                          className={`text-lg font-bold ${
-                            transaction.type === "add"
-                              ? "text-green-600"
-                              : "text-red-600"
-                          }`}
-                        >
-                          {transaction.type === "add" ? "+" : "-"}
-                          {currency}
-                          {(transaction.amount / 100).toFixed(2)}
-                        </Text>
-                      </View>
-                    ))
+                      );
+                    })
                 )}
               </View>
             </ScrollView>
           </SafeAreaView>
         </Animated.View>
-      </View>
+      </GestureHandlerRootView>
     </Modal>
   );
 }
