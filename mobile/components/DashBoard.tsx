@@ -35,7 +35,6 @@ export default function DashBoard() {
   const [expanded, setExpanded] = useState(false);
 
   const [accounts, setAccounts] = useState<any[]>([]);
-
   // Per-account cached data
   const [transactionsByAccount, setTransactionsByAccount] = useState<
     Record<number, any[]>

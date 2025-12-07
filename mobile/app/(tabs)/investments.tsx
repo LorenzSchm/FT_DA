@@ -1,8 +1,9 @@
 import { View, Text, TextInput, TouchableOpacity } from "react-native";
 import { useState } from "react";
-import InvestmentView from "@/components/Views/InvestmentView";
+import AddInvestmentView from "@/components/Views/AddInvestmentView";
 import SavingGoals from "@/components/saving-goals/SavingGoals";
 import { SearchIcon } from "lucide-react-native";
+import {InvestmentView} from "@/components/Views/InvestmentView";
 
 export default function Investments() {
   const [activeTab, setActiveTab] = useState<"investments" | "savings">(
