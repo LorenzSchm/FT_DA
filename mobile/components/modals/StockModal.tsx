@@ -15,6 +15,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import axios from "axios";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PhantomChart } from "@/components/PhantomChart";
+import { useAuthStore } from "@/utils/authStore";
+import { getInvestments } from "@/utils/db/invest/invest";
+import AddInvestmentModal from "@/components/modals/AddInvestmentModal";
 
 type Props = {
   isVisible: boolean;
@@ -30,6 +33,10 @@ export default function StockModal({
   const [isModalVisible, setIsModalVisible] = useState(isVisible);
   const [history, setHistory] = useState<any | null>(null);
   const [chartLoading, setChartLoading] = useState(false);
+  const [myPosition, setMyPosition] = useState<any | null>(null);
+  const [showAddInvestment, setShowAddInvestment] = useState(false);
+  const API_BASE = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
+  const { session } = useAuthStore();
 
   const SCREEN_HEIGHT = Dimensions.get("window").height;
   const sheetPosition = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
@@ -84,6 +91,7 @@ export default function StockModal({
       if (selectedStock?.symbol || selectedStock?.ticker) {
         const sym = selectedStock.symbol ?? selectedStock.ticker;
         fetchHistory(sym);
+        fetchMyPosition(sym);
       }
     } else {
       Animated.timing(sheetPosition, {
@@ -93,6 +101,7 @@ export default function StockModal({
       }).start(() => {
         setIsModalVisible(false);
         setHistory(null);
+        setMyPosition(null);
       });
     }
   }, [isVisible, selectedStock]);
@@ -102,7 +111,7 @@ export default function StockModal({
       setChartLoading(true);
 
       const res = await axios.get(
-        `http://localhost:8000/stock/${symbol}/history`,
+        `${API_BASE}/stock/${symbol}/history`,
       );
 
       setHistory({
@@ -119,6 +128,36 @@ export default function StockModal({
     }
   };
 
+  const fetchMyPosition = async (symbol: string) => {
+    try {
+      const sym = String(symbol).toUpperCase();
+      if (!session?.access_token) return;
+      const data = await getInvestments(session.access_token, session.refresh_token);
+      const positions = data?.positions || [];
+      const pos = positions.find((p: any) => String(p?.ticker).toUpperCase() === sym);
+      if (!pos) {
+        setMyPosition(null);
+        return;
+      }
+      const ds = pos?.dates || [];
+      const last = ds.length ? ds[ds.length - 1] : null;
+      if (!last) {
+        setMyPosition(null);
+        return;
+      }
+      setMyPosition({
+        shares: Number(last.position_quantity ?? 0),
+        total: Number(last.market_value ?? 0),
+        pl: Number(last.unrealized_pl ?? 0),
+        returnPct: Number(last.unrealized_pl_pct ?? 0),
+        currency: pos.currency,
+      });
+    } catch (e) {
+      console.error("fetchMyPosition error", e);
+      setMyPosition(null);
+    }
+  };
+
   const handleClose = () => {
     Animated.timing(sheetPosition, {
       toValue: SCREEN_HEIGHT,
@@ -126,6 +165,7 @@ export default function StockModal({
       useNativeDriver: true,
     }).start(() => {
       setIsModalVisible(false);
+      setShowAddInvestment(false);
       onClose();
     });
   };
@@ -133,6 +173,7 @@ export default function StockModal({
   if (!isModalVisible) return null;
 
   return (
+    <>
     <Modal
       animationType="none"
       transparent={true}
@@ -146,7 +187,6 @@ export default function StockModal({
           onPress={handleClose}
         />
 
-        {/* Bottom sheet */}
         <Animated.View
           style={{
             transform: [{ translateY: sheetPosition }],
@@ -158,7 +198,6 @@ export default function StockModal({
             ...shadowStyle,
           }}
         >
-          {/* Drag Handle - Fixed at top */}
           <View className={"flex items-center"}>
             <View
               {...panResponder.panHandlers}
@@ -174,19 +213,16 @@ export default function StockModal({
             </View>
           </View>
 
-          {/* Content - Scrollable */}
           <SafeAreaView style={{ flex: 1 }}>
             <ScrollView
-              style={{ flex: 1 }}
               showsVerticalScrollIndicator={false}
               scrollEnabled={true}
             >
               <View>
-                {/* Header */}
                 {selectedStock && (
-                  <View className="mb-4">
+                  <View className=" p-4 mb-4">
                     <Text className="text-3xl font-bold text-black">
-                      {selectedStock.symbol}
+                      {selectedStock.longname}
                     </Text>
                     <Text className="text-gray-500 text-base mt-1">
                       {selectedStock.display_name}
@@ -194,7 +230,6 @@ export default function StockModal({
                   </View>
                 )}
 
-                {/* Chart */}
                 {chartLoading ? (
                   <Skeleton className="h-[260px] w-full rounded-2xl" />
                 ) : history ? (
@@ -206,11 +241,61 @@ export default function StockModal({
                     No chart data
                   </Text>
                 )}
+
+                {myPosition && (
+                  <View className="px-8 mt-6">
+                    <Text className="text-lg font-semibold text-black mb-3">My position</Text>
+                    <View className="">
+                      <View className="flex-row justify-between mb-3">
+                        <Text className=" font-semibold text-gray-500">Total</Text>
+                        <Text className="text-black font-medium">
+                          {myPosition.total.toFixed(2)} {myPosition.currency}
+                        </Text>
+                      </View>
+                      <View className="flex-row justify-between mb-3">
+                        <Text className="font-semibold text-gray-500">Return</Text>
+                        <Text className={(myPosition.returnPct >= 0 ? "text-green-600" : "text-red-600") + " font-medium"}>
+                          {myPosition.returnPct.toFixed(2)}%
+                        </Text>
+                      </View>
+                      <View className="flex-row justify-between mb-3">
+                        <Text className="font-semibold text-gray-500">P/L</Text>
+                        <Text className={(myPosition.pl >= 0 ? "text-green-600" : "text-red-600") + " font-medium"}>
+                          {myPosition.pl.toFixed(2)} {myPosition.currency}
+                        </Text>
+                      </View>
+                      <View className="flex-row justify-between">
+                        <Text className="font-semibold text-gray-500">Shares</Text>
+                        <Text className="text-black font-medium">{myPosition.shares}</Text>
+                      </View>
+                    </View>
+                  </View>
+                )}
               </View>
             </ScrollView>
           </SafeAreaView>
+          <View style={{ position: 'absolute', bottom: 50, right: 20 }} pointerEvents="box-none">
+            <TouchableOpacity
+              onPress={() =>{ setShowAddInvestment(true);
+              console.log("button")
+                console.log(showAddInvestment)
+              }}
+              activeOpacity={0.9}
+              style={{ backgroundColor: 'black', width: 160, paddingVertical: 16, borderRadius: 9999 }}
+            >
+              <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ color: 'white', fontSize: 24, fontWeight: '600' }}>Add +</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
         </Animated.View>
+        <AddInvestmentModal
+          isVisible={showAddInvestment}
+          onClose={() => setShowAddInvestment(false)}
+          selectedStock={selectedStock}
+        />
       </View>
     </Modal>
+    </>
   );
 }

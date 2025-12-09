@@ -1,6 +1,7 @@
 import yfinance as yf
 from fastapi import APIRouter
 import math
+from urllib.parse import urlparse
 from datetime import datetime
 #https://ranaroussi.github.io/yfinance
 router = APIRouter(prefix="/stock", tags=["stock"])
@@ -14,7 +15,9 @@ def get_stock_price(ticker_symbol: str):
     last = last_week["Close"].iloc[-1]
     percent_change = ((last - first) / first) * 100
     rounded = round(percent_change, 2)
-    return {"price": price, "weekly_change": rounded}
+    domain = urlparse(ticker.info.get("website")).netloc
+    domain = domain.removeprefix("www.")  # Removes 'www.' if it exists
+    return {"price": price, "weekly_change": rounded, "longname": ticker.info.get("longName"), "domain": domain}
 import yfinance as yf
 
 @router.get("/{ticker_symbol}/history")
@@ -54,3 +57,6 @@ def get_chart_history(ticker_symbol: str):
         result[label] = entries
 
     return result
+
+ticker = yf.Ticker("AAPL")
+print(ticker.info)

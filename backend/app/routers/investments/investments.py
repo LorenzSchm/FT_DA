@@ -77,6 +77,8 @@ async def get_investments(
 
         holdings = defaultdict(lambda: {"quantity": 0.0, "cost_minor": 0.0, "currency": "USD"})
         cash_minor_per_cur = defaultdict(int)
+        # per-ticker per-trade records in chronological order
+        dates_by_ticker: dict[str, list[dict]] = defaultdict(list)
 
         for trade in trades:
             ticker = trade["ticker"].upper()
@@ -86,6 +88,13 @@ async def get_investments(
             fee_minor = int(trade.get("fee_minor") or 0)
             qty = float(trade["quantity"])
             ttype = trade["type"].lower()
+
+            # compute per-trade price, fee, gross
+            tdate = trade.get("trade_date")
+            trade_date_str = str(tdate) if tdate is not None else None
+            trade_gross = (gross_minor / DIVISOR)
+            trade_fee = (fee_minor / DIVISOR)
+            entry_price = (trade_gross / qty) if qty not in (0.0, 0) else 0.0
 
             # Cash impact
             if ttype == "buy":
@@ -97,6 +106,7 @@ async def get_investments(
             h = holdings[ticker]
             h["currency"] = currency
 
+            # apply trade to running position
             if ttype == "buy":
                 h["cost_minor"] += gross_minor + fee_minor
                 h["quantity"] += qty
@@ -108,6 +118,31 @@ async def get_investments(
                 h["quantity"] -= qty
                 if h["quantity"] < 0:
                     h["quantity"] = 0.0
+
+            # snapshot after trade
+            pos_qty = h["quantity"]
+            cost_basis_after = h["cost_minor"] / DIVISOR
+            avg_entry_after = (cost_basis_after / pos_qty) if pos_qty > 0 else 0.0
+            cur_price = current_prices.get(ticker, 0.0)
+            market_value_after = pos_qty * cur_price
+            unrealized_pl_after = market_value_after - cost_basis_after
+            unrealized_pl_pct_after = (unrealized_pl_after / cost_basis_after * 100) if cost_basis_after > 0 else 0.0
+
+            dates_by_ticker[ticker].append({
+                "date": trade_date_str,
+                "type": ttype,
+                "quantity": round(qty, 8),
+                "entry_price": round(entry_price, 4),
+                "gross": round(trade_gross, 2),
+                "fee": round(trade_fee, 2),
+                "position_quantity": round(pos_qty, 8),
+                "avg_entry_price": round(avg_entry_after, 4),
+                "cost_basis": round(cost_basis_after, 2),
+                "current_price": round(cur_price, 4),
+                "market_value": round(market_value_after, 2),
+                "unrealized_pl": round(unrealized_pl_after, 2),
+                "unrealized_pl_pct": round(unrealized_pl_pct_after, 2),
+            })
 
         open_holdings = {t: h for t, h in holdings.items() if h["quantity"] > 0.001}
 
@@ -159,10 +194,7 @@ async def get_investments(
             currency = h["currency"]
             quantity = h["quantity"]
             cost_basis = h["cost_minor"] / DIVISOR
-            avg_entry = cost_basis / quantity if quantity > 0 else 0.0
             market_value = quantity * price
-            unrealized_pl = market_value - cost_basis
-            unrealized_pl_pct = (unrealized_pl / cost_basis * 100) if cost_basis > 0 else 0.0
 
             positions.append({
                 "ticker": ticker,
@@ -173,13 +205,8 @@ async def get_investments(
                     "stock"
                 ),
                 "currency": currency,
-                "quantity": round(quantity, 8),
-                "avg_entry_price": round(avg_entry, 4),
                 "current_price": round(price, 4),
-                "market_value": round(market_value, 2),
-                "cost_basis": round(cost_basis, 2),
-                "unrealized_pl": round(unrealized_pl, 2),
-                "unrealized_pl_pct": round(unrealized_pl_pct, 2),
+                "dates": dates_by_ticker.get(ticker, []),
             })
 
             rate = get_conversion_rate(currency)
@@ -204,7 +231,12 @@ async def get_investments(
             "as_of_date": date.today().isoformat(),
         }
 
-        positions.sort(key=lambda x: x["market_value"], reverse=True)
+        # sort by total market value per ticker (derived from last date snapshot)
+        def ticker_market_value(item: dict) -> float:
+            ds = item.get("dates") or []
+            return float(ds[-1].get("market_value", 0.0)) if ds else 0.0
+
+        positions.sort(key=ticker_market_value, reverse=True)
 
         return {
             "positions": positions,
@@ -305,3 +337,4 @@ async def delete_trade(
         return {"user": user.model_dump(), "rows": delete_response.data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Trade deletion failed: {str(e)}")
+

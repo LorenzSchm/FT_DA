@@ -65,7 +65,7 @@ export const PhantomChart: React.FC<Props> = ({
     <View className={`rounded-full bg-[${backgroundColor}]`}>
       <View className="flex-row justify-between items-center px-4 pt-4">
         <Text className="text-2xl font-semibold text-black">
-          {displayValue.toFixed(2)} €
+          ${displayValue.toFixed(2)}
         </Text>
 
         <View

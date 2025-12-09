@@ -33,7 +33,6 @@ export default function DashBoard() {
   const [accountIndex, setAccountIndex] = useState(0);
   const [state, setState] = useState<STATE>(STATE.DEFAULT);
   const [expanded, setExpanded] = useState(false);
-
   const [accounts, setAccounts] = useState<any[]>([]);
   // Per-account cached data
   const [transactionsByAccount, setTransactionsByAccount] = useState<
@@ -56,6 +55,8 @@ export default function DashBoard() {
   const maxListHeight = height * 0.35;
 
   const { user, session } = useAuthStore();
+  console.log(session?.refresh_token)
+  console.log(session?.access_token)
 
   const loadAccounts = async () => {
     if (!session?.access_token) return [];
