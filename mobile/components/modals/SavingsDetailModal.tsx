@@ -15,6 +15,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PhantomChart } from "../PhantomChart";
+import { format, parseISO } from "date-fns";
 
 type Transaction = {
   id: number;
@@ -28,7 +29,8 @@ type Contribution = {
   id: string;
   amount_minor?: number;
   contributed_minor?: number;
-  created_at: string;
+  created_at?: string;        // sometimes present
+  contributed_at?: string;     // THIS is the real transaction date
   description?: string;
   note?: string;
 };
@@ -48,13 +50,26 @@ type Props = {
   };
 };
 
-// Timeframe keys used by PhantomChart
 type TimeframeKey = "1D" | "1W" | "1M" | "1Y" | "ALL";
 
-const parseBackendDate = (value: string): Date => {
-  if (!value) return new Date();
-  console.log(value);
-  return new Date(value);
+/* -------------------------------------------------------------
+   Robust date parser – works with both created_at & contributed_at
+   and strips microseconds that sometimes break React Native
+   ------------------------------------------------------------- */
+const parseContributionDate = (contrib: Contribution): Date => {
+  const raw = contrib.contributed_at ?? contrib.created_at;
+  if (!raw) return new Date();
+
+  // Remove microseconds (everything after the first 3 decimal places or the dot entirely)
+  const cleanIso = raw.split(".")[0] + (raw.includes(".") ? "Z" : "");
+
+  const parsed = parseISO(cleanIso);
+  return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+};
+
+const formatDateYMD = (contrib: Contribution): string => {
+  const date = parseContributionDate(contrib);
+  return format(date, "yyyy-MM-dd");
 };
 
 export default function SavingsDetailModal({
@@ -76,10 +91,7 @@ export default function SavingsDetailModal({
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: (_, gestureState) => {
-        return (
-          Math.abs(gestureState.dy) > Math.abs(gestureState.dx) &&
-          Math.abs(gestureState.dy) > 2
-        );
+        return Math.abs(gestureState.dy) > Math.abs(gestureState.dx) && Math.abs(gestureState.dy) > 2;
       },
       onPanResponderMove: (_, gestureState) => {
         if (gestureState.dy > 0) {
@@ -111,9 +123,7 @@ export default function SavingsDetailModal({
         toValue: SCREEN_HEIGHT,
         duration: 200,
         useNativeDriver: true,
-      }).start(() => {
-        setIsModalVisible(false);
-      });
+      }).start(() => setIsModalVisible(false));
     }
   }, [isVisible]);
 
@@ -128,28 +138,18 @@ export default function SavingsDetailModal({
     });
   };
 
-  // Build data for PhantomChart: cumulative amounts within different timeframes
+  /* -------------------------- Chart Data -------------------------- */
   const dataByTimeframe = React.useMemo(() => {
-    const result: Record<TimeframeKey, { timestamp: number; value: number }[]> =
-      {
-        "1D": [],
-        "1W": [],
-        "1M": [],
-        "1Y": [],
-        ALL: [],
-      };
+    const result: Record<TimeframeKey, { timestamp: number; value: number }[]> = {
+      "1D": [], "1W": [], "1M": [], "1Y": [], ALL: [],
+    };
 
-    if (
-      !savingObject?.contributions ||
-      savingObject.contributions.length === 0
-    ) {
+    if (!savingObject?.contributions || savingObject.contributions.length === 0) {
       return result;
     }
 
     const sorted = [...savingObject.contributions].sort(
-      (a, b) =>
-        parseBackendDate(a.created_at).getTime() -
-        parseBackendDate(b.created_at).getTime(),
+      (a, b) => parseContributionDate(a).getTime() - parseContributionDate(b).getTime(),
     );
 
     const now = Date.now();
@@ -158,33 +158,30 @@ export default function SavingsDetailModal({
       "1W": 7 * 24 * 60 * 60 * 1000,
       "1M": 30 * 24 * 60 * 60 * 1000,
       "1Y": 365 * 24 * 60 * 60 * 1000,
-      ALL: now - parseBackendDate(savingObject.created_at).getTime(),
+      ALL: now - parseISO(savingObject.created_at.split(".")[0] + "Z").getTime(),
     };
 
     (Object.keys(ranges) as TimeframeKey[]).forEach((key) => {
-      const windowStart =
-        key === "ALL"
-          ? parseBackendDate(savingObject.created_at).getTime()
-          : now - ranges[key];
+      const windowStart = key === "ALL" ? parseISO(savingObject.created_at.split(".")[0] + "Z").getTime() : now - ranges[key];
       let cumulative = 0;
-      const series: { timestamp: number; value: number }[] = [];
-
-      series.push({ timestamp: windowStart, value: 0 });
+      const series: { timestamp: number; value: number }[] = [{ timestamp: windowStart, value: 0 }];
 
       sorted.forEach((c) => {
-        const ts = parseBackendDate(c.created_at).getTime();
+        const ts = parseContributionDate(c).getTime();
         if (ts >= windowStart) {
-          const amount = c.amount_minor ?? c.contributed_minor ?? 0;
-          cumulative += amount / 100; // convert from minor to major for display alignment with PhantomChart
+          const amount = (c.amount_minor ?? c.contributed_minor ?? 0) / 100;
+          cumulative += amount;
           series.push({ timestamp: ts, value: cumulative });
         }
       });
 
       result[key] = series.length > 1 ? series : [];
     });
+      console.log(savingObject)
 
     return result;
-  }, [savingObject?.contributions, savingObject?.created_at]);
+  }, [savingObject]);
+
   const progress = goalAmount > 0 ? (currentAmount / goalAmount) * 100 : 0;
 
   return (
@@ -212,7 +209,7 @@ export default function SavingsDetailModal({
         >
           <SafeAreaView style={{ flex: 1 }}>
             {/* Drag Handle */}
-            <View className={"flex items-center"}>
+            <View className="flex items-center">
               <View
                 {...panResponder.panHandlers}
                 style={{
@@ -223,97 +220,68 @@ export default function SavingsDetailModal({
                   justifyContent: "center",
                 }}
               >
-                <View className={"bg-gray-400 w-[50px] h-[5px] rounded-full"} />
+                <View className="bg-gray-400 w-[50px] h-[5px] rounded-full" />
               </View>
             </View>
 
             <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
               {/* Header */}
-              <View className="mb-6">
-                <Text className="text-2xl font-bold">{savingName}</Text>
+              <View className="mb-4">
+                <Text className="text-4xl font-bold">{savingName}</Text>
               </View>
 
               {/* Chart Section */}
-              {/* Replaced custom SVG chart with reusable PhantomChart */}
               <View className="mb-6">
-                <View className="mb-4">
+                <View>
                   <Text className="text-3xl font-bold">
-                    {currency}
-                    {(currentAmount / 100).toFixed(2)}
+                    {currency}{(currentAmount / 100).toFixed(2)}
                   </Text>
                   {goalAmount > 0 && (
                     <Text className="text-neutral-500 mt-1">
-                      of {currency}
-                      {(goalAmount / 100).toFixed(2)} ({progress.toFixed(0)}%)
+                      of {currency}{(goalAmount / 100).toFixed(2)} ({progress.toFixed(0)}%)
                     </Text>
                   )}
                 </View>
-                {/* Chart */}
-                <View className="rounded-2xl p-2" style={{ minHeight: 180 }}>
+
+                <View className="rounded-2xl " style={{ minHeight: 180 }}>
                   <PhantomChart
                     dataByTimeframe={dataByTimeframe}
-                    initialTimeframe={"1W"}
-                    height={180}
+                    initialTimeframe="ALL"
+                    height={200}
+                    lineColor={"#22c55e"}
+                    showAmount={false}
                   />
                 </View>
-              </View>
-
-              {/* Description Section */}
-              <View className="mb-6">
-                <Text className="text-xl font-bold mb-3">Description</Text>
-                <TextInput
-                  className="text-neutral-600 text-base leading-6"
-                  placeholder="Add a description..."
-                  multiline
-                >
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed
-                  do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                  Ut enim ad minim veniam, quis nostrud exercitation ullamco
-                  laboris nisi ut aliquip ex ea commodo consequat.
-                </TextInput>
               </View>
 
               {/* Transactions Section */}
               <View className="mb-20">
                 <Text className="text-xl font-bold mb-3">Transactions</Text>
-                {!savingObject?.contributions ||
-                savingObject.contributions.length === 0 ? (
+
+                {!savingObject?.contributions || savingObject.contributions.length === 0 ? (
                   <Text className="text-neutral-500 text-center py-8">
                     No transactions yet
                   </Text>
                 ) : (
                   [...savingObject.contributions]
-                    .sort(
-                      (a, b) =>
-                        parseBackendDate(b.created_at).getTime() -
-                        parseBackendDate(a.created_at).getTime(),
-                    )
+                    .sort((a, b) => parseContributionDate(b).getTime() - parseContributionDate(a).getTime())
                     .map((contribution) => {
-                      const amount =
-                        contribution.amount_minor ??
-                        contribution.contributed_minor ??
-                        0;
-                      const date = parseBackendDate(contribution.created_at);
-                      const isValidDate = !isNaN(date.getTime());
+                      const amount = (contribution.amount_minor ?? contribution.contributed_minor ?? 0) / 100;
+                      const displayDate = formatDateYMD(contribution);
 
                       return (
                         <View
                           key={contribution.id}
-                          className="bg-white rounded-2xl p-4 mb-1 flex-row justify-between items-center"
+                          className="bg-white p-4 mb-1 flex-row justify-between items-center"
                         >
                           <View>
                             <Text className="text-base font-semibold">
-                              {contribution.description ||
-                                contribution.note ||
-                                "Contribution"}
+                              {contribution.description || contribution.note || "Contribution"}
                             </Text>
-                            <Text className="text-neutral-500 text-sm">
-                              {date.toLocaleDateString("de-DE")}
-                            </Text>
+                            <Text className="text-neutral-500 text-sm">{displayDate}</Text>
                           </View>
                           <Text className="text-lg font-bold text-green-600">
-                            +{currency}
-                            {(amount / 100).toFixed(2)}
+                            +{currency}{amount.toFixed(2)}
                           </Text>
                         </View>
                       );

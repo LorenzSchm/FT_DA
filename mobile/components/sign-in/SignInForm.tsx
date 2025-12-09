@@ -8,6 +8,7 @@ import {
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/utils/authStore";
 import ResetPasswordModal from "@/components/modals/ResetPasswordModal";
+import Toast from "react-native-toast-message";
 
 type Props = {
   isVisible: boolean;
@@ -33,6 +34,11 @@ export default function SignInForm({ isVisible, email }: Props) {
           console.log("User signed in successfully");
         })
         .catch((error) => {
+            Toast.show({
+                visibilityTime: 3000,
+                type: "error",
+                text1: "Invalid email or password",
+            })
           console.error("Error signing in:", error);
         });
       setLoading(false);
