@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
+import { Skeleton } from "@/components/ui/skeleton";
 import { LineChart } from "react-native-wagmi-charts";
 
 type Point = {
@@ -16,6 +17,8 @@ type Props = {
   positiveColor?: string;
   negativeColor?: string;
   backgroundColor?: string;
+  loading?: boolean;
+  emptyPlaceholder?: React.ReactNode;
 };
 
 const TIMEFRAMES: TimeframeKey[] = ["1D", "1W", "1M", "1Y", "ALL"];
@@ -27,6 +30,8 @@ export const PhantomChart: React.FC<Props> = ({
   positiveColor = "#16a34a",
   negativeColor = "#dc2626",
   backgroundColor = "#FFFFFF",
+  loading = false,
+  emptyPlaceholder,
 }) => {
   const [timeframe, setTimeframe] =
     React.useState<TimeframeKey>(initialTimeframe);
@@ -50,13 +55,15 @@ export const PhantomChart: React.FC<Props> = ({
     if (!isCursorActive) setDisplayValue(lastValue);
   }, [lastValue, timeframe, isCursorActive]);
 
-  if (!activeData.length) {
+  if (loading || !activeData.length) {
     return (
       <View className={`rounded-3xl bg-[${backgroundColor}]`}>
-        <Text className="text-gray-400 text-sm text-center py-4">
-          No data for {timeframe}
-        </Text>
+        <View className="px-4 pt-4">
+          <Skeleton className="h-6 w-40 mb-3 rounded-full" />
+          <Skeleton className="w-full rounded-2xl" style={{ height }} />
+        </View>
         <TimeframeRow active={timeframe} onChange={setTimeframe} />
+        {emptyPlaceholder}
       </View>
     );
   }
@@ -92,6 +99,7 @@ export const PhantomChart: React.FC<Props> = ({
       <TimeframeRow active={timeframe} onChange={setTimeframe} />
 
       <LineChart.Provider
+          key={`${timeframe}-${activeData.length}`}
         data={activeData}
         onCurrentIndexChange={(index) => {
           if (index == null) return;
@@ -100,7 +108,10 @@ export const PhantomChart: React.FC<Props> = ({
         }}
       >
         <LineChart height={height} className="mt-6">
-          <LineChart.Path color="#000" width={2} />
+          <LineChart.Path
+            color={isCursorActive ? "#000" : isUp ? positiveColor : negativeColor}
+            width={2}
+          />
 
           <LineChart.CursorCrosshair
             color="#000"

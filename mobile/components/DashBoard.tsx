@@ -55,8 +55,6 @@ export default function DashBoard() {
   const maxListHeight = height * 0.35;
 
   const { user, session } = useAuthStore();
-  console.log(session?.refresh_token)
-  console.log(session?.access_token)
 
   const loadAccounts = async () => {
     if (!session?.access_token) return [];
