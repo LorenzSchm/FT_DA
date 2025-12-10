@@ -9,7 +9,8 @@ import {
   Dimensions,
   PanResponder,
   Platform,
-  ScrollView, Image,
+  ScrollView,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import axios from "axios";
@@ -18,7 +19,7 @@ import { PhantomChart } from "@/components/PhantomChart";
 import { useAuthStore } from "@/utils/authStore";
 import { getInvestments } from "@/utils/db/invest/invest";
 import AddInvestmentModal from "@/components/modals/AddInvestmentModal";
-import {ChevronDown} from "lucide-react-native";
+import { ChevronDown } from "lucide-react-native";
 
 type Props = {
   isVisible: boolean;
@@ -209,7 +210,6 @@ export default function StockModal({
 
   if (!isModalVisible) return null;
 
-
   return (
     <>
       <Modal
@@ -268,13 +268,19 @@ export default function StockModal({
                           />
                         ) : (
                           <Text className="text-3xl font-bold text-orange-600">
-                            {(selectedStock.symbol || selectedStock.ticker || "?")[0]}
+                            {
+                              (selectedStock.symbol ||
+                                selectedStock.ticker ||
+                                "?")[0]
+                            }
                           </Text>
                         )}
                       </View>
                       <View className="flex-1">
                         <Text className="text-2xl font-bold text-black">
-                          {selectedStock.longname || selectedStock.display_name || selectedStock.symbol}
+                          {selectedStock.longname ||
+                            selectedStock.display_name ||
+                            selectedStock.symbol}
                         </Text>
                         <Text className="text-gray-500 text-base">
                           {selectedStock.symbol || selectedStock.ticker}

@@ -99,7 +99,7 @@ export const PhantomChart: React.FC<Props> = ({
       <TimeframeRow active={timeframe} onChange={setTimeframe} />
 
       <LineChart.Provider
-          key={`${timeframe}-${activeData.length}`}
+        key={`${timeframe}-${activeData.length}`}
         data={activeData}
         onCurrentIndexChange={(index) => {
           if (index == null) return;
@@ -109,7 +109,9 @@ export const PhantomChart: React.FC<Props> = ({
       >
         <LineChart height={height} className="mt-6">
           <LineChart.Path
-            color={isCursorActive ? "#000" : isUp ? positiveColor : negativeColor}
+            color={
+              isCursorActive ? "#000" : isUp ? positiveColor : negativeColor
+            }
             width={2}
           />
 

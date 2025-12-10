@@ -15,7 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import StockModal from "@/components/modals/StockModal";
 import { useAuthStore } from "@/utils/authStore";
 import { getInvestments } from "@/utils/db/invest/invest";
-import {Search, Triangle, X} from "lucide-react-native";
+import { Search, Triangle, X } from "lucide-react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export default function AddInvestmentView() {
@@ -186,7 +186,7 @@ export default function AddInvestmentView() {
   };
 
   return (
-      <View className="flex-1">
+    <View className="flex-1">
       <View
         style={{ width: expandedWidth, alignSelf: "center" }}
         className="bg-[#F1F1F2] mb-6 h-[42px] rounded-full flex-row items-center px-4 self-center"
@@ -211,175 +211,201 @@ export default function AddInvestmentView() {
           </TouchableOpacity>
         )}
       </View>
-    <ScrollView className="flex-1 bg-white p-7">
-
-
-      {isSearching ? (
-        <View>
-          <Text className="text-2xl font-bold mb-5">
-            Results ({searchResults.length})
-          </Text>
-          {searchLoading ? (
-            <View className="gap-4">
-              <Skeleton className="h-14 w-full rounded-xl" />
-              <Skeleton className="h-14 w-full rounded-xl" />
-              <Skeleton className="h-14 w-full rounded-xl" />
-            </View>
-          ) : searchResults.length === 0 ? (
-            <Text className="text-gray-500 text-center py-10">
-              No results found
+      <ScrollView className="flex-1 bg-white p-7">
+        {isSearching ? (
+          <View>
+            <Text className="text-2xl font-bold mb-5">
+              Results ({searchResults.length})
             </Text>
-          ) : (
-            <View className="gap-5">
-              {searchResults.map((item) => (
-                <Pressable key={item.symbol} onPress={() => openModal(item)}>
-                  <View className="flex-row items-center justify-between py-2">
-                    <View className="flex-row items-center">
-                      <Logo symbol={item.symbol} />
-                      <View>
-                        <Text className="text-lg font-bold">
-                          {item.longname || item.shortname || "Stock"}
-                        </Text>
-                        <Text className="text-sm text-gray-500">
-                          {item.symbol}
-                        </Text>
-                      </View>
-                    </View>
-                    <Text
-                      className={`font-bold  text-lg ${
-                        (item.weekly_change ?? 0) > 0
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }`}
-                    >{item.weekly_change != null
-                        ? `${Math.abs(item.weekly_change).toFixed(2)}%`
-                        : item.price != null
-                          ? `$${item.price.toFixed(2)}`
-                          : "—"}
-                    </Text>
-                  </View>
-                </Pressable>
-              ))}
-            </View>
-          )}
-        </View>
-      ) : (
-        <>
-          {/* Your Investments */}
-          <View className="mb-8">
-            <Text className="text-2xl font-bold mb-4">Your investments</Text>
-            {initialLoading ? (
-              <View className="gap-3">
+            {searchLoading ? (
+              <View className="gap-4">
+                <Skeleton className="h-14 w-full rounded-xl" />
                 <Skeleton className="h-14 w-full rounded-xl" />
                 <Skeleton className="h-14 w-full rounded-xl" />
               </View>
-            ) : positions.length === 0 ? (
-              <Text className="text-gray-500">No investments yet</Text>
+            ) : searchResults.length === 0 ? (
+              <Text className="text-gray-500 text-center py-10">
+                No results found
+              </Text>
             ) : (
-              <View>
-                {positions.map((item) => (
-                  <Pressable key={item.ticker} onPress={() => openModal(item)}>
-                    <View className="flex-row items-center justify-between py-3">
+              <View className="gap-5">
+                {searchResults.map((item) => (
+                  <Pressable key={item.symbol} onPress={() => openModal(item)}>
+                    <View className="flex-row items-center justify-between py-2">
                       <View className="flex-row items-center">
-                        <Logo symbol={item.ticker} />
+                        <Logo symbol={item.symbol} />
                         <View>
                           <Text className="text-lg font-bold">
-                            {item.ticker}
+                            {item.longname || item.shortname || "Stock"}
                           </Text>
-                          {item.price != null && (
-                            <Text className="text-gray-500">
-                              ${item.price.toFixed(2)}
-                            </Text>
-                          )}
+                          <Text className="text-sm text-gray-500">
+                            {item.symbol}
+                          </Text>
                         </View>
                       </View>
-                      {item.weekly_change != null && (
-                          <View className="flex flex-row gap-1">
-                          <View className="flex justify-center">
-                          {item.weekly_change > 0? (<Triangle stroke={"none"} size="12px" fill={"#22C55E"} />) : (
-                              <View className="rotate-180">
-                              <Triangle className="rotate-180" stroke={"none"} size="12px" fill={"#EF4444"}/>
-                              </View>
-                          )}
-                          </View>
-                        <Text
-                          className={`font-bold text-lg ${
-                            item.weekly_change > 0
-                              ? "text-[#22C55E]"
-                              : "text-[#EF4444]"
-                          }`}
-                        >
-                          {Math.abs(item.weekly_change).toFixed(2)}%
-                        </Text>
-                          </View>
-                      )}
+                      <Text
+                        className={`font-bold  text-lg ${
+                          (item.weekly_change ?? 0) > 0
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }`}
+                      >
+                        {item.weekly_change != null
+                          ? `${Math.abs(item.weekly_change).toFixed(2)}%`
+                          : item.price != null
+                            ? `$${item.price.toFixed(2)}`
+                            : "—"}
+                      </Text>
                     </View>
                   </Pressable>
                 ))}
               </View>
             )}
           </View>
+        ) : (
+          <>
+            {/* Your Investments */}
+            <View className="mb-8">
+              <Text className="text-2xl font-bold mb-4">Your investments</Text>
+              {initialLoading ? (
+                <View className="gap-3">
+                  <Skeleton className="h-14 w-full rounded-xl" />
+                  <Skeleton className="h-14 w-full rounded-xl" />
+                </View>
+              ) : positions.length === 0 ? (
+                <Text className="text-gray-500">No investments yet</Text>
+              ) : (
+                <View>
+                  {positions.map((item) => (
+                    <Pressable
+                      key={item.ticker}
+                      onPress={() => openModal(item)}
+                    >
+                      <View className="flex-row items-center justify-between py-3">
+                        <View className="flex-row items-center">
+                          <Logo symbol={item.ticker} />
+                          <View>
+                            <Text className="text-lg font-bold">
+                              {item.ticker}
+                            </Text>
+                            {item.price != null && (
+                              <Text className="text-gray-500">
+                                ${item.price.toFixed(2)}
+                              </Text>
+                            )}
+                          </View>
+                        </View>
+                        {item.weekly_change != null && (
+                          <View className="flex flex-row gap-1">
+                            <View className="flex justify-center">
+                              {item.weekly_change > 0 ? (
+                                <Triangle
+                                  stroke={"none"}
+                                  size="12px"
+                                  fill={"#22C55E"}
+                                />
+                              ) : (
+                                <View className="rotate-180">
+                                  <Triangle
+                                    className="rotate-180"
+                                    stroke={"none"}
+                                    size="12px"
+                                    fill={"#EF4444"}
+                                  />
+                                </View>
+                              )}
+                            </View>
+                            <Text
+                              className={`font-bold text-lg ${
+                                item.weekly_change > 0
+                                  ? "text-[#22C55E]"
+                                  : "text-[#EF4444]"
+                              }`}
+                            >
+                              {Math.abs(item.weekly_change).toFixed(2)}%
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+                    </Pressable>
+                  ))}
+                </View>
+              )}
+            </View>
 
-          {/* Trending */}
-          <View>
-            <Text className="text-2xl font-bold mb-4">Trending</Text>
-            {initialLoading ? (
-              <View className="gap-3">
-                <Skeleton className="h-14 w-full rounded-xl" />
-                <Skeleton className="h-14 w-full rounded-xl" />
-                <Skeleton className="h-14 w-full rounded-xl" />
-              </View>
-            ) : (
-              trending.map((item) => (
-              <Pressable key={item.symbol} onPress={() => openModal(item)}>
-                <View className="flex-row items-center justify-between py-3">
-                  <View className="flex-row items-center">
-                    <Logo symbol={item.symbol} />
-                    <View>
-                      <Text className="text-lg font-bold">{item.symbol}</Text>
-                      {item.price != null && (
-                        <Text className="text-gray-500 ">
-                          ${item.price.toFixed(2)}
-                        </Text>
+            {/* Trending */}
+            <View>
+              <Text className="text-2xl font-bold mb-4">Trending</Text>
+              {initialLoading ? (
+                <View className="gap-3">
+                  <Skeleton className="h-14 w-full rounded-xl" />
+                  <Skeleton className="h-14 w-full rounded-xl" />
+                  <Skeleton className="h-14 w-full rounded-xl" />
+                </View>
+              ) : (
+                trending.map((item) => (
+                  <Pressable key={item.symbol} onPress={() => openModal(item)}>
+                    <View className="flex-row items-center justify-between py-3">
+                      <View className="flex-row items-center">
+                        <Logo symbol={item.symbol} />
+                        <View>
+                          <Text className="text-lg font-bold">
+                            {item.symbol}
+                          </Text>
+                          {item.price != null && (
+                            <Text className="text-gray-500 ">
+                              ${item.price.toFixed(2)}
+                            </Text>
+                          )}
+                        </View>
+                      </View>
+                      {item.weekly_change != null && (
+                        <View className="flex flex-row gap-1">
+                          <View className="flex justify-center">
+                            {item.weekly_change > 0 ? (
+                              <Triangle
+                                stroke={"none"}
+                                size="12px"
+                                fill={"#22C55E"}
+                              />
+                            ) : (
+                              <View className="rotate-180">
+                                <Triangle
+                                  className="rotate-180"
+                                  stroke={"none"}
+                                  size="12px"
+                                  fill={"#EF4444"}
+                                />
+                              </View>
+                            )}
+                          </View>
+                          <Text
+                            className={`font-bold text-lg ${
+                              item.weekly_change > 0
+                                ? "text-[#22C55E]"
+                                : "text-[#EF4444]"
+                            }`}
+                          >
+                            {Math.abs(item.weekly_change).toFixed(2)}%
+                          </Text>
+                        </View>
                       )}
                     </View>
-                  </View>
-                  {item.weekly_change != null && (
-                          <View className="flex flex-row gap-1">
-                          <View className="flex justify-center">
-                          {item.weekly_change > 0? (<Triangle stroke={"none"} size="12px" fill={"#22C55E"} />) : (
-                              <View className="rotate-180">
-                              <Triangle className="rotate-180" stroke={"none"} size="12px" fill={"#EF4444"}/>
-                              </View>
-                          )}
-                          </View>
-                        <Text
-                          className={`font-bold text-lg ${
-                            item.weekly_change > 0
-                              ? "text-[#22C55E]"
-                              : "text-[#EF4444]"
-                          }`}
-                        >
-                          {Math.abs(item.weekly_change).toFixed(2)}%
-                        </Text>
-                          </View>
-                      )}
-                </View>
-              </Pressable>
-            ))
-            )}
-          </View>
-        </>
-      )}
+                  </Pressable>
+                ))
+              )}
+            </View>
+          </>
+        )}
 
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <StockModal
-          isVisible={modalVisible}
-          onClose={closeModal}
-          selectedStock={selectedStock}
-        />
-      </GestureHandlerRootView>
-    </ScrollView>
-      </View>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <StockModal
+            isVisible={modalVisible}
+            onClose={closeModal}
+            selectedStock={selectedStock}
+          />
+        </GestureHandlerRootView>
+      </ScrollView>
+    </View>
   );
 }

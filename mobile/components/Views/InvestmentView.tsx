@@ -1,4 +1,12 @@
-import {View, Text, Pressable, TouchableOpacity, Image, ScrollView, ActivityIndicator} from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+  ActivityIndicator,
+} from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { getInvestments } from "@/utils/db/invest/invest";
 import { useAuthStore } from "@/utils/authStore";
@@ -362,9 +370,7 @@ export function InvestmentView() {
               <Text className="text-gray-400">No investments yet</Text>
             </View>
           ) : (
-            <ScrollView className=" h-60"
-                showsVerticalScrollIndicator={false}
-            >
+            <ScrollView className=" h-60" showsVerticalScrollIndicator={false}>
               {positions.map((item) => (
                 <Pressable key={item.ticker} onPress={() => openModal(item)}>
                   <View className="flex-row justify-between items-center py-3">
