@@ -17,16 +17,16 @@ type Props = {
 };
 
 const COLORS = [
-  "#1F2937", // dark slate
-  "#1E40AF", // cobalt
-  "#0E7490", // cyan-teal
-  "#047857", // emerald green
-  "#A16207", // golden brown
-  "#B91C1C", // red
-  "#BE185D", // raspberry
-  "#6D28D9", // purple
-  "#7C3AED", // violet
-  "#4B5563", // dark gray
+  "#AFBACC",
+  "#213D65",
+  "#425989",
+  "#000000",
+  "#35609f",
+  "#38475e",
+  "#3d6eb3",
+  "#1b5cb3",
+  "#435671",
+  "#4B5563",
 ];
 
 function polarToCartesian(
@@ -59,8 +59,8 @@ function describeArc(
 }
 
 export default function CircularProgress({
-  size = 200,
-  strokeWidth = 20,
+  size = 250,
+  strokeWidth = 25,
   savings,
   totalAmount,
   currency = "€",
@@ -139,7 +139,7 @@ export default function CircularProgress({
           justifyContent: "center",
         }}
       >
-        <Text className="text-3xl font-bold text-black">
+        <Text className="text-[32px] font-bold text-green-500">
           {currency}
           {(totalAmount / 100).toLocaleString("de-DE", {
             minimumFractionDigits: 2,
