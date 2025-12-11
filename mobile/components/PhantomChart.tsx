@@ -163,3 +163,4 @@ const TimeframeRow = ({ active, onChange }: any) => (
     ))}
   </View>
 );
+
