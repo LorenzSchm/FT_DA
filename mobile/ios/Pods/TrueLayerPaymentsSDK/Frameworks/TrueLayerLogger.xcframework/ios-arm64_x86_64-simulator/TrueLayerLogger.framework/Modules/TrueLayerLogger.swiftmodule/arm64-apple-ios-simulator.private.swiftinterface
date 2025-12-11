@@ -1,0 +1,28 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.0.3 effective-5.10 (swiftlang-6.0.3.1.10 clang-1600.0.30.1)
+// swift-module-flags: -target arm64-apple-ios14.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-bare-slash-regex -module-name TrueLayerLogger
+// swift-module-flags-ignorable: -no-verify-emitted-module-interface
+import Foundation
+import Swift
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+@_spi(TrueLayer) public enum LogType : Swift.String {
+  @_spi(TrueLayer) case debug
+  @_spi(TrueLayer) case error
+  @_spi(TrueLayer) public init?(rawValue: Swift.String)
+  @_spi(TrueLayer) public typealias RawValue = Swift.String
+  @_spi(TrueLayer) public var rawValue: Swift.String {
+    @_spi(TrueLayer) get
+  }
+}
+@_spi(TrueLayer) public enum Logger {
+}
+@_spi(TrueLayer) extension TrueLayerLogger.Logger {
+  @_spi(TrueLayer) public static func log(type: TrueLayerLogger.LogType = .debug, message: Any?, file: Swift.StaticString = #file, line: Swift.UInt = #line)
+  @_spi(TrueLayer) public static func prepareLog(type: TrueLayerLogger.LogType = .debug, message: Any, file: Swift.StaticString, line: Swift.UInt, dateProvider: () -> Foundation.Date = { Date() }) -> Swift.String
+  @_spi(TrueLayer) public static func readableDateTime(from date: Foundation.Date) -> Swift.String
+}
+@_spi(TrueLayer) extension TrueLayerLogger.LogType : Swift.Equatable {}
+@_spi(TrueLayer) extension TrueLayerLogger.LogType : Swift.Hashable {}
+@_spi(TrueLayer) extension TrueLayerLogger.LogType : Swift.RawRepresentable {}

@@ -1,0 +1,18 @@
+[
+  {
+    "key": "psu-sub-account.display-text",
+    "value": "Sub-account"
+  },
+  {
+    "key": "remitter-iban.placeholder",
+    "value": "e.g. GB91BARC20039567287254"
+  },
+  {
+    "key": "sca_method_selection.placeholder",
+    "value": "SCA Search Placeholder"
+  },
+  {
+    "key": "branch-name.placeholder",
+    "value": "Branch search placeholder"
+  }
+]

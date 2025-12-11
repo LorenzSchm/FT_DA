@@ -1,0 +1,975 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.0.3 effective-5.10 (swiftlang-6.0.3.1.10 clang-1600.0.30.1)
+// swift-module-flags: -target arm64-apple-ios14.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-bare-slash-regex -module-name TrueLayerCore
+// swift-module-flags-ignorable: -no-verify-emitted-module-interface
+import Foundation
+import Swift
+@_spi(TrueLayer) import TrueLayerLogger
+@_spi(TrueLayer) import TrueLayerUtils
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+@_spi(TrueLayer) public enum Core {
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core {
+  @_spi(TrueLayer) public enum Payments {
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments {
+  @_spi(TrueLayer) public enum Models {
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models {
+  @_spi(TrueLayer) public enum SinglePayment {
+    @_spi(TrueLayer) public typealias Identifier = Swift.String
+  }
+  @_spi(TrueLayer) public enum Mandate {
+    @_spi(TrueLayer) public typealias Identifier = Swift.String
+  }
+  @_spi(TrueLayer) public enum Shared {
+    @_spi(TrueLayer) public typealias Currency = Swift.String
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Mandate {
+  @_spi(TrueLayer) public struct AuthorizationFlow : Swift.Equatable {
+    @_spi(TrueLayer) public let actions: TrueLayerCore.Core.Payments.Models.Mandate.AuthorizationFlow.Actions
+    @_spi(TrueLayer) public let adjacent: TrueLayerCore.Core.Payments.Models.Shared.Adjacent?
+    @_spi(TrueLayer) public init(actions: TrueLayerCore.Core.Payments.Models.Mandate.AuthorizationFlow.Actions, adjacent: TrueLayerCore.Core.Payments.Models.Shared.Adjacent? = nil)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Mandate.AuthorizationFlow, b: TrueLayerCore.Core.Payments.Models.Mandate.AuthorizationFlow) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Mandate.AuthorizationFlow {
+  @_spi(TrueLayer) public struct Actions : Swift.Equatable {
+    @_spi(TrueLayer) public let next: TrueLayerCore.Core.Payments.Models.Mandate.AuthorizationFlow.Step
+    @_spi(TrueLayer) public init(next: TrueLayerCore.Core.Payments.Models.Mandate.AuthorizationFlow.Step)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Mandate.AuthorizationFlow.Actions, b: TrueLayerCore.Core.Payments.Models.Mandate.AuthorizationFlow.Actions) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Mandate.AuthorizationFlow {
+  @_spi(TrueLayer) public enum Step : Swift.Equatable {
+    @_spi(TrueLayer) case userAccountSelection(userAccounts: [TrueLayerCore.Core.Payments.Models.Shared.UserAccount])
+    @_spi(TrueLayer) case providerSelection(providers: [TrueLayerCore.Core.Payments.Models.Shared.Provider])
+    @_spi(TrueLayer) case redirect(uri: Foundation.URL)
+    @_spi(TrueLayer) case consentRedirectRetry(url: Foundation.URL)
+    @_spi(TrueLayer) case consent
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Mandate.AuthorizationFlow.Step, b: TrueLayerCore.Core.Payments.Models.Mandate.AuthorizationFlow.Step) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Mandate.AuthorizationFlow {
+  @_spi(TrueLayer) public enum Status : Swift.Equatable {
+    @_spi(TrueLayer) case authorizing(authorizationFlow: TrueLayerCore.Core.Payments.Models.Mandate.AuthorizationFlow)
+    @_spi(TrueLayer) case failed(reason: TrueLayerCore.Core.Payments.Models.Mandate.FailureReason)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Mandate.AuthorizationFlow.Status, b: TrueLayerCore.Core.Payments.Models.Mandate.AuthorizationFlow.Status) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Mandate {
+  @_spi(TrueLayer) public struct Information : Swift.Equatable {
+    @_spi(TrueLayer) public let identifier: TrueLayerCore.Core.Payments.Models.Mandate.Identifier
+    @_spi(TrueLayer) public let currency: TrueLayerCore.Core.Payments.Models.Shared.Currency
+    @_spi(TrueLayer) public let beneficiary: TrueLayerCore.Core.Payments.Models.Shared.Beneficiary
+    @_spi(TrueLayer) public let creationDate: Foundation.Date
+    @_spi(TrueLayer) public let constraints: TrueLayerCore.Core.Payments.Models.Mandate.Constraints
+    @_spi(TrueLayer) public let status: TrueLayerCore.Core.Payments.Models.Mandate.Status
+    @_spi(TrueLayer) public let providerSelection: TrueLayerCore.Core.Payments.Models.Shared.ProviderSelection
+    @_spi(TrueLayer) public let reference: Swift.String
+    @_spi(TrueLayer) public let userIdentifier: Swift.String?
+    @_spi(TrueLayer) public let isSignupPlus: Swift.Bool
+    @_spi(TrueLayer) public var providerIdentifier: TrueLayerCore.Core.Payments.Models.Shared.Provider.Identifier? {
+      @_spi(TrueLayer) get
+    }
+    @_spi(TrueLayer) public init(identifier: TrueLayerCore.Core.Payments.Models.Mandate.Identifier, currency: TrueLayerCore.Core.Payments.Models.Shared.Currency, beneficiary: TrueLayerCore.Core.Payments.Models.Shared.Beneficiary, creationDate: Foundation.Date, constraints: TrueLayerCore.Core.Payments.Models.Mandate.Constraints, status: TrueLayerCore.Core.Payments.Models.Mandate.Status, reference: Swift.String, providerSelection: TrueLayerCore.Core.Payments.Models.Shared.ProviderSelection, userIdentifier: Swift.String?, isSignupPlus: Swift.Bool)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Mandate.Information, b: TrueLayerCore.Core.Payments.Models.Mandate.Information) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Mandate {
+  @_spi(TrueLayer) public enum State : Swift.CaseIterable {
+    @_spi(TrueLayer) case authorized
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Mandate.State, b: TrueLayerCore.Core.Payments.Models.Mandate.State) -> Swift.Bool
+    @_spi(TrueLayer) public func hash(into hasher: inout Swift.Hasher)
+    @_spi(TrueLayer) public typealias AllCases = [TrueLayerCore.Core.Payments.Models.Mandate.State]
+    @_spi(TrueLayer) nonisolated public static var allCases: [TrueLayerCore.Core.Payments.Models.Mandate.State] {
+      @_spi(TrueLayer) get
+    }
+    @_spi(TrueLayer) public var hashValue: Swift.Int {
+      @_spi(TrueLayer) get
+    }
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Mandate {
+  @_spi(TrueLayer) public enum Status : Swift.Equatable {
+    @_spi(TrueLayer) case authorizationRequired
+    @_spi(TrueLayer) case authorizing(authorizationFlowStep: TrueLayerCore.Core.Payments.Models.Mandate.AuthorizationFlow.Step)
+    @_spi(TrueLayer) case authorized
+    @_spi(TrueLayer) case revoked
+    @_spi(TrueLayer) case failed(_: TrueLayerCore.Core.Payments.Models.Mandate.FailureReason)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Mandate.Status, b: TrueLayerCore.Core.Payments.Models.Mandate.Status) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Mandate {
+  @_spi(TrueLayer) public enum FailureReason : Swift.Equatable, Swift.Error {
+    @_spi(TrueLayer) case authorizationFailed
+    @_spi(TrueLayer) case providerRejected
+    @_spi(TrueLayer) case internalServerError
+    @_spi(TrueLayer) case invalidMandateState
+    @_spi(TrueLayer) case expired
+    @_spi(TrueLayer) case userCanceledAtProvider
+    @_spi(TrueLayer) case invalidAccountDetails
+    @_spi(TrueLayer) case constraintViolation
+    @_spi(TrueLayer) case mandateRevoked
+    @_spi(TrueLayer) case other(reason: Swift.String)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Mandate.FailureReason, b: TrueLayerCore.Core.Payments.Models.Mandate.FailureReason) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Mandate {
+  @_spi(TrueLayer) public struct Constraints : Swift.Equatable {
+    @_spi(TrueLayer) public let validFrom: Foundation.Date?
+    @_spi(TrueLayer) public let validTo: Foundation.Date?
+    @_spi(TrueLayer) public let singleTransactionLimit: Swift.Int
+    @_spi(TrueLayer) public let periodicLimits: [TrueLayerCore.Core.Payments.Models.Mandate.Constraints.Period]
+    @_spi(TrueLayer) public init(validFrom: Foundation.Date?, validTo: Foundation.Date?, singleTransactionLimit: Swift.Int, periodicLimits: [TrueLayerCore.Core.Payments.Models.Mandate.Constraints.Period])
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Mandate.Constraints, b: TrueLayerCore.Core.Payments.Models.Mandate.Constraints) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Mandate.Constraints {
+  @_spi(TrueLayer) public enum Period : Swift.Equatable {
+    @_spi(TrueLayer) case day(periodicLimit: TrueLayerCore.Core.Payments.Models.Mandate.Constraints.Period.Limit)
+    @_spi(TrueLayer) case week(periodicLimit: TrueLayerCore.Core.Payments.Models.Mandate.Constraints.Period.Limit)
+    @_spi(TrueLayer) case fortnight(periodicLimit: TrueLayerCore.Core.Payments.Models.Mandate.Constraints.Period.Limit)
+    @_spi(TrueLayer) case month(periodicLimit: TrueLayerCore.Core.Payments.Models.Mandate.Constraints.Period.Limit)
+    @_spi(TrueLayer) case halfYear(periodicLimit: TrueLayerCore.Core.Payments.Models.Mandate.Constraints.Period.Limit)
+    @_spi(TrueLayer) case year(periodicLimit: TrueLayerCore.Core.Payments.Models.Mandate.Constraints.Period.Limit)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Mandate.Constraints.Period, b: TrueLayerCore.Core.Payments.Models.Mandate.Constraints.Period) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Mandate.Constraints.Period {
+  @_spi(TrueLayer) public struct Limit : Swift.Equatable {
+    @_spi(TrueLayer) public let maximumAmount: Swift.Int
+    @_spi(TrueLayer) public let alignment: TrueLayerCore.Core.Payments.Models.Mandate.Constraints.Period.Alignment
+    @_spi(TrueLayer) public init(maximumAmount: Swift.Int, alignment: TrueLayerCore.Core.Payments.Models.Mandate.Constraints.Period.Alignment)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Mandate.Constraints.Period.Limit, b: TrueLayerCore.Core.Payments.Models.Mandate.Constraints.Period.Limit) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Mandate.Constraints.Period {
+  @_spi(TrueLayer) public enum Alignment : Swift.String, Swift.Equatable {
+    @_spi(TrueLayer) case calendar
+    @_spi(TrueLayer) case consent
+    @_spi(TrueLayer) public init?(rawValue: Swift.String)
+    @_spi(TrueLayer) public typealias RawValue = Swift.String
+    @_spi(TrueLayer) public var rawValue: Swift.String {
+      @_spi(TrueLayer) get
+    }
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Mandate {
+  @_spi(TrueLayer) public enum ResultShown : Swift.Equatable {
+    @_spi(TrueLayer) case noneShown
+    @_spi(TrueLayer) case success
+    @_spi(TrueLayer) case initiated
+    @_spi(TrueLayer) case noneInvalidState
+    @_spi(TrueLayer) case error(reason: TrueLayerCore.Core.Payments.Models.Mandate.FailureReason?)
+    @_spi(TrueLayer) public init(mandateInformation: TrueLayerCore.Core.Payments.Models.Mandate.Information)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Mandate.ResultShown, b: TrueLayerCore.Core.Payments.Models.Mandate.ResultShown) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models {
+  @_spi(TrueLayer) public enum PaymentType {
+    @_spi(TrueLayer) case singlePayment(identifier: TrueLayerCore.Core.Payments.Models.SinglePayment.Identifier)
+    @_spi(TrueLayer) case mandate(identifier: TrueLayerCore.Core.Payments.Models.Mandate.Identifier)
+    @_spi(TrueLayer) public var resourceIdentifier: Swift.String {
+      @_spi(TrueLayer) get
+    }
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Shared {
+  @_spi(TrueLayer) public struct AISLegals : Swift.Equatable {
+    @_spi(TrueLayer) public let modal: TrueLayerCore.Core.Payments.Models.Shared.AISModal
+    @_spi(TrueLayer) public let smallTextNormalized: TrueLayerCore.Core.Payments.Models.Shared.ActionableCopy
+    @_spi(TrueLayer) public init(modal: TrueLayerCore.Core.Payments.Models.Shared.AISModal, smallTextNormalized: TrueLayerCore.Core.Payments.Models.Shared.ActionableCopy)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Shared.AISLegals, b: TrueLayerCore.Core.Payments.Models.Shared.AISLegals) -> Swift.Bool
+  }
+  @_spi(TrueLayer) public struct AISModal : Swift.Decodable, Swift.Equatable {
+    @_spi(TrueLayer) public let title: Swift.String
+    @_spi(TrueLayer) public let content: [TrueLayerCore.Core.Payments.Models.Shared.AISModalContent]
+    @_spi(TrueLayer) public init(title: Swift.String, content: [TrueLayerCore.Core.Payments.Models.Shared.AISModalContent])
+    @_spi(TrueLayer) public var contentString: Swift.String {
+      @_spi(TrueLayer) get
+    }
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Shared.AISModal, b: TrueLayerCore.Core.Payments.Models.Shared.AISModal) -> Swift.Bool
+    @_spi(TrueLayer) public init(from decoder: any Swift.Decoder) throws
+  }
+  @_spi(TrueLayer) public enum AISModalContent : Swift.Decodable, Swift.Equatable {
+    @_spi(TrueLayer) case paragraph(Swift.String)
+    @_spi(TrueLayer) case list([Swift.String])
+    @_spi(TrueLayer) public init?(type: Swift.String, text: Swift.String? = nil, list: [Swift.String]? = nil)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Shared.AISModalContent, b: TrueLayerCore.Core.Payments.Models.Shared.AISModalContent) -> Swift.Bool
+    @_spi(TrueLayer) public init(from decoder: any Swift.Decoder) throws
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Shared {
+  @_spi(TrueLayer) public struct ActionableCopy : Swift.Equatable {
+    @_spi(TrueLayer) public let text: Swift.String
+    @_spi(TrueLayer) public let actionableLinks: [Swift.String : Foundation.URL]
+    @_spi(TrueLayer) public init(text: Swift.String, actionableKeys: [Swift.String : Foundation.URL])
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Shared.ActionableCopy, b: TrueLayerCore.Core.Payments.Models.Shared.ActionableCopy) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Shared {
+  @_spi(TrueLayer) public struct Adjacent : Swift.Codable, Swift.Equatable, Swift.Hashable {
+    @_spi(TrueLayer) public let consent: TrueLayerCore.Core.Payments.Models.Shared.Consent?
+    @_spi(TrueLayer) public init(consent: TrueLayerCore.Core.Payments.Models.Shared.Consent?)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Shared.Adjacent, b: TrueLayerCore.Core.Payments.Models.Shared.Adjacent) -> Swift.Bool
+    @_spi(TrueLayer) public func hash(into hasher: inout Swift.Hasher)
+    @_spi(TrueLayer) public func encode(to encoder: any Swift.Encoder) throws
+    @_spi(TrueLayer) public var hashValue: Swift.Int {
+      @_spi(TrueLayer) get
+    }
+    @_spi(TrueLayer) public init(from decoder: any Swift.Decoder) throws
+  }
+  @_spi(TrueLayer) public struct Consent : Swift.Codable, Swift.Equatable, Swift.Hashable {
+    @_spi(TrueLayer) public let requirements: TrueLayerCore.Core.Payments.Models.Shared.Requirements?
+    @_spi(TrueLayer) public init(requirements: TrueLayerCore.Core.Payments.Models.Shared.Requirements?)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Shared.Consent, b: TrueLayerCore.Core.Payments.Models.Shared.Consent) -> Swift.Bool
+    @_spi(TrueLayer) public func hash(into hasher: inout Swift.Hasher)
+    @_spi(TrueLayer) public func encode(to encoder: any Swift.Encoder) throws
+    @_spi(TrueLayer) public var hashValue: Swift.Int {
+      @_spi(TrueLayer) get
+    }
+    @_spi(TrueLayer) public init(from decoder: any Swift.Decoder) throws
+  }
+  @_spi(TrueLayer) public struct Requirements : Swift.Codable, Swift.Equatable, Swift.Hashable {
+    @_spi(TrueLayer) public let pis: TrueLayerCore.Core.Payments.Models.Shared.PISRequirements?
+    @_spi(TrueLayer) public let ais: TrueLayerCore.Core.Payments.Models.Shared.AISRequirements?
+    @_spi(TrueLayer) public init(pis: TrueLayerCore.Core.Payments.Models.Shared.PISRequirements?, ais: TrueLayerCore.Core.Payments.Models.Shared.AISRequirements?)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Shared.Requirements, b: TrueLayerCore.Core.Payments.Models.Shared.Requirements) -> Swift.Bool
+    @_spi(TrueLayer) public func hash(into hasher: inout Swift.Hasher)
+    @_spi(TrueLayer) public func encode(to encoder: any Swift.Encoder) throws
+    @_spi(TrueLayer) public var hashValue: Swift.Int {
+      @_spi(TrueLayer) get
+    }
+    @_spi(TrueLayer) public init(from decoder: any Swift.Decoder) throws
+  }
+  @_spi(TrueLayer) public struct PISRequirements : Swift.Codable, Swift.Equatable, Swift.Hashable {
+    @_spi(TrueLayer) public init()
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Shared.PISRequirements, b: TrueLayerCore.Core.Payments.Models.Shared.PISRequirements) -> Swift.Bool
+    @_spi(TrueLayer) public func hash(into hasher: inout Swift.Hasher)
+    @_spi(TrueLayer) public func encode(to encoder: any Swift.Encoder) throws
+    @_spi(TrueLayer) public var hashValue: Swift.Int {
+      @_spi(TrueLayer) get
+    }
+    @_spi(TrueLayer) public init(from decoder: any Swift.Decoder) throws
+  }
+  @_spi(TrueLayer) public struct AISRequirements : Swift.Codable, Swift.Equatable, Swift.Hashable {
+    @_spi(TrueLayer) public let requiredScopes: [Swift.String]
+    @_spi(TrueLayer) public let optionalScopes: [Swift.String]
+    @_spi(TrueLayer) public init(requiredScopes: [Swift.String], optionalScopes: [Swift.String])
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Shared.AISRequirements, b: TrueLayerCore.Core.Payments.Models.Shared.AISRequirements) -> Swift.Bool
+    @_spi(TrueLayer) public func hash(into hasher: inout Swift.Hasher)
+    @_spi(TrueLayer) public func encode(to encoder: any Swift.Encoder) throws
+    @_spi(TrueLayer) public var hashValue: Swift.Int {
+      @_spi(TrueLayer) get
+    }
+    @_spi(TrueLayer) public init(from decoder: any Swift.Decoder) throws
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Shared {
+  @_spi(TrueLayer) public struct BadRequest : Swift.Equatable {
+    @_spi(TrueLayer) public typealias KeyedErrors = [Swift.String : [Swift.String]]
+    @_spi(TrueLayer) public let errors: TrueLayerCore.Core.Payments.Models.Shared.BadRequest.KeyedErrors
+    @_spi(TrueLayer) public var additionalInputErrors: TrueLayerCore.Core.Payments.Models.Shared.BadRequest.KeyedErrors {
+      @_spi(TrueLayer) get
+    }
+    @_spi(TrueLayer) public var redirectURIErrors: [Swift.String]? {
+      @_spi(TrueLayer) get
+    }
+    @_spi(TrueLayer) public init(errors: TrueLayerCore.Core.Payments.Models.Shared.BadRequest.KeyedErrors)
+    @_spi(TrueLayer) public func additionalInputErrors(for inputID: Swift.String) -> [Swift.String]?
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Shared.BadRequest, b: TrueLayerCore.Core.Payments.Models.Shared.BadRequest) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Shared {
+  @_spi(TrueLayer) public struct Beneficiary : Swift.Equatable {
+    @_spi(TrueLayer) public let name: Swift.String?
+    @_spi(TrueLayer) public let accountIdentifier: TrueLayerCore.Core.Payments.Models.Shared.Beneficiary.AccountIdentifier?
+    @_spi(TrueLayer) public let reference: Swift.String?
+    @_spi(TrueLayer) public init(name: Swift.String?, accountIdentifier: TrueLayerCore.Core.Payments.Models.Shared.Beneficiary.AccountIdentifier?, reference: Swift.String?)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Shared.Beneficiary, b: TrueLayerCore.Core.Payments.Models.Shared.Beneficiary) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Shared.Beneficiary {
+  @_spi(TrueLayer) public enum AccountIdentifier : Swift.Equatable {
+    @_spi(TrueLayer) case accountNumber(_: TrueLayerCore.Core.Payments.Models.Shared.Beneficiary.AccountIdentifier.AccountNumber)
+    @_spi(TrueLayer) case iban(_: Swift.String)
+    @_spi(TrueLayer) case trueLayer(_: Swift.String)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Shared.Beneficiary.AccountIdentifier, b: TrueLayerCore.Core.Payments.Models.Shared.Beneficiary.AccountIdentifier) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Shared.Beneficiary.AccountIdentifier {
+  @_spi(TrueLayer) public struct AccountNumber : Swift.Equatable {
+    @_spi(TrueLayer) public let sortCode: Swift.String
+    @_spi(TrueLayer) public let accountNumber: Swift.String
+    @_spi(TrueLayer) public init(sortCode: Swift.String, accountNumber: Swift.String)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Shared.Beneficiary.AccountIdentifier.AccountNumber, b: TrueLayerCore.Core.Payments.Models.Shared.Beneficiary.AccountIdentifier.AccountNumber) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Shared {
+  @_spi(TrueLayer) public struct CancellationFormInformation : Swift.Equatable {
+    @_spi(TrueLayer) public let title: Swift.String?
+    @_spi(TrueLayer) public let smallPrint: Swift.String?
+    @_spi(TrueLayer) public let buttonText: Swift.String?
+    @_spi(TrueLayer) public let options: [TrueLayerCore.Core.Payments.Models.Shared.CancellationFormInformation.CancellationFormOption]
+    @_spi(TrueLayer) public init(title: Swift.String?, smallPrint: Swift.String?, buttonText: Swift.String?, options: [TrueLayerCore.Core.Payments.Models.Shared.CancellationFormInformation.CancellationFormOption])
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Shared.CancellationFormInformation, b: TrueLayerCore.Core.Payments.Models.Shared.CancellationFormInformation) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Shared.CancellationFormInformation {
+  @_spi(TrueLayer) public struct CancellationFormOption : Swift.Equatable, Swift.Identifiable {
+    @_spi(TrueLayer) public let id: Swift.String?
+    @_spi(TrueLayer) public let text: Swift.String?
+    @_spi(TrueLayer) public let comments: Swift.Bool?
+    @_spi(TrueLayer) public let commentsPlaceholder: Swift.String?
+    @_spi(TrueLayer) public init(id: Swift.String?, text: Swift.String?, comments: Swift.Bool?, commentsPlaceholder: Swift.String?)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Shared.CancellationFormInformation.CancellationFormOption, b: TrueLayerCore.Core.Payments.Models.Shared.CancellationFormInformation.CancellationFormOption) -> Swift.Bool
+    @_spi(TrueLayer) public typealias ID = Swift.String?
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Shared {
+  @_spi(TrueLayer) public struct Country : Swift.Identifiable, Swift.Hashable, Swift.Codable {
+    @_spi(TrueLayer) public var id: Swift.String {
+      @_spi(TrueLayer) get
+    }
+    @_spi(TrueLayer) public let code: Swift.String
+    @_spi(TrueLayer) public let name: Swift.String
+    @_spi(TrueLayer) public var flagURL: Foundation.URL? {
+      @_spi(TrueLayer) get
+    }
+    @_spi(TrueLayer) public init(code: Swift.String, name: Swift.String)
+    @_spi(TrueLayer) public init?(code: Swift.String)
+    @_spi(TrueLayer) public func hash(into hasher: inout Swift.Hasher)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Shared.Country, b: TrueLayerCore.Core.Payments.Models.Shared.Country) -> Swift.Bool
+    @_spi(TrueLayer) public typealias ID = Swift.String
+    @_spi(TrueLayer) public func encode(to encoder: any Swift.Encoder) throws
+    @_spi(TrueLayer) public var hashValue: Swift.Int {
+      @_spi(TrueLayer) get
+    }
+    @_spi(TrueLayer) public init(from decoder: any Swift.Decoder) throws
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Shared.Country {
+  @_spi(TrueLayer) public struct Stored : Swift.Codable {
+    @_spi(TrueLayer) public let id: TrueLayerCore.Core.Payments.Models.Shared.Country.ID
+    @_spi(TrueLayer) public func encode(to encoder: any Swift.Encoder) throws
+    @_spi(TrueLayer) public init(from decoder: any Swift.Decoder) throws
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Shared {
+  @_spi(TrueLayer) public struct Merchant : Swift.Equatable {
+    @_spi(TrueLayer) public let name: Swift.String
+    @_spi(TrueLayer) public let logoURI: Foundation.URL
+    @_spi(TrueLayer) public let isRegulated: Swift.Bool
+    @_spi(TrueLayer) public let fallbackURL: Foundation.URL?
+    @_spi(TrueLayer) public init(name: Swift.String, logoURI: Foundation.URL, isRegulated: Swift.Bool, fallbackURL: Foundation.URL?)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Shared.Merchant, b: TrueLayerCore.Core.Payments.Models.Shared.Merchant) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Shared {
+  @_spi(TrueLayer) public struct PISLegals : Swift.Equatable {
+    @_spi(TrueLayer) public let smallText: TrueLayerCore.Core.Payments.Models.Shared.ActionableCopy
+    @_spi(TrueLayer) public init(smallText: TrueLayerCore.Core.Payments.Models.Shared.ActionableCopy)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Shared.PISLegals, b: TrueLayerCore.Core.Payments.Models.Shared.PISLegals) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Shared {
+  @_spi(TrueLayer) public enum PaymentType {
+    @_spi(TrueLayer) case singlePayment
+    @_spi(TrueLayer) case mandate
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Shared.PaymentType, b: TrueLayerCore.Core.Payments.Models.Shared.PaymentType) -> Swift.Bool
+    @_spi(TrueLayer) public func hash(into hasher: inout Swift.Hasher)
+    @_spi(TrueLayer) public var hashValue: Swift.Int {
+      @_spi(TrueLayer) get
+    }
+  }
+  @_spi(TrueLayer) public enum PaymentInformation {
+    @_spi(TrueLayer) case singlePayment(_: TrueLayerCore.Core.Payments.Models.SinglePayment.Information)
+    @_spi(TrueLayer) case mandate(_: TrueLayerCore.Core.Payments.Models.Mandate.Information)
+    @_spi(TrueLayer) public var providerSelection: TrueLayerCore.Core.Payments.Models.Shared.ProviderSelection {
+      @_spi(TrueLayer) get
+    }
+    @_spi(TrueLayer) public var currency: TrueLayerCore.Core.Payments.Models.Shared.Currency {
+      @_spi(TrueLayer) get
+    }
+    @_spi(TrueLayer) public var userIdentifier: Swift.String? {
+      @_spi(TrueLayer) get
+    }
+    @_spi(TrueLayer) public var providerIdentifier: TrueLayerCore.Core.Payments.Models.Shared.Provider.Identifier? {
+      @_spi(TrueLayer) get
+    }
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Shared {
+  @_spi(TrueLayer) public struct Provider : Swift.Identifiable, Swift.Hashable {
+    @_spi(TrueLayer) public typealias Identifier = Swift.String
+    @_spi(TrueLayer) public let id: TrueLayerCore.Core.Payments.Models.Shared.Provider.Identifier
+    @_spi(TrueLayer) public let displayName: Swift.String
+    @_spi(TrueLayer) public let country: TrueLayerCore.Core.Payments.Models.Shared.Country
+    @_spi(TrueLayer) public let aliases: [Swift.String]
+    @_spi(TrueLayer) public let isConnectionHealthy: Swift.Bool
+    @_spi(TrueLayer) public let schemeIdentifiers: [Swift.String]
+    @_spi(TrueLayer) public let logoURI: Foundation.URL?
+    @_spi(TrueLayer) public let iconURI: Foundation.URL?
+    @_spi(TrueLayer) public var isConnectionNotHealthy: Swift.Bool {
+      @_spi(TrueLayer) get
+    }
+    @_spi(TrueLayer) public let normalizedDisplayName: Swift.String
+    @_spi(TrueLayer) public let normalizedSearchTokens: [Swift.String]
+    @_spi(TrueLayer) public init(id: Swift.String, displayName: Swift.String, country: TrueLayerCore.Core.Payments.Models.Shared.Country, aliases: [Swift.String], isConnectionHealthy: Swift.Bool, schemeIdentifiers: [TrueLayerCore.Core.Payments.Models.Shared.Provider.Identifier], logoURI: Foundation.URL?, iconURI: Foundation.URL?)
+    @_spi(TrueLayer) public func addLastUsedPrefix() -> TrueLayerCore.Core.Payments.Models.Shared.Provider.Identifier
+    @_spi(TrueLayer) public func cleanID() -> TrueLayerCore.Core.Payments.Models.Shared.Provider.ID
+    @_spi(TrueLayer) public func cleaned() -> TrueLayerCore.Core.Payments.Models.Shared.Provider
+    @_spi(TrueLayer) public func hash(into hasher: inout Swift.Hasher)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Shared.Provider, b: TrueLayerCore.Core.Payments.Models.Shared.Provider) -> Swift.Bool
+    @_spi(TrueLayer) public typealias ID = TrueLayerCore.Core.Payments.Models.Shared.Provider.Identifier
+    @_spi(TrueLayer) public var hashValue: Swift.Int {
+      @_spi(TrueLayer) get
+    }
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Shared.Provider {
+  @_spi(TrueLayer) public struct Configuration : Swift.Equatable {
+    @_spi(TrueLayer) public let parentIdentifier: Swift.String
+    @_spi(TrueLayer) public let weight: Swift.Double
+    @_spi(TrueLayer) public let shouldPrimeUser: Swift.Bool
+    @_spi(TrueLayer) public let branches: [TrueLayerCore.Core.Payments.Models.Shared.Provider.Branch]
+    @_spi(TrueLayer) public let iconURL: Foundation.URL?
+    @_spi(TrueLayer) public init(parentIdentifier: Swift.String, weight: Swift.Double, shouldPrimeUser: Swift.Bool, branches: [TrueLayerCore.Core.Payments.Models.Shared.Provider.Branch], iconURL: Foundation.URL?)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Shared.Provider.Configuration, b: TrueLayerCore.Core.Payments.Models.Shared.Provider.Configuration) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Shared.Provider {
+  @_spi(TrueLayer) public struct Branch : Swift.Equatable {
+    @_spi(TrueLayer) public typealias Identifier = Swift.String
+    @_spi(TrueLayer) public let id: TrueLayerCore.Core.Payments.Models.Shared.Provider.Branch.Identifier
+    @_spi(TrueLayer) public let displayName: Swift.String
+    @_spi(TrueLayer) public let searchAliases: [Swift.String]
+    @_spi(TrueLayer) public let normalizedDisplayName: Swift.String
+    @_spi(TrueLayer) public let normalizedSearchTokens: [Swift.String]
+    @_spi(TrueLayer) public init(id: TrueLayerCore.Core.Payments.Models.Shared.Provider.Branch.Identifier, displayName: Swift.String, searchAliases: [Swift.String])
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Shared.Provider.Branch, b: TrueLayerCore.Core.Payments.Models.Shared.Provider.Branch) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Shared.Provider.UserPriming {
+  @_spi(TrueLayer) public enum Status : Swift.Equatable {
+    @_spi(TrueLayer) case primingRequired(TrueLayerCore.Core.Payments.Models.Shared.Provider.UserPriming)
+    @_spi(TrueLayer) case noPrimingRequired
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Shared.Provider.UserPriming.Status, b: TrueLayerCore.Core.Payments.Models.Shared.Provider.UserPriming.Status) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Shared.Provider {
+  @_spi(TrueLayer) public struct UserPriming : Swift.Equatable {
+    @_spi(TrueLayer) public let title: Swift.String
+    @_spi(TrueLayer) public let headline: Swift.String
+    @_spi(TrueLayer) public let steps: [Swift.String]
+    @_spi(TrueLayer) public let bankNavigation: TrueLayerCore.Core.Payments.Models.Shared.Provider.UserPriming.BankNavigation
+    @_spi(TrueLayer) public init(title: Swift.String, headline: Swift.String, steps: [Swift.String], bankNavigation: TrueLayerCore.Core.Payments.Models.Shared.Provider.UserPriming.BankNavigation)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Shared.Provider.UserPriming, b: TrueLayerCore.Core.Payments.Models.Shared.Provider.UserPriming) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Shared.Provider.UserPriming {
+  @_spi(TrueLayer) public struct BankNavigation : Swift.Equatable {
+    @_spi(TrueLayer) public let title: Swift.String
+    @_spi(TrueLayer) public let url: Foundation.URL
+    @_spi(TrueLayer) public init(title: Swift.String, url: Foundation.URL)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Shared.Provider.UserPriming.BankNavigation, b: TrueLayerCore.Core.Payments.Models.Shared.Provider.UserPriming.BankNavigation) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Shared.Provider {
+  @_spi(TrueLayer) public struct Stored : Swift.Codable, Swift.Equatable {
+    @_spi(TrueLayer) public let id: TrueLayerCore.Core.Payments.Models.Shared.Provider.ID
+    @_spi(TrueLayer) public let date: Foundation.TimeInterval
+    @_spi(TrueLayer) public init(id: TrueLayerCore.Core.Payments.Models.Shared.Provider.ID, date: Foundation.TimeInterval)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Shared.Provider.Stored, b: TrueLayerCore.Core.Payments.Models.Shared.Provider.Stored) -> Swift.Bool
+    @_spi(TrueLayer) public func encode(to encoder: any Swift.Encoder) throws
+    @_spi(TrueLayer) public init(from decoder: any Swift.Decoder) throws
+  }
+}
+@_spi(TrueLayer) extension Swift.Array where Element == TrueLayerCore.Core.Payments.Models.Shared.Provider {
+  @_spi(TrueLayer) public var countries: Swift.Set<TrueLayerCore.Core.Payments.Models.Shared.Country> {
+    @_spi(TrueLayer) get
+  }
+}
+@_spi(TrueLayer) extension Swift.Array where Element == TrueLayerCore.Core.Payments.Models.Shared.Provider.Configuration {
+  @_spi(TrueLayer) public subscript(provider: TrueLayerCore.Core.Payments.Models.Shared.Provider?) -> Element? {
+    @_spi(TrueLayer) get
+  }
+  @_spi(TrueLayer) public subscript(providerIdentifier: TrueLayerCore.Core.Payments.Models.Shared.Provider.Identifier?) -> Element? {
+    @_spi(TrueLayer) get
+  }
+  @_spi(TrueLayer) public func iconURL(for providerIdentifier: TrueLayerCore.Core.Payments.Models.Shared.Provider.Identifier?) -> Foundation.URL?
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Shared {
+  @_spi(TrueLayer) public enum ProviderSelection : Swift.Equatable {
+    @_spi(TrueLayer) case preselected(providerID: Swift.String, userShouldSelectScheme: Swift.Bool)
+    @_spi(TrueLayer) case userSelected(providerID: Swift.String, userShouldSelectScheme: Swift.Bool)
+    @_spi(TrueLayer) case userShouldSelect(userShouldSelectScheme: Swift.Bool)
+    @_spi(TrueLayer) public var userShouldSelectScheme: Swift.Bool {
+      @_spi(TrueLayer) get
+    }
+    @_spi(TrueLayer) public var isPreselected: Swift.Bool {
+      @_spi(TrueLayer) get
+    }
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Shared.ProviderSelection, b: TrueLayerCore.Core.Payments.Models.Shared.ProviderSelection) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Shared {
+  @_spi(TrueLayer) public struct UserAccount : Swift.Equatable {
+    @_spi(TrueLayer) public typealias Identifier = Swift.String
+    @_spi(TrueLayer) public let identifier: TrueLayerCore.Core.Payments.Models.Shared.UserAccount.Identifier
+    @_spi(TrueLayer) public let provider: TrueLayerCore.Core.Payments.Models.Shared.Provider
+    @_spi(TrueLayer) public let maskedAccountIdentifier: Swift.String
+    @_spi(TrueLayer) public init(identifier: TrueLayerCore.Core.Payments.Models.Shared.UserAccount.Identifier, provider: TrueLayerCore.Core.Payments.Models.Shared.Provider, maskedAccountIdentifier: Swift.String)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.Shared.UserAccount, b: TrueLayerCore.Core.Payments.Models.Shared.UserAccount) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow {
+  @_spi(TrueLayer) public enum AdditionalInputs {
+    @_spi(TrueLayer) public enum `Type` : Swift.Equatable {
+      @_spi(TrueLayer) case text(_: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.Text)
+      @_spi(TrueLayer) case singleChoiceList(_: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.SingleChoiceList)
+      @_spi(TrueLayer) case textWithImage(_: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.TextWithImage)
+      @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.`Type`, b: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.`Type`) -> Swift.Bool
+    }
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs {
+  @_spi(TrueLayer) public enum Step : Swift.Equatable {
+    @_spi(TrueLayer) case iban(textModel: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.Text)
+    @_spi(TrueLayer) case text(textModels: [TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.Text])
+    @_spi(TrueLayer) case singleChoiceList(listModel: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.SingleChoiceList)
+    @_spi(TrueLayer) case textWithImage(textAndImageModel: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.TextWithImage)
+    @_spi(TrueLayer) case usernameAndPassword(textModels: [TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.Text])
+    @_spi(TrueLayer) case otp(textModel: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.Text)
+    @_spi(TrueLayer) public var identifiers: [Swift.String] {
+      @_spi(TrueLayer) get
+    }
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.Step, b: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.Step) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs {
+  @_spi(TrueLayer) public struct HelpText : Swift.Equatable {
+    @_spi(TrueLayer) public let key: Swift.String
+    @_spi(TrueLayer) public let element: Swift.String
+    @_spi(TrueLayer) public let type: Swift.String
+    @_spi(TrueLayer) public let actionableCopy: TrueLayerCore.Core.Payments.Models.Shared.ActionableCopy
+    @_spi(TrueLayer) public init(key: Swift.String, element: Swift.String, type: Swift.String, actionableCopy: TrueLayerCore.Core.Payments.Models.Shared.ActionableCopy)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.HelpText, b: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.HelpText) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs {
+  @_spi(TrueLayer) public struct Localization : Swift.Equatable {
+    @_spi(TrueLayer) public let key: Swift.String
+    @_spi(TrueLayer) public let value: Swift.String
+    @_spi(TrueLayer) public init(key: Swift.String, value: Swift.String)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.Localization, b: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.Localization) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension Swift.Array where Element == TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.Localization {
+  @_spi(TrueLayer) public func translation(for key: Swift.String) -> Swift.String?
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs {
+  @_spi(TrueLayer) public struct KeyedText : Swift.Equatable {
+    @_spi(TrueLayer) public let key: Swift.String?
+    @_spi(TrueLayer) public let `default`: Swift.String
+    @_spi(TrueLayer) public init(key: Swift.String?, default: Swift.String)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.KeyedText, b: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.KeyedText) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs {
+  @_spi(TrueLayer) public struct SingleChoiceList : Swift.Equatable {
+    @_spi(TrueLayer) public let id: Swift.String
+    @_spi(TrueLayer) public let mandatory: Swift.Bool
+    @_spi(TrueLayer) public let type: Swift.String
+    @_spi(TrueLayer) public let title: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.KeyedText
+    @_spi(TrueLayer) public let description: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.KeyedText?
+    @_spi(TrueLayer) public let options: [TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.SingleChoiceList.Option]
+    @_spi(TrueLayer) public init(id: Swift.String, mandatory: Swift.Bool, type: Swift.String, title: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.KeyedText, description: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.KeyedText?, options: [TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.SingleChoiceList.Option])
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.SingleChoiceList, b: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.SingleChoiceList) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.SingleChoiceList {
+  @_spi(TrueLayer) public struct Option : Swift.Equatable {
+    @_spi(TrueLayer) public typealias Identifier = Swift.String
+    @_spi(TrueLayer) public let id: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.SingleChoiceList.Option.Identifier
+    @_spi(TrueLayer) public let title: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.KeyedText
+    @_spi(TrueLayer) public let aliases: [Swift.String]
+    @_spi(TrueLayer) public func addRecentlyUsedPrefix() -> TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.SingleChoiceList.Option.Identifier
+    @_spi(TrueLayer) public func cleanID() -> TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.SingleChoiceList.Option.Identifier
+    @_spi(TrueLayer) public func cleaned() -> TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.SingleChoiceList.Option
+    @_spi(TrueLayer) public init(id: Swift.String, title: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.KeyedText, aliases: [Swift.String])
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.SingleChoiceList.Option, b: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.SingleChoiceList.Option) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.SingleChoiceList.Option {
+  @_spi(TrueLayer) public struct Stored : Swift.Codable, Swift.Equatable {
+    @_spi(TrueLayer) public let id: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.SingleChoiceList.Option.Identifier
+    @_spi(TrueLayer) public let date: Foundation.TimeInterval
+    @_spi(TrueLayer) public init(id: TrueLayerCore.Core.Payments.Models.Shared.Provider.ID, date: Foundation.TimeInterval)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.SingleChoiceList.Option.Stored, b: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.SingleChoiceList.Option.Stored) -> Swift.Bool
+    @_spi(TrueLayer) public func encode(to encoder: any Swift.Encoder) throws
+    @_spi(TrueLayer) public init(from decoder: any Swift.Decoder) throws
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs {
+  @_spi(TrueLayer) public struct Text : Swift.Equatable {
+    @_spi(TrueLayer) public let id: Swift.String
+    @_spi(TrueLayer) public let mandatory: Swift.Bool
+    @_spi(TrueLayer) public let title: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.KeyedText
+    @_spi(TrueLayer) public let description: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.KeyedText?
+    @_spi(TrueLayer) public let format: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.Text.Format
+    @_spi(TrueLayer) public let sensitive: Swift.Bool
+    @_spi(TrueLayer) public let minLength: Swift.Int
+    @_spi(TrueLayer) public let maxLength: Swift.Int
+    @_spi(TrueLayer) public let regexes: [TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.Text.Regex]
+    @_spi(TrueLayer) public init(id: Swift.String, mandatory: Swift.Bool, title: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.KeyedText, description: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.KeyedText?, format: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.Text.Format, sensitive: Swift.Bool, minLength: Swift.Int, maxLength: Swift.Int, regexes: [TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.Text.Regex])
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.Text, b: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.Text) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.Text {
+  @_spi(TrueLayer) public enum Format : Swift.Equatable {
+    @_spi(TrueLayer) case any
+    @_spi(TrueLayer) case accountNumber
+    @_spi(TrueLayer) case alphabetical
+    @_spi(TrueLayer) case alphanumerical
+    @_spi(TrueLayer) case email
+    @_spi(TrueLayer) case iban
+    @_spi(TrueLayer) case numerical
+    @_spi(TrueLayer) case sortCode
+    @_spi(TrueLayer) public func hash(into hasher: inout Swift.Hasher)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.Text.Format, b: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.Text.Format) -> Swift.Bool
+    @_spi(TrueLayer) public var hashValue: Swift.Int {
+      @_spi(TrueLayer) get
+    }
+  }
+  @_spi(TrueLayer) public struct Regex : Swift.Equatable {
+    @_spi(TrueLayer) public let regex: Swift.String
+    @_spi(TrueLayer) public let message: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.KeyedText
+    @_spi(TrueLayer) public init(regex: Swift.String, message: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.KeyedText)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.Text.Regex, b: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.Text.Regex) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs {
+  @_spi(TrueLayer) public struct TextWithImage : Swift.Equatable {
+    @_spi(TrueLayer) public let id: Swift.String
+    @_spi(TrueLayer) public let textInput: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.Text
+    @_spi(TrueLayer) public let image: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.TextWithImage.Image
+    @_spi(TrueLayer) public init(id: Swift.String, textInput: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.Text, image: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.TextWithImage.Image)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.TextWithImage, b: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.TextWithImage) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.TextWithImage {
+  @_spi(TrueLayer) public enum Image : Swift.Equatable {
+    @_spi(TrueLayer) case uri(url: Foundation.URL)
+    @_spi(TrueLayer) case base64(data: Swift.String, mediaType: Swift.String)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.TextWithImage.Image, b: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.TextWithImage.Image) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment {
+  @_spi(TrueLayer) public struct AuthorizationFlow : Swift.Equatable {
+    @_spi(TrueLayer) public let actions: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.Actions
+    @_spi(TrueLayer) public let adjacent: TrueLayerCore.Core.Payments.Models.Shared.Adjacent?
+    @_spi(TrueLayer) public init(actions: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.Actions, adjacent: TrueLayerCore.Core.Payments.Models.Shared.Adjacent? = nil)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow, b: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow {
+  @_spi(TrueLayer) public struct Actions : Swift.Equatable {
+    @_spi(TrueLayer) public let next: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.Step
+    @_spi(TrueLayer) public init(next: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.Step)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.Actions, b: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.Actions) -> Swift.Bool
+  }
+  @_spi(TrueLayer) public enum Status : Swift.Equatable {
+    @_spi(TrueLayer) case authorizing(authorizationFlow: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow)
+    @_spi(TrueLayer) case failed(reason: TrueLayerCore.Core.Payments.Models.SinglePayment.FailureReason)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.Status, b: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.Status) -> Swift.Bool
+  }
+  @_spi(TrueLayer) public enum Step : Swift.Equatable {
+    @_spi(TrueLayer) case userAccountSelection(userAccounts: [TrueLayerCore.Core.Payments.Models.Shared.UserAccount])
+    @_spi(TrueLayer) case consent(subsequentAction: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.SubsequentActionHint)
+    @_spi(TrueLayer) case additionalInputs(inputs: [TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.`Type`])
+    @_spi(TrueLayer) case providerSelection(providers: [TrueLayerCore.Core.Payments.Models.Shared.Provider])
+    @_spi(TrueLayer) case redirect(url: Foundation.URL)
+    @_spi(TrueLayer) case consentRedirectRetry(url: Foundation.URL)
+    @_spi(TrueLayer) case wait(displayMessage: Swift.String?)
+    @_spi(TrueLayer) case schemeSelection
+    @_spi(TrueLayer) case retry(retryOptions: [TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.RetryOption])
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.Step, b: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.Step) -> Swift.Bool
+  }
+  @_spi(TrueLayer) public enum SubsequentActionHint : Swift.Decodable {
+    @_spi(TrueLayer) case additionalInputs
+    @_spi(TrueLayer) case redirect
+    @_spi(TrueLayer) case wait
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.SubsequentActionHint, b: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.SubsequentActionHint) -> Swift.Bool
+    @_spi(TrueLayer) public func hash(into hasher: inout Swift.Hasher)
+    @_spi(TrueLayer) public var hashValue: Swift.Int {
+      @_spi(TrueLayer) get
+    }
+    @_spi(TrueLayer) public init(from decoder: any Swift.Decoder) throws
+  }
+  @_spi(TrueLayer) public enum RetryOption : Swift.String {
+    @_spi(TrueLayer) case restart
+    @_spi(TrueLayer) public init?(rawValue: Swift.String)
+    @_spi(TrueLayer) public typealias RawValue = Swift.String
+    @_spi(TrueLayer) public var rawValue: Swift.String {
+      @_spi(TrueLayer) get
+    }
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment {
+  @_spi(TrueLayer) public struct Information : Swift.Equatable {
+    @_spi(TrueLayer) public let identifier: TrueLayerCore.Core.Payments.Models.SinglePayment.Identifier
+    @_spi(TrueLayer) public let amount: Swift.Double
+    @_spi(TrueLayer) public let currency: TrueLayerCore.Core.Payments.Models.Shared.Currency
+    @_spi(TrueLayer) public let status: TrueLayerCore.Core.Payments.Models.SinglePayment.Status
+    @_spi(TrueLayer) public let method: TrueLayerCore.Core.Payments.Models.SinglePayment.Method
+    @_spi(TrueLayer) public let userIdentifier: Swift.String?
+    @_spi(TrueLayer) public let creditableAt: Swift.String?
+    @_spi(TrueLayer) public let isSignupPlus: Swift.Bool
+    @_spi(TrueLayer) public var providerIdentifier: TrueLayerCore.Core.Payments.Models.Shared.Provider.Identifier? {
+      @_spi(TrueLayer) get
+    }
+    @_spi(TrueLayer) public var beneficiary: TrueLayerCore.Core.Payments.Models.Shared.Beneficiary {
+      @_spi(TrueLayer) get
+    }
+    @_spi(TrueLayer) public var providerSelection: TrueLayerCore.Core.Payments.Models.Shared.ProviderSelection {
+      @_spi(TrueLayer) get
+    }
+    @_spi(TrueLayer) public var canChangeBank: Swift.Bool {
+      @_spi(TrueLayer) get
+    }
+    @_spi(TrueLayer) public var canRetry: Swift.Bool {
+      @_spi(TrueLayer) get
+    }
+    @_spi(TrueLayer) public init(identifier: TrueLayerCore.Core.Payments.Models.SinglePayment.Identifier, amount: Swift.Double, currency: TrueLayerCore.Core.Payments.Models.Shared.Currency, status: TrueLayerCore.Core.Payments.Models.SinglePayment.Status, method: TrueLayerCore.Core.Payments.Models.SinglePayment.Method, userIdentifier: Swift.String?, creditableAt: Swift.String?, isSignupPlus: Swift.Bool)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.Information, b: TrueLayerCore.Core.Payments.Models.SinglePayment.Information) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment {
+  @_spi(TrueLayer) public enum Method : Swift.Equatable {
+    @_spi(TrueLayer) case bankTransfer(beneficiary: TrueLayerCore.Core.Payments.Models.Shared.Beneficiary, providerSelection: TrueLayerCore.Core.Payments.Models.Shared.ProviderSelection, retry: TrueLayerCore.Core.Payments.Models.SinglePayment.Retry?)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.Method, b: TrueLayerCore.Core.Payments.Models.SinglePayment.Method) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment.Method {
+  @_spi(TrueLayer) public enum BankTransfer {
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment {
+  @_spi(TrueLayer) public struct ProvidersInfo : Swift.Equatable {
+    @_spi(TrueLayer) public let currency: Swift.String?
+    @_spi(TrueLayer) public let filters: TrueLayerCore.Core.Payments.Models.SinglePayment.ProvidersInfo.Filters?
+    @_spi(TrueLayer) public let accountSaveOption: TrueLayerCore.Core.Payments.Models.SinglePayment.ProvidersInfo.AccountSaveOption?
+    @_spi(TrueLayer) public init(currency: Swift.String?, filters: TrueLayerCore.Core.Payments.Models.SinglePayment.ProvidersInfo.Filters?, accountSaveOption: TrueLayerCore.Core.Payments.Models.SinglePayment.ProvidersInfo.AccountSaveOption?)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.ProvidersInfo, b: TrueLayerCore.Core.Payments.Models.SinglePayment.ProvidersInfo) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment.ProvidersInfo {
+  @_spi(TrueLayer) public struct Filters : Swift.Decodable, Swift.Equatable {
+    @_spi(TrueLayer) public let countries: [Swift.String]?
+    @_spi(TrueLayer) public init(countries: [Swift.String]?)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.ProvidersInfo.Filters, b: TrueLayerCore.Core.Payments.Models.SinglePayment.ProvidersInfo.Filters) -> Swift.Bool
+    @_spi(TrueLayer) public init(from decoder: any Swift.Decoder) throws
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment.ProvidersInfo {
+  @_spi(TrueLayer) public enum AccountSaveOption : Swift.Equatable {
+    @_spi(TrueLayer) case automatic
+    @_spi(TrueLayer) case checkbox(preselected: Swift.Bool)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.ProvidersInfo.AccountSaveOption, b: TrueLayerCore.Core.Payments.Models.SinglePayment.ProvidersInfo.AccountSaveOption) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment {
+  @_spi(TrueLayer) public enum ResultShown : Swift.Equatable {
+    @_spi(TrueLayer) case noneShown
+    @_spi(TrueLayer) case success
+    @_spi(TrueLayer) case initiated
+    @_spi(TrueLayer) case noneInvalidState
+    @_spi(TrueLayer) case error(reason: TrueLayerCore.Core.Payments.Models.SinglePayment.FailureReason?)
+    @_spi(TrueLayer) public init(singlePaymentInformation: TrueLayerCore.Core.Payments.Models.SinglePayment.Information)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.ResultShown, b: TrueLayerCore.Core.Payments.Models.SinglePayment.ResultShown) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment {
+  @_spi(TrueLayer) public struct Retry : Swift.Equatable {
+    @_spi(TrueLayer) public init()
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.Retry, b: TrueLayerCore.Core.Payments.Models.SinglePayment.Retry) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment {
+  @_spi(TrueLayer) public struct Scheme : Swift.Equatable {
+    @_spi(TrueLayer) public typealias Identifier = Swift.String
+    @_spi(TrueLayer) public let identifier: TrueLayerCore.Core.Payments.Models.SinglePayment.Scheme.Identifier
+    @_spi(TrueLayer) public let title: Swift.String
+    @_spi(TrueLayer) public let description: Swift.String
+    @_spi(TrueLayer) public let icon: Swift.String
+    @_spi(TrueLayer) public let enabled: Swift.Bool
+    @_spi(TrueLayer) public init(identifier: TrueLayerCore.Core.Payments.Models.SinglePayment.Scheme.Identifier, title: Swift.String, description: Swift.String, currency: Swift.String, icon: Swift.String, enabled: Swift.Bool = false)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.Scheme, b: TrueLayerCore.Core.Payments.Models.SinglePayment.Scheme) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment.Scheme {
+  @_spi(TrueLayer) public enum SelectionType : Swift.Equatable {
+    @_spi(TrueLayer) case userSelected(TrueLayerCore.Core.Payments.Models.SinglePayment.Scheme.SelectionType.UserSelectedDetails)
+    @_spi(TrueLayer) case autoSelected(schemeID: Swift.String)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.Scheme.SelectionType, b: TrueLayerCore.Core.Payments.Models.SinglePayment.Scheme.SelectionType) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment.Scheme.SelectionType {
+  @_spi(TrueLayer) public struct UserSelectedDetails : Swift.Equatable {
+    @_spi(TrueLayer) public let autoSelectSchemeIdentifier: TrueLayerCore.Core.Payments.Models.SinglePayment.Scheme.Identifier?
+    @_spi(TrueLayer) public let schemes: [TrueLayerCore.Core.Payments.Models.SinglePayment.Scheme]
+    @_spi(TrueLayer) public let subtitle: Swift.String?
+    @_spi(TrueLayer) public init(autoSelectSchemeID: TrueLayerCore.Core.Payments.Models.SinglePayment.Scheme.Identifier?, schemes: [TrueLayerCore.Core.Payments.Models.SinglePayment.Scheme], subtitle: Swift.String?)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.Scheme.SelectionType.UserSelectedDetails, b: TrueLayerCore.Core.Payments.Models.SinglePayment.Scheme.SelectionType.UserSelectedDetails) -> Swift.Bool
+  }
+}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment {
+  @_spi(TrueLayer) public enum Status : Swift.Equatable {
+    @_spi(TrueLayer) case authorizationRequired
+    @_spi(TrueLayer) case authorizing(authorizationFlow: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow)
+    @_spi(TrueLayer) case authorized
+    @_spi(TrueLayer) case executed
+    @_spi(TrueLayer) case settled
+    @_spi(TrueLayer) case failed(reason: TrueLayerCore.Core.Payments.Models.SinglePayment.FailureReason)
+    @_spi(TrueLayer) case attemptFailed(reason: TrueLayerCore.Core.Payments.Models.SinglePayment.FailureReason, authorizationFlow: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.Status, b: TrueLayerCore.Core.Payments.Models.SinglePayment.Status) -> Swift.Bool
+  }
+  @_spi(TrueLayer) public enum FailureReason : Swift.Equatable, Swift.Error {
+    @_spi(TrueLayer) case authorizationFailed
+    @_spi(TrueLayer) case blocked
+    @_spi(TrueLayer) case canceled
+    @_spi(TrueLayer) case expired
+    @_spi(TrueLayer) case insufficientFunds
+    @_spi(TrueLayer) case internalServerError
+    @_spi(TrueLayer) case invalidAccountDetails
+    @_spi(TrueLayer) case invalidAccountHolderName
+    @_spi(TrueLayer) case invalidBeneficiaryAccount
+    @_spi(TrueLayer) case invalidCredentials
+    @_spi(TrueLayer) case invalidOtp
+    @_spi(TrueLayer) case invalidRemitterAccount
+    @_spi(TrueLayer) case invalidRequest
+    @_spi(TrueLayer) case invalidSortCode
+    @_spi(TrueLayer) case notAuthorized
+    @_spi(TrueLayer) case paymentLimitExceeded
+    @_spi(TrueLayer) case providerError
+    @_spi(TrueLayer) case providerExpired
+    @_spi(TrueLayer) case providerRejected
+    @_spi(TrueLayer) case rejected
+    @_spi(TrueLayer) case schemeUnavailable
+    @_spi(TrueLayer) case unknownError
+    @_spi(TrueLayer) case userCanceledAtProvider
+    @_spi(TrueLayer) case verificationDeclined
+    @_spi(TrueLayer) case other(reason: Swift.String)
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.FailureReason, b: TrueLayerCore.Core.Payments.Models.SinglePayment.FailureReason) -> Swift.Bool
+  }
+  @_spi(TrueLayer) public enum State : Swift.CaseIterable {
+    @_spi(TrueLayer) case authorized
+    @_spi(TrueLayer) case executed
+    @_spi(TrueLayer) case settled
+    @_spi(TrueLayer) case wait
+    @_spi(TrueLayer) public static func == (a: TrueLayerCore.Core.Payments.Models.SinglePayment.State, b: TrueLayerCore.Core.Payments.Models.SinglePayment.State) -> Swift.Bool
+    @_spi(TrueLayer) public func hash(into hasher: inout Swift.Hasher)
+    @_spi(TrueLayer) public typealias AllCases = [TrueLayerCore.Core.Payments.Models.SinglePayment.State]
+    @_spi(TrueLayer) nonisolated public static var allCases: [TrueLayerCore.Core.Payments.Models.SinglePayment.State] {
+      @_spi(TrueLayer) get
+    }
+    @_spi(TrueLayer) public var hashValue: Swift.Int {
+      @_spi(TrueLayer) get
+    }
+  }
+}
+@_spi(TrueLayer) public protocol AISPISPersistable {
+  @_spi(TrueLayer) func updateHasAIS(newValue: Swift.Bool)
+  @_spi(TrueLayer) var hasAIS: Swift.Bool { get }
+  @_spi(TrueLayer) func updatePISConsentGiven(newValue: Swift.Bool)
+  @_spi(TrueLayer) var pisConsentGiven: Swift.Bool { get }
+  @_spi(TrueLayer) func updateAdjacent(newValue: TrueLayerCore.Core.Payments.Models.Shared.Adjacent?) throws
+  @_spi(TrueLayer) func getAdjacent() throws -> TrueLayerCore.Core.Payments.Models.Shared.Adjacent?
+}
+@_spi(TrueLayer) public protocol CodablePersistable {
+  @_spi(TrueLayer) func get<Key, Value>(_ key: Key) throws -> Value? where Key : TrueLayerCore.PersistenceKey, Value : Swift.Decodable
+  @_spi(TrueLayer) func delete<Key>(_ key: Key) where Key : TrueLayerCore.PersistenceKey
+  @_spi(TrueLayer) func set<Value, Key>(_ value: Value, using key: Key) throws where Value : Swift.Encodable, Key : TrueLayerCore.PersistenceKey
+}
+@_spi(TrueLayer) public protocol CountryPersistable {
+  @_spi(TrueLayer) func updateLastUsed(_ country: TrueLayerCore.Core.Payments.Models.Shared.Country) throws
+  @_spi(TrueLayer) func getLastUsedCountry() throws -> TrueLayerCore.Core.Payments.Models.Shared.Country.Stored?
+}
+@_spi(TrueLayer) public protocol LongListOptionPersistable {
+  @_spi(TrueLayer) func updateLastUsed(optionIdentifier: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.SingleChoiceList.Option.Identifier, listIdentifier: Swift.String, providerIdentifier: TrueLayerCore.Core.Payments.Models.Shared.Provider.Identifier, dateProvider: () -> Foundation.Date) throws
+  @_spi(TrueLayer) func getOptions(providerIdentifier: TrueLayerCore.Core.Payments.Models.Shared.Provider.Identifier, listIdentifier: Swift.String) -> [TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.SingleChoiceList.Option.Stored]
+}
+@_spi(TrueLayer) public protocol PersistenceKey : Swift.RawRepresentable where Self.RawValue == Swift.String {
+}
+@_spi(TrueLayer) extension Foundation.UserDefaults : TrueLayerCore.AISPISPersistable {
+  @_spi(TrueLayer) public func updateHasAIS(newValue: Swift.Bool)
+  @_spi(TrueLayer) public var hasAIS: Swift.Bool {
+    @_spi(TrueLayer) get
+  }
+  @_spi(TrueLayer) public func updatePISConsentGiven(newValue: Swift.Bool)
+  @_spi(TrueLayer) public var pisConsentGiven: Swift.Bool {
+    @_spi(TrueLayer) get
+  }
+  @_spi(TrueLayer) public func updateAdjacent(newValue: TrueLayerCore.Core.Payments.Models.Shared.Adjacent?) throws
+  @_spi(TrueLayer) public func getAdjacent() throws -> TrueLayerCore.Core.Payments.Models.Shared.Adjacent?
+}
+@_spi(TrueLayer) extension Foundation.UserDefaults : TrueLayerCore.CountryPersistable {
+  @_spi(TrueLayer) public func updateLastUsed(_ country: TrueLayerCore.Core.Payments.Models.Shared.Country) throws
+  @_spi(TrueLayer) public func getLastUsedCountry() throws -> TrueLayerCore.Core.Payments.Models.Shared.Country.Stored?
+}
+@_spi(TrueLayer) extension Foundation.UserDefaults : TrueLayerCore.CodablePersistable {
+  @_spi(TrueLayer) public func get<Key, Value>(_ key: Key) throws -> Value? where Key : TrueLayerCore.PersistenceKey, Value : Swift.Decodable
+  @_spi(TrueLayer) public func delete<Key>(_ key: Key) where Key : TrueLayerCore.PersistenceKey
+  @_spi(TrueLayer) public func set<Value, Key>(_ value: Value, using key: Key) throws where Value : Swift.Encodable, Key : TrueLayerCore.PersistenceKey
+}
+@_spi(TrueLayer) extension Foundation.UserDefaults {
+  @_spi(TrueLayer) public static var trueLayerSDK: Foundation.UserDefaults {
+    @_spi(TrueLayer) get
+  }
+}
+@_spi(TrueLayer) extension Foundation.UserDefaults : TrueLayerCore.LongListOptionPersistable {
+  @_spi(TrueLayer) public func updateLastUsed(optionIdentifier: TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.SingleChoiceList.Option.Identifier, listIdentifier: Swift.String, providerIdentifier: TrueLayerCore.Core.Payments.Models.Shared.Provider.Identifier, dateProvider: () -> Foundation.Date) throws
+  @_spi(TrueLayer) public func getOptions(providerIdentifier: TrueLayerCore.Core.Payments.Models.Shared.Provider.Identifier, listIdentifier: Swift.String) -> [TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.SingleChoiceList.Option.Stored]
+}
+@_spi(TrueLayer) public enum UserDefaultsKey : Swift.String, TrueLayerCore.PersistenceKey, Swift.CaseIterable {
+  @_spi(TrueLayer) case lastUsedCountry
+  @_spi(TrueLayer) case lastUsedProviders
+  @_spi(TrueLayer) case lastUsedLongListOptions
+  @_spi(TrueLayer) case hasAIS
+  @_spi(TrueLayer) case pisConsentGiven
+  @_spi(TrueLayer) case adjacentActions
+  @_spi(TrueLayer) public init?(rawValue: Swift.String)
+  @_spi(TrueLayer) public typealias AllCases = [TrueLayerCore.UserDefaultsKey]
+  @_spi(TrueLayer) public typealias RawValue = Swift.String
+  @_spi(TrueLayer) nonisolated public static var allCases: [TrueLayerCore.UserDefaultsKey] {
+    @_spi(TrueLayer) get
+  }
+  @_spi(TrueLayer) public var rawValue: Swift.String {
+    @_spi(TrueLayer) get
+  }
+}
+public typealias DateProvider = () -> Foundation.Date
+public typealias UUIDProvider = () -> Foundation.UUID
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Mandate.State : Swift.Equatable {}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Mandate.State : Swift.Hashable {}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Mandate.Constraints.Period.Alignment : Swift.Hashable {}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Mandate.Constraints.Period.Alignment : Swift.RawRepresentable {}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Shared.PaymentType : Swift.Equatable {}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.Shared.PaymentType : Swift.Hashable {}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.AdditionalInputs.Text.Format : Swift.Hashable {}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.SubsequentActionHint : Swift.Equatable {}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.SubsequentActionHint : Swift.Hashable {}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.RetryOption : Swift.Equatable {}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.RetryOption : Swift.Hashable {}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment.AuthorizationFlow.RetryOption : Swift.RawRepresentable {}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment.State : Swift.Equatable {}
+@_spi(TrueLayer) extension TrueLayerCore.Core.Payments.Models.SinglePayment.State : Swift.Hashable {}
+@_spi(TrueLayer) extension TrueLayerCore.UserDefaultsKey : Swift.Equatable {}
+@_spi(TrueLayer) extension TrueLayerCore.UserDefaultsKey : Swift.Hashable {}

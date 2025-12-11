@@ -1,0 +1,10 @@
+${PODS_XCFRAMEWORKS_BUILD_DIR}/TrueLayerPaymentsSDK/TrueLayerObjectiveC.framework
+${PODS_XCFRAMEWORKS_BUILD_DIR}/TrueLayerPaymentsSDK/TrueLayerAPI.framework
+${PODS_XCFRAMEWORKS_BUILD_DIR}/TrueLayerPaymentsSDK/TrueLayerCore.framework
+${PODS_XCFRAMEWORKS_BUILD_DIR}/TrueLayerPaymentsSDK/TrueLayerLogger.framework
+${PODS_XCFRAMEWORKS_BUILD_DIR}/TrueLayerPaymentsSDK/TrueLayerMockable.framework
+${PODS_XCFRAMEWORKS_BUILD_DIR}/TrueLayerPaymentsSDK/TrueLayerNetwork.framework
+${PODS_XCFRAMEWORKS_BUILD_DIR}/TrueLayerPaymentsSDK/TrueLayerSDK.framework
+${PODS_XCFRAMEWORKS_BUILD_DIR}/TrueLayerPaymentsSDK/TrueLayerUI.framework
+${PODS_XCFRAMEWORKS_BUILD_DIR}/TrueLayerPaymentsSDK/TrueLayerUtils.framework
+${PODS_XCFRAMEWORKS_BUILD_DIR}/TrueLayerPaymentsSDK/TrueLayerArchitecture.framework

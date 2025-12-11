@@ -1,0 +1,11 @@
+${PODS_ROOT}/Target Support Files/TrueLayerPaymentsSDK/TrueLayerPaymentsSDK-xcframeworks.sh
+${PODS_ROOT}/TrueLayerPaymentsSDK/Frameworks/TrueLayerObjectiveC.xcframework
+${PODS_ROOT}/TrueLayerPaymentsSDK/Frameworks/TrueLayerAPI.xcframework
+${PODS_ROOT}/TrueLayerPaymentsSDK/Frameworks/TrueLayerCore.xcframework
+${PODS_ROOT}/TrueLayerPaymentsSDK/Frameworks/TrueLayerLogger.xcframework
+${PODS_ROOT}/TrueLayerPaymentsSDK/Frameworks/TrueLayerMockable.xcframework
+${PODS_ROOT}/TrueLayerPaymentsSDK/Frameworks/TrueLayerNetwork.xcframework
+${PODS_ROOT}/TrueLayerPaymentsSDK/Frameworks/TrueLayerSDK.xcframework
+${PODS_ROOT}/TrueLayerPaymentsSDK/Frameworks/TrueLayerUI.xcframework
+${PODS_ROOT}/TrueLayerPaymentsSDK/Frameworks/TrueLayerUtils.xcframework
+${PODS_ROOT}/TrueLayerPaymentsSDK/Frameworks/TrueLayerArchitecture.xcframework
