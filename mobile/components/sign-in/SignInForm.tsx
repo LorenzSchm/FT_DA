@@ -34,11 +34,11 @@ export default function SignInForm({ isVisible, email }: Props) {
           console.log("User signed in successfully");
         })
         .catch((error) => {
-          Toast.show({
-            visibilityTime: 3000,
-            type: "error",
-            text1: "Invalid email or password",
-          });
+            Toast.show({
+                visibilityTime: 3000,
+                type: "error",
+                text1: "Invalid email or password",
+            })
           console.error("Error signing in:", error);
         });
       setLoading(false);

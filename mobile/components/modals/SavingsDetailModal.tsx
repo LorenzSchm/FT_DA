@@ -29,8 +29,8 @@ type Contribution = {
   id: string;
   amount_minor?: number;
   contributed_minor?: number;
-  created_at?: string; // sometimes present
-  contributed_at?: string; // THIS is the real transaction date
+  created_at?: string;        // sometimes present
+  contributed_at?: string;     // THIS is the real transaction date
   description?: string;
   note?: string;
 };
@@ -91,10 +91,7 @@ export default function SavingsDetailModal({
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: (_, gestureState) => {
-        return (
-          Math.abs(gestureState.dy) > Math.abs(gestureState.dx) &&
-          Math.abs(gestureState.dy) > 2
-        );
+        return Math.abs(gestureState.dy) > Math.abs(gestureState.dx) && Math.abs(gestureState.dy) > 2;
       },
       onPanResponderMove: (_, gestureState) => {
         if (gestureState.dy > 0) {
@@ -143,25 +140,16 @@ export default function SavingsDetailModal({
 
   /* -------------------------- Chart Data -------------------------- */
   const dataByTimeframe = React.useMemo(() => {
-    const result: Record<TimeframeKey, { timestamp: number; value: number }[]> =
-      {
-        "1D": [],
-        "1W": [],
-        "1M": [],
-        "1Y": [],
-        ALL: [],
-      };
+    const result: Record<TimeframeKey, { timestamp: number; value: number }[]> = {
+      "1D": [], "1W": [], "1M": [], "1Y": [], ALL: [],
+    };
 
-    if (
-      !savingObject?.contributions ||
-      savingObject.contributions.length === 0
-    ) {
+    if (!savingObject?.contributions || savingObject.contributions.length === 0) {
       return result;
     }
 
     const sorted = [...savingObject.contributions].sort(
-      (a, b) =>
-        parseContributionDate(a).getTime() - parseContributionDate(b).getTime(),
+      (a, b) => parseContributionDate(a).getTime() - parseContributionDate(b).getTime(),
     );
 
     const now = Date.now();
@@ -170,19 +158,13 @@ export default function SavingsDetailModal({
       "1W": 7 * 24 * 60 * 60 * 1000,
       "1M": 30 * 24 * 60 * 60 * 1000,
       "1Y": 365 * 24 * 60 * 60 * 1000,
-      ALL:
-        now - parseISO(savingObject.created_at.split(".")[0] + "Z").getTime(),
+      ALL: now - parseISO(savingObject.created_at.split(".")[0] + "Z").getTime(),
     };
 
     (Object.keys(ranges) as TimeframeKey[]).forEach((key) => {
-      const windowStart =
-        key === "ALL"
-          ? parseISO(savingObject.created_at.split(".")[0] + "Z").getTime()
-          : now - ranges[key];
+      const windowStart = key === "ALL" ? parseISO(savingObject.created_at.split(".")[0] + "Z").getTime() : now - ranges[key];
       let cumulative = 0;
-      const series: { timestamp: number; value: number }[] = [
-        { timestamp: windowStart, value: 0 },
-      ];
+      const series: { timestamp: number; value: number }[] = [{ timestamp: windowStart, value: 0 }];
 
       sorted.forEach((c) => {
         const ts = parseContributionDate(c).getTime();
@@ -195,7 +177,7 @@ export default function SavingsDetailModal({
 
       result[key] = series.length > 1 ? series : [];
     });
-    console.log(savingObject);
+      console.log(savingObject)
 
     return result;
   }, [savingObject]);
@@ -252,13 +234,11 @@ export default function SavingsDetailModal({
               <View className="mb-6">
                 <View>
                   <Text className="text-3xl font-bold">
-                    {currency}
-                    {(currentAmount / 100).toFixed(2)}
+                    {currency}{(currentAmount / 100).toFixed(2)}
                   </Text>
                   {goalAmount > 0 && (
                     <Text className="text-neutral-500 mt-1">
-                      of {currency}
-                      {(goalAmount / 100).toFixed(2)} ({progress.toFixed(0)}%)
+                      of {currency}{(goalAmount / 100).toFixed(2)} ({progress.toFixed(0)}%)
                     </Text>
                   )}
                 </View>
@@ -278,23 +258,15 @@ export default function SavingsDetailModal({
               <View className="mb-20">
                 <Text className="text-xl font-bold mb-3">Transactions</Text>
 
-                {!savingObject?.contributions ||
-                savingObject.contributions.length === 0 ? (
+                {!savingObject?.contributions || savingObject.contributions.length === 0 ? (
                   <Text className="text-neutral-500 text-center py-8">
                     No transactions yet
                   </Text>
                 ) : (
                   [...savingObject.contributions]
-                    .sort(
-                      (a, b) =>
-                        parseContributionDate(b).getTime() -
-                        parseContributionDate(a).getTime(),
-                    )
+                    .sort((a, b) => parseContributionDate(b).getTime() - parseContributionDate(a).getTime())
                     .map((contribution) => {
-                      const amount =
-                        (contribution.amount_minor ??
-                          contribution.contributed_minor ??
-                          0) / 100;
+                      const amount = (contribution.amount_minor ?? contribution.contributed_minor ?? 0) / 100;
                       const displayDate = formatDateYMD(contribution);
 
                       return (
@@ -304,17 +276,12 @@ export default function SavingsDetailModal({
                         >
                           <View>
                             <Text className="text-base font-semibold">
-                              {contribution.description ||
-                                contribution.note ||
-                                "Contribution"}
+                              {contribution.description || contribution.note || "Contribution"}
                             </Text>
-                            <Text className="text-neutral-500 text-sm">
-                              {displayDate}
-                            </Text>
+                            <Text className="text-neutral-500 text-sm">{displayDate}</Text>
                           </View>
                           <Text className="text-lg font-bold text-green-600">
-                            +{currency}
-                            {amount.toFixed(2)}
+                            +{currency}{amount.toFixed(2)}
                           </Text>
                         </View>
                       );
