@@ -7,8 +7,10 @@ import {
 } from "react-native";
 import { Bell, Search, User, X } from "lucide-react-native";
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "expo-router";
 
 export default function NavBar() {
+  const router = useRouter(); // <<< important
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [searchText, setSearchText] = useState("");
   const searchWidth = useRef(new Animated.Value(222)).current;
@@ -97,7 +99,7 @@ export default function NavBar() {
   };
 
   return (
-    <View className={"bg-white flex-row justify-evenly items-center pt-20 p-4"}>
+    <View className="bg-white flex-row justify-evenly items-center pt-20 p-4">
       <Animated.View
         style={{
           opacity: leftIconOpacity,
@@ -106,13 +108,15 @@ export default function NavBar() {
         }}
         pointerEvents={isSearchExpanded ? "none" : "auto"}
       >
-        <View
-          className={
-            "bg-[#F1F1F2] rounded-full p-2 w-[40px] h-[40px] flex justify-center items-center "
-          }
-        >
-          <User />
-        </View>
+        <TouchableOpacity onPress={() => router.push("/settings")}>
+          <View
+            className={
+              "bg-[#F1F1F2] rounded-full p-2 w-[40px] h-[40px] flex justify-center items-center "
+            }
+          >
+            <User />
+          </View>
+        </TouchableOpacity>
       </Animated.View>
 
       <Animated.View
