@@ -194,6 +194,7 @@ async def get_investments(
             currency = h["currency"]
             quantity = h["quantity"]
             cost_basis = h["cost_minor"] / DIVISOR
+            avg_entry = cost_basis / quantity if quantity else 0.0  # Average entry price per unit
             market_value = quantity * price
 
             positions.append({
