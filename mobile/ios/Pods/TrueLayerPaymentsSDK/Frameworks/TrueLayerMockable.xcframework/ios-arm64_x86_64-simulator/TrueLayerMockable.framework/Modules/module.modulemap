@@ -1,4 +1,0 @@
-framework module TrueLayerMockable {
-  header "TrueLayerMockable-Swift.h"
-  requires objc
-}

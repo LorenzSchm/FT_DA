@@ -20,6 +20,7 @@ import { useAuthStore } from "@/utils/authStore";
 import { getAccounts, getTransactions } from "@/utils/db/finance/finance";
 import { getSubscriptions } from "@/utils/db/finance/subscriptions/subscriptions";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getData } from "@/utils/db/connect_accounts/connectAccounts";
 
 enum STATE {
   DEFAULT = "DEFAULT",
@@ -36,7 +37,6 @@ export default function DashBoard() {
 
   const [accounts, setAccounts] = useState<any[]>([]);
 
-  // Per-account cached data
   const [transactionsByAccount, setTransactionsByAccount] = useState<
     Record<number, any[]>
   >({});
@@ -44,7 +44,6 @@ export default function DashBoard() {
     Record<number, any[]>
   >({});
 
-  // Loading states
   const [isFetchingAccounts, setIsFetchingAccounts] = useState<boolean>(true);
   const [loadingTxByAccount, setLoadingTxByAccount] = useState<
     Record<number, boolean>
@@ -58,6 +57,53 @@ export default function DashBoard() {
 
   const { user, session } = useAuthStore();
 
+  const fetchConnectBalanceMinor = async () => {
+    if (!session?.access_token) return 0;
+    const connectData = await getData(
+      session.access_token,
+      session.refresh_token,
+    );
+    const available = Number(connectData?.balance?.[0]?.available ?? 0);
+    return Math.round(available * 100);
+  };
+
+  // Normalize transactions from different backends into a consistent shape
+  const normalizeTransactions = (list?: any[]) => {
+    if (!Array.isArray(list)) return [];
+    return list.map((t: any) => {
+      const amountMinor =
+        t.amount_minor !== undefined
+          ? Number(t.amount_minor)
+          : t.amount !== undefined
+            ? Math.round(Number(t.amount) * 100)
+            : 0;
+
+      return {
+        id:
+          t.id ??
+          t.transaction_id ??
+          `${amountMinor}_${t.date ?? t.timestamp ?? ""}`,
+        description:
+          t.description ||
+          t.merchant ||
+          t.name ||
+          t.merchant_name ||
+          "Transaction",
+        category_id:
+          t.category ||
+          t.category_id ||
+          t.category_name ||
+          t.categoryLabel ||
+          "Other",
+        amount_minor: Number(amountMinor || 0),
+        currency: t.currency || t.currency_code || "USD",
+        date: t.date || t.timestamp || t.created_at || null,
+        // preserve original payload for debugging if needed
+        __raw: t,
+      };
+    });
+  };
+
   const loadAccounts = async () => {
     if (!session?.access_token) return [];
     try {
@@ -66,7 +112,22 @@ export default function DashBoard() {
         session.access_token,
         session.refresh_token,
       );
-      const result = data.rows || data;
+      let result = data.rows || data;
+
+      const hasConnected = result.some((acc: any) => acc.kind === "connect");
+      if (hasConnected) {
+        const availableCents = await fetchConnectBalanceMinor();
+
+        result = result.map((acc: any) =>
+          acc.kind !== "connect"
+            ? acc
+            : {
+                ...acc,
+                balance_minor: availableCents,
+              },
+        );
+      }
+
       setAccounts(result);
       return result;
     } catch (e: any) {
@@ -77,19 +138,60 @@ export default function DashBoard() {
     }
   };
 
-  // Fetch transactions for a single account and cache them
-  const loadTransactionsForAccount = async (accountId: number) => {
+  const loadTransactionsForAccount = async (
+    accountId: number,
+    accountObj?: any,
+  ) => {
     if (!session?.access_token || !accountId) return;
     try {
       setLoadingTxByAccount((prev) => ({ ...prev, [accountId]: true }));
+      const matchingAccount =
+        accountObj ?? accounts.find((acc) => acc.id === accountId);
+
+      if (matchingAccount?.kind === "connect") {
+        const availableCents = await fetchConnectBalanceMinor();
+        setAccounts((prev) =>
+          prev.map((acc) =>
+            acc.id !== accountId
+              ? acc
+              : {
+                  ...acc,
+                  balance_minor: availableCents,
+                },
+          ),
+        );
+
+        const txDataConnected = await getData(
+          session.access_token,
+          session.refresh_token,
+        );
+        const rawTx = txDataConnected?.transactions || [];
+        const normalized = normalizeTransactions(rawTx);
+        // prefer sorting by date if present, fallback to array order reversed
+        const sorted = normalized.sort((a: any, b: any) => {
+          if (a.date && b.date) return Date.parse(b.date) - Date.parse(a.date);
+          return 0;
+        });
+
+        setTransactionsByAccount((prev) => ({
+          ...prev,
+          [accountId]: sorted,
+        }));
+
+        return;
+      }
+
       const data = await getTransactions(
         session.access_token,
         session.refresh_token,
         accountId,
       );
       const list = (data.rows || data) as any[];
-      const sorted = [...list].reverse();
-
+      const normalized = normalizeTransactions(list);
+      const sorted = normalized.sort((a: any, b: any) => {
+        if (a.date && b.date) return Date.parse(b.date) - Date.parse(a.date);
+        return 0;
+      });
       setTransactionsByAccount((prev) => ({
         ...prev,
         [accountId]: sorted,
@@ -104,7 +206,6 @@ export default function DashBoard() {
     }
   };
 
-  // Fetch subscriptions for a single account and cache them
   const loadSubscriptionsForAccount = async (accountId: number) => {
     if (!session?.access_token || !accountId) return;
     try {
@@ -131,7 +232,6 @@ export default function DashBoard() {
     }
   };
 
-  // Helper to compute balance from cached tx + subs
   const computeAccountBalance = (
     accountId: number,
     txByAcc: Record<number, any[]>,
@@ -145,10 +245,6 @@ export default function DashBoard() {
       .filter((s) => s.active)
       .reduce((sum, s) => sum + (s.amount_minor || 0), 0);
 
-    // Assuming:
-    // - transactions: income positive, expenses negative
-    // - subscriptions: amount_minor is positive recurring cost ->
-    //   we subtract them from balance
     return txTotal - subsTotal;
   };
 
@@ -156,15 +252,14 @@ export default function DashBoard() {
     const init = async () => {
       const accs = await loadAccounts();
       if (accs.length > 0) {
-        // set to first account and lazy-load its data
         setAccountIndex(0);
+        // pass the freshly fetched account object to avoid race with setAccounts
         const firstId = accs[0].id;
-        await loadTransactionsForAccount(firstId);
+        await loadTransactionsForAccount(firstId, accs[0]);
         await loadSubscriptionsForAccount(firstId);
       }
     };
     init();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.access_token]);
 
   const openAddAccountModal = () => {
@@ -199,7 +294,6 @@ export default function DashBoard() {
   const handleAccountAdded = async () => {
     const result = await loadAccounts();
     if (result.length > 0) {
-      // Select newest/first account and load its data
       setAccountIndex(0);
       const id = result[0].id;
       await loadTransactionsForAccount(id);
@@ -222,7 +316,6 @@ export default function DashBoard() {
       !!loadingSubsByAccount[selectedAccountId]
     : false;
 
-  // When the selected account changes, lazily fetch its data if not cached
   useEffect(() => {
     if (!selectedAccountId) return;
     const hasTx = !!transactionsByAccount[selectedAccountId];
@@ -234,14 +327,14 @@ export default function DashBoard() {
     if (!hasSubs) {
       loadSubscriptionsForAccount(selectedAccountId);
     }
-    // We intentionally don't add transactionsByAccount / subscriptionsByAccount
-    // here to avoid re-fetch loops.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedAccountId]);
 
-  // Recompute balance for the selected account whenever its data changes
   useEffect(() => {
     if (!selectedAccountId) return;
+    const selectedAccount = accounts.find(
+      (acc) => acc.id === selectedAccountId,
+    );
+    if (selectedAccount?.kind === "connect") return;
 
     setAccounts((prev) =>
       prev.map((acc) =>

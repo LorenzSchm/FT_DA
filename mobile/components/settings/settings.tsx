@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, TextInput, ActivityIndicator, Alert } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  TextInput,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
 import axios from "axios";
 import { useAuthStore } from "@/utils/authStore";
 import SettingsNavBar from "./SettingsNavBar";
@@ -55,10 +62,12 @@ export default function SettingsScreen() {
           headers["Authorization"] = `Bearer ${session.access_token}`;
         }
 
-        const res = await axios.get<UserResponse>(`${API_BASE_URL}/account/`, { headers });
+        const res = await axios.get<UserResponse>(`${API_BASE_URL}/account/`, {
+          headers,
+        });
         if (isMounted) {
           setData(res.data);
-          setEditableFields(prev => ({
+          setEditableFields((prev) => ({
             ...prev,
             display_name: res.data.display_name || "",
             email: res.data.email || "",
@@ -66,7 +75,12 @@ export default function SettingsScreen() {
         }
       } catch (err: any) {
         console.error("Failed to load account:", err);
-        if (isMounted) setError(err?.response?.data?.detail || err.message || "Failed to load settings");
+        if (isMounted)
+          setError(
+            err?.response?.data?.detail ||
+              err.message ||
+              "Failed to load settings",
+          );
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -85,7 +99,7 @@ export default function SettingsScreen() {
   const handleCancel = () => {
     // Reset editable fields to original values
     if (data) {
-      setEditableFields(prev => ({
+      setEditableFields((prev) => ({
         ...prev,
         display_name: data.display_name || "",
         email: data.email || "",
@@ -114,20 +128,20 @@ export default function SettingsScreen() {
           display_name: editableFields.display_name,
           refresh_token: session.refresh_token,
         },
-        { headers }
+        { headers },
       );
 
       setData(response.data);
       setIsEditing(false);
       Toast.show({
-        type: 'success',
-        text1: 'Settings updated successfully',
+        type: "success",
+        text1: "Settings updated successfully",
       });
     } catch (err: any) {
       console.error("Failed to update account:", err);
       Toast.show({
-        type: 'error',
-        text1: 'Failed to update settings',
+        type: "error",
+        text1: "Failed to update settings",
         text2: err?.response?.data?.detail || err.message || "Unknown error",
       });
     } finally {
@@ -136,7 +150,7 @@ export default function SettingsScreen() {
   };
 
   const handleFieldChange = (field: keyof EditableFields, value: string) => {
-    setEditableFields(prev => ({
+    setEditableFields((prev) => ({
       ...prev,
       [field]: value,
     }));
@@ -145,10 +159,7 @@ export default function SettingsScreen() {
   if (loading) {
     return (
       <View className="flex-1 bg-white">
-        <SettingsNavBar 
-          isEditing={false}
-          onEditToggle={() => {}}
-        />
+        <SettingsNavBar isEditing={false} onEditToggle={() => {}} />
         <ScrollView>
           <View className="p-6 mt-4">
             <Text className="text-lg">Loading settings…</Text>
@@ -161,10 +172,7 @@ export default function SettingsScreen() {
   if (error) {
     return (
       <View className="flex-1 bg-white">
-        <SettingsNavBar 
-          isEditing={false}
-          onEditToggle={() => {}}
-        />
+        <SettingsNavBar isEditing={false} onEditToggle={() => {}} />
         <ScrollView>
           <View className="p-6 mt-4">
             <Text className="text-lg font-bold text-red-600">Error</Text>
@@ -177,7 +185,7 @@ export default function SettingsScreen() {
 
   return (
     <View className="flex-1 bg-white">
-      <SettingsNavBar 
+      <SettingsNavBar
         isEditing={isEditing}
         onEditToggle={handleEditToggle}
         onSave={handleSave}
@@ -197,10 +205,14 @@ export default function SettingsScreen() {
               <TextInput
                 className="text-gray-500 mt-1"
                 value={editableFields.display_name}
-                onChangeText={(value) => handleFieldChange('display_name', value)}
+                onChangeText={(value) =>
+                  handleFieldChange("display_name", value)
+                }
               />
             ) : (
-              <Text className="text-gray-500 mt-1">{data?.display_name ?? "Not set"}</Text>
+              <Text className="text-gray-500 mt-1">
+                {data?.display_name ?? "Not set"}
+              </Text>
             )}
           </View>
 
@@ -210,12 +222,14 @@ export default function SettingsScreen() {
               <TextInput
                 className="text-gray-500 mt-1"
                 value={editableFields.email}
-                onChangeText={(value) => handleFieldChange('email', value)}
+                onChangeText={(value) => handleFieldChange("email", value)}
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
             ) : (
-              <Text className="text-gray-500 mt-1">{data?.email ?? "Not set"}</Text>
+              <Text className="text-gray-500 mt-1">
+                {data?.email ?? "Not set"}
+              </Text>
             )}
           </View>
 
@@ -225,7 +239,7 @@ export default function SettingsScreen() {
               <TextInput
                 className="text-gray-500 mt-1"
                 value={editableFields.password}
-                onChangeText={(value) => handleFieldChange('password', value)}
+                onChangeText={(value) => handleFieldChange("password", value)}
                 secureTextEntry
               />
             ) : (
@@ -239,7 +253,7 @@ export default function SettingsScreen() {
               <TextInput
                 className="text-gray-500 mt-1"
                 value={editableFields.phone}
-                onChangeText={(value) => handleFieldChange('phone', value)}
+                onChangeText={(value) => handleFieldChange("phone", value)}
                 keyboardType="phone-pad"
               />
             ) : (
@@ -253,7 +267,9 @@ export default function SettingsScreen() {
               <TextInput
                 className="text-gray-500 mt-1"
                 value={editableFields.defaultCurrency}
-                onChangeText={(value) => handleFieldChange('defaultCurrency', value)}
+                onChangeText={(value) =>
+                  handleFieldChange("defaultCurrency", value)
+                }
               />
             ) : (
               <Text className="text-gray-500 mt-1">{getDefaultCurrency()}</Text>
@@ -266,7 +282,7 @@ export default function SettingsScreen() {
               <TextInput
                 className="text-gray-500 mt-1"
                 value={editableFields.language}
-                onChangeText={(value) => handleFieldChange('language', value)}
+                onChangeText={(value) => handleFieldChange("language", value)}
               />
             ) : (
               <Text className="text-gray-500 mt-1">{getLanguage()}</Text>

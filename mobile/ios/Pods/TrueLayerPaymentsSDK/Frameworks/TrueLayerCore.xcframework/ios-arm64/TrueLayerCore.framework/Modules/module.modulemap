@@ -1,4 +1,0 @@
-framework module TrueLayerCore {
-  header "TrueLayerCore-Swift.h"
-  requires objc
-}

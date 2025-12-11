@@ -1,4 +1,0 @@
-framework module TrueLayerArchitecture {
-  header "TrueLayerArchitecture-Swift.h"
-  requires objc
-}

@@ -1,4 +1,0 @@
-framework module TrueLayerUI {
-  header "TrueLayerUI-Swift.h"
-  requires objc
-}

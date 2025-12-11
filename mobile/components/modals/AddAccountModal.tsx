@@ -17,6 +17,13 @@ import { ChevronDown } from "lucide-react-native";
 import { addAccount } from "@/utils/db/account/account";
 import { useAuthStore } from "@/utils/authStore";
 import Toast from "react-native-toast-message";
+import {
+  TrueLayerPaymentsSDKWrapper,
+  ResultType,
+  Environment,
+} from "rn-truelayer-payments-sdk";
+import { generateToken } from "@/utils/db/connect_accounts/connectAccounts";
+import * as WebBrowser from "expo-web-browser";
 
 type Props = {
   isVisible: boolean;
@@ -200,6 +207,71 @@ export default function AddAccountModal({
     }
   };
 
+  const handleConnect = async () => {
+    try {
+      if (isSubmitting || !name.trim()) return;
+
+      if (!session?.access_token || !user?.id) {
+        Toast.show({
+          type: "error",
+          text1: "Missing session",
+          visibilityTime: 3000,
+        });
+        return;
+      }
+
+      setIsSubmitting(true);
+
+      const result = await WebBrowser.openAuthSessionAsync(
+        "https://auth.truelayer-sandbox.com/?response_type=code&client_id=sandbox-financetracker-ff71fc&scope=accounts%20balance%20cards%20direct_debits%20info%20offline_access%20standing_orders%20transactions&redirect_uri=exp%3A%2F%2F--&providers=uk-cs-mock%20uk-ob-all%20uk-oauth-all",
+      );
+
+      if (result.type === "success" && result.url) {
+        const url = new URL(result.url);
+        const code = url.searchParams.get("code");
+        console.log(code);
+
+        if (!code) {
+          throw new Error("No authorization code received");
+        }
+
+        const res = await generateToken(
+          session.access_token,
+          session.refresh_token,
+          code,
+          name,
+        );
+
+        await handleClose();
+        Toast.show({
+          type: "success",
+          text1: "Account connected successfully!",
+          visibilityTime: 3000,
+        });
+
+        if (onAccountAdded) await onAccountAdded();
+      } else if (result.type === "cancel" || result.type === "dismiss") {
+        Toast.show({
+          type: "info",
+          text1: "Connection cancelled",
+          visibilityTime: 2000,
+        });
+      } else {
+        throw new Error(`Auth failed: ${result.type}`);
+      }
+    } catch (error) {
+      console.error("Connect error:", error);
+      Toast.show({
+        type: "error",
+        text1: "Failed to connect account",
+        text2: error instanceof Error ? error.message : undefined,
+        visibilityTime: 4000,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const setManual = () => {
     setState("manual");
     setErrors((prev) => ({ ...prev, initialAmount: undefined }));
@@ -361,20 +433,11 @@ export default function AddAccountModal({
               </>
             ) : (
               <View>
-                <Text className="text-lg font-semibold text-black mb-2">
-                  Connect your account
-                </Text>
-                <View className="bg-neutral-100 rounded-2xl px-5 py-4 mb-8">
-                  <TextInput
-                    className="text-black"
-                    placeholder="Search for provider..."
-                  />
-                </View>
                 <TouchableOpacity
-                  className={`bg-black rounded-full py-4 ${
+                  className={`bg-black rounded-full py-4 mt-2 ${
                     isButtonDisabled ? "opacity-60" : ""
                   }`}
-                  onPress={handleAddAccount}
+                  onPress={handleConnect}
                   disabled={isButtonDisabled}
                 >
                   <Text className="text-center text-white font-semibold text-lg">

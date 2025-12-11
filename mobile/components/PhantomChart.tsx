@@ -16,17 +16,21 @@ type Props = {
   positiveColor?: string;
   negativeColor?: string;
   backgroundColor?: string;
+  lineColor?: string;
+  showAmount?: boolean;
 };
 
 const TIMEFRAMES: TimeframeKey[] = ["1D", "1W", "1M", "1Y", "ALL"];
 
 export const PhantomChart: React.FC<Props> = ({
   dataByTimeframe,
-  initialTimeframe = "1D",
+  initialTimeframe = "ALL",
   height = 220,
   positiveColor = "#16a34a",
   negativeColor = "#dc2626",
   backgroundColor = "#FFFFFF",
+  lineColor = "#000000",
+  showAmount = true,
 }) => {
   const [timeframe, setTimeframe] =
     React.useState<TimeframeKey>(initialTimeframe);
@@ -63,31 +67,35 @@ export const PhantomChart: React.FC<Props> = ({
 
   return (
     <View className={`rounded-full bg-[${backgroundColor}]`}>
-      <View className="flex-row justify-between items-center px-4 pt-4">
-        <Text className="text-2xl font-semibold text-black">
-          {displayValue.toFixed(2)} €
-        </Text>
+      {showAmount && (
+        <View>
+          <View className="flex-row justify-between items-center px-4 pt-4">
+            <Text className="text-2xl font-semibold text-black">
+              {displayValue.toFixed(2)} €
+            </Text>
 
-        <View
-          className={`rounded-full px-2 py-1 ${
-            isUp ? "bg-green-100" : "bg-red-100"
-          }`}
-        >
-          <Text
-            className={`text-xs font-medium ${
-              isUp ? "text-green-600" : "text-red-600"
-            }`}
-          >
-            {isUp ? "+" : ""}
-            {diff.toFixed(2)} ({isUp ? "+" : ""}
-            {diffPct.toFixed(2)}%)
+            <View
+              className={`rounded-full px-2 py-1 ${
+                isUp ? "bg-green-100" : "bg-red-100"
+              }`}
+            >
+              <Text
+                className={`text-xs font-medium ${
+                  isUp ? "text-green-600" : "text-red-600"
+                }`}
+              >
+                {isUp ? "+" : ""}
+                {diff.toFixed(2)} ({isUp ? "+" : ""}
+                {diffPct.toFixed(2)}%)
+              </Text>
+            </View>
+          </View>
+
+          <Text className="text-gray-500 text-xs px-4 mt-1">
+            {timeframe} · {isUp ? "Performance" : "Loss"}
           </Text>
         </View>
-      </View>
-
-      <Text className="text-gray-500 text-xs px-4 mt-1">
-        {timeframe} · {isUp ? "Performance" : "Loss"}
-      </Text>
+      )}
 
       <TimeframeRow active={timeframe} onChange={setTimeframe} />
 
@@ -100,10 +108,10 @@ export const PhantomChart: React.FC<Props> = ({
         }}
       >
         <LineChart height={height} className="mt-6">
-          <LineChart.Path color="#000" width={2} />
+          <LineChart.Path color={lineColor} width={2} />
 
           <LineChart.CursorCrosshair
-            color="#000"
+            color={lineColor}
             onActivated={() => setIsCursorActive(true)}
             onEnded={() => setIsCursorActive(false)}
           >
@@ -155,3 +163,4 @@ const TimeframeRow = ({ active, onChange }: any) => (
     ))}
   </View>
 );
+

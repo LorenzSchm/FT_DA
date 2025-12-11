@@ -1,4 +1,0 @@
-framework module TrueLayerObjectiveC {
-  header "TrueLayerObjectiveC-Swift.h"
-  requires objc
-}

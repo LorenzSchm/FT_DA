@@ -1,6 +1,6 @@
 import React from "react";
-import {View, TouchableOpacity, Text} from "react-native";
-import {User, Edit2, X, Check} from "lucide-react-native";
+import { View, TouchableOpacity, Text } from "react-native";
+import { User, Edit2, X, Check } from "lucide-react-native";
 import { useRouter } from "expo-router";
 
 type SettingsNavBarProps = {
@@ -10,7 +10,12 @@ type SettingsNavBarProps = {
   onCancel?: () => void;
 };
 
-export default function SettingsNavBar({ isEditing, onEditToggle, onSave, onCancel }: SettingsNavBarProps) {
+export default function SettingsNavBar({
+  isEditing,
+  onEditToggle,
+  onSave,
+  onCancel,
+}: SettingsNavBarProps) {
   const router = useRouter();
 
   return (

@@ -10,7 +10,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "expo-router";
 
 export default function NavBar() {
-  const router = useRouter();   // <<< important
+  const router = useRouter(); // <<< important
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [searchText, setSearchText] = useState("");
   const searchWidth = useRef(new Animated.Value(222)).current;
@@ -108,7 +108,7 @@ export default function NavBar() {
         }}
         pointerEvents={isSearchExpanded ? "none" : "auto"}
       >
-        <TouchableOpacity onPress={() => router.push('/settings')}>
+        <TouchableOpacity onPress={() => router.push("/settings")}>
           <View
             className={
               "bg-[#F1F1F2] rounded-full p-2 w-[40px] h-[40px] flex justify-center items-center "
