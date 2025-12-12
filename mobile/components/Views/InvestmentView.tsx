@@ -99,28 +99,18 @@ export function InvestmentView() {
           }),
         );
         setPositions(posData);
+
+        // Calculate total portfolio value from position-level market_value
         let total = 0;
         (posData || []).forEach((p: any) => {
-          const ds = p?.dates || [];
-          if (ds.length > 0) {
-            const last = ds[ds.length - 1];
-            total += Number(last.market_value ?? 0);
-          }
+          total += Number(p?.market_value ?? 0);
         });
         setValue(total.toFixed(2));
 
-        // Build array of each position's current value and print it
+        // Build array of each position's current value
         const vals = (posData || []).map((p: any) => {
-          const ds = p?.dates || [];
-          const last = ds.length ? ds[ds.length - 1] : null;
-          // Prefer backend-provided market_value snapshot; fallback to price * quantity if needed
-          const fallbackQty =
-            Number(p?.quantity ?? last?.position_quantity ?? 0) || 0;
-          const fallbackPrice =
-            Number(p?.current_price ?? last?.current_price ?? 0) || 0;
-          const currentValue = Number(
-            (last?.market_value ?? fallbackQty * fallbackPrice) as number,
-          );
+          // Use backend-provided market_value from position level
+          const currentValue = Number(p?.market_value ?? 0);
           return {
             ticker: p.ticker,
             value: Number.isFinite(currentValue) ? currentValue : 0,
@@ -312,6 +302,48 @@ export function InvestmentView() {
           "1W": trimSeries(toArray(combinedMaps["1W"])),
           "1D": trimSeries(toArray(combinedMaps["1D"])),
         };
+
+        // Fallback logic: if a timeframe has exactly 2 or fewer entries, use data from shorter timeframe
+        // Order: 1D -> 1W -> 1M -> 1Y -> ALL
+
+        // 1W fallback to 1D
+        if (combined["1W"].length <= 2 && combined["1D"].length > 2) {
+          combined["1W"] = combined["1D"];
+        }
+
+        // 1M fallback to 1W, then 1D
+        if (combined["1M"].length <= 2) {
+          if (combined["1W"].length > 2) {
+            combined["1M"] = combined["1W"];
+          } else if (combined["1D"].length > 2) {
+            combined["1M"] = combined["1D"];
+          }
+        }
+
+        // 1Y fallback to 1M, then 1W, then 1D
+        if (combined["1Y"].length <= 2) {
+          if (combined["1M"].length > 2) {
+            combined["1Y"] = combined["1M"];
+          } else if (combined["1W"].length > 2) {
+            combined["1Y"] = combined["1W"];
+          } else if (combined["1D"].length > 2) {
+            combined["1Y"] = combined["1D"];
+          }
+        }
+
+        // ALL fallback to 1Y, then 1M, then 1W, then 1D
+        if (combined["ALL"].length <= 2) {
+          if (combined["1Y"].length > 2) {
+            combined["ALL"] = combined["1Y"];
+          } else if (combined["1M"].length > 2) {
+            combined["ALL"] = combined["1M"];
+          } else if (combined["1W"].length > 2) {
+            combined["ALL"] = combined["1W"];
+          } else if (combined["1D"].length > 2) {
+            combined["ALL"] = combined["1D"];
+          }
+        }
+
         if (!active) return;
         setPortfolioHistory(combined);
       } catch (e) {
@@ -389,6 +421,29 @@ export function InvestmentView() {
                           })()}
                         </Text>
                       </View>
+                    </View>
+                    {/* Unrealized P/L */}
+                    <View className="items-end">
+                      <Text
+                        className={`text-lg font-bold ${
+                          (item.unrealized_pl ?? 0) >= 0
+                            ? "text-green-500"
+                            : "text-red-500"
+                        }`}
+                      >
+                        {(item.unrealized_pl ?? 0) >= 0 ? "+" : ""}
+                        ${Number(item.unrealized_pl ?? 0).toFixed(2)}
+                      </Text>
+                      <Text
+                        className={`font-semibold ${
+                          (item.unrealized_pl_pct ?? 0) >= 0
+                            ? "text-green-500"
+                            : "text-red-500"
+                        }`}
+                      >
+                        {(item.unrealized_pl_pct ?? 0) >= 0 ? "+" : ""}
+                        {Number(item.unrealized_pl_pct ?? 0).toFixed(2)}%
+                      </Text>
                     </View>
                   </View>
                 </Pressable>

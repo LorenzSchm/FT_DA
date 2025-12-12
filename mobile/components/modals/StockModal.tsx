@@ -45,7 +45,6 @@ export default function StockModal({
 
   const SCREEN_HEIGHT = Dimensions.get("window").height;
   const sheetPosition = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
-
   const iosShadow = {
     shadowColor: "#000",
     shadowOffset: { width: 1, height: 1 },
@@ -177,17 +176,11 @@ export default function StockModal({
         setMyPosition(null);
         return;
       }
-      const ds = pos?.dates || [];
-      const last = ds.length ? ds[ds.length - 1] : null;
-      if (!last) {
-        setMyPosition(null);
-        return;
-      }
       setMyPosition({
-        shares: Number(last.position_quantity ?? 0),
-        total: Number(last.market_value ?? 0),
-        pl: Number(last.unrealized_pl ?? 0),
-        returnPct: Number(last.unrealized_pl_pct ?? 0),
+        shares: Number(pos.quantity ?? 0),
+        total: Number(pos.market_value ?? 0),
+        pl: Number(pos.unrealized_pl ?? 0),
+        returnPct: Number(pos.unrealized_pl_pct ?? 0),
         currency: pos.currency,
       });
     } catch (e) {

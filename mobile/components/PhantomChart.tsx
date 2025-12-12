@@ -60,7 +60,9 @@ export const PhantomChart: React.FC<Props> = ({
       <View className={`rounded-3xl bg-[${backgroundColor}]`}>
         <View className="px-4 pt-4">
           <Skeleton className="h-6 w-40 mb-3 rounded-full" />
-          <Skeleton className="w-full rounded-2xl" style={{ height }} />
+            <View className={`h-[${height}]`}>
+          <Skeleton className="w-full rounded-2xl"/>
+            </View>
         </View>
         <TimeframeRow active={timeframe} onChange={setTimeframe} />
         {emptyPlaceholder}
