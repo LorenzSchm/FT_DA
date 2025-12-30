@@ -308,10 +308,7 @@ export default function StockModal({
                             onPress={() => setShowDescriptionModal(true)}
                             className={"text-gray-500"}
                           >
-                            <Text
-                              numberOfLines={3}
-                              ellipsizeMode={"tail"}
-                            >
+                            <Text numberOfLines={3} ellipsizeMode={"tail"}>
                               {String(informationData.description || "")}
                             </Text>
                           </TouchableOpacity>
