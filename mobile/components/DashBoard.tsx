@@ -508,7 +508,7 @@ export default function DashBoard() {
 
                   return combined.map((item: any, index: number) => (
                     <View
-                      key={`${selectedAccountId || 'acc'}-tx-${index}`}
+                      key={`${selectedAccountId || "acc"}-tx-${index}`}
                       className="flex flex-row justify-between"
                       style={{ width: contentWidth }}
                     >
