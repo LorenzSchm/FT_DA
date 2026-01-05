@@ -5,19 +5,43 @@ from urllib.parse import urlparse
 from datetime import datetime
 #https://ranaroussi.github.io/yfinance
 router = APIRouter(prefix="/stock", tags=["stock"])
+
 @router.get("/{ticker_symbol}/price")
 def get_stock_price(ticker_symbol: str):
     ticker = yf.Ticker(ticker_symbol)
-    price = ticker.info.get("regularMarketPrice")
+
+    info = ticker.info or {}
+    price = info.get("regularMarketPrice")
+
+    # Weekly change (fallback-safe)
+    rounded = 0.0
     data = ticker.history(period="1mo")
-    last_week = data.tail(5)
-    first = last_week["Close"].iloc[0]
-    last = last_week["Close"].iloc[-1]
-    percent_change = ((last - first) / first) * 100
-    rounded = round(percent_change, 2)
-    domain = urlparse(ticker.info.get("website")).netloc
-    domain = domain.removeprefix("www.")  # Removes 'www.' if it exists
-    return {"price": price, "weekly_change": rounded, "longname": ticker.info.get("longName"), "domain": domain}
+    if data is not None and not data.empty:
+        last_week = data.tail(5)
+        if len(last_week) >= 2:
+            first = last_week["Close"].iloc[0]
+            last = last_week["Close"].iloc[-1]
+            if first not in (0, None) and not (isinstance(first, float) and math.isnan(first)):
+                percent_change = ((last - first) / first) * 100
+                if percent_change is not None and not (isinstance(percent_change, float) and math.isnan(percent_change)):
+                    rounded = round(float(percent_change), 2)
+
+    # Domain (website can be missing or not a string)
+    website = info.get("website")
+    domain = ""
+    if isinstance(website, str) and website:
+        try:
+            domain = urlparse(website).netloc or ""
+            domain = domain.removeprefix("www.")
+        except Exception:
+            domain = ""
+
+    return {
+        "price": price,
+        "weekly_change": rounded,
+        "longname": info.get("longName"),
+        "domain": domain,
+    }
 
 @router.get("/{ticker_symbol}/history")
 def get_chart_history(ticker_symbol: str):

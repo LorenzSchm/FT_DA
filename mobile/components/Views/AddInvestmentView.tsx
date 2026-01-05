@@ -30,12 +30,12 @@ export default function AddInvestmentView() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const { session } = useAuthStore();
-
   const logoCache = useRef<Record<string, string>>({});
-
   const inputRef = useRef<TextInput | null>(null);
   const { width } = useWindowDimensions();
-  const expandedWidth = width - 32; // match NavBar spacing
+  const expandedWidth = width - 32;
+  const FMP_API_KEY = process.env.EXPO_PUBLIC_FMP_API_KEY;
+  const BRANDFETCH_API_KEY = process.env.EXPO_PUBLIC_LOGO_API_KEY;
 
   const handleSearchChange = (text: string) => {
     setSearchQuery(text);
@@ -62,24 +62,53 @@ export default function AddInvestmentView() {
       const res = await axios.get(
         `http://localhost:8000/stock/${symbol}/price`,
       );
-      const { price, weekly_change, domain, longname } = res.data;
+
+      let { price, weekly_change, domain, longname } = res.data;
+
       let logo = logoCache.current[symbol];
-      if (!logo && domain) {
+
+      if (!logo && symbol) {
         try {
-          const brandResp = await axios.get(
-            `https://api.brandfetch.io/v2/search/${domain}`,
+          console.log(symbol);
+          const brandInformationResp = await axios.get(
+            `https://financialmodelingprep.com/stable/profile?symbol=${symbol}&apikey=${FMP_API_KEY}`,
           );
-          const best =
-            brandResp.data.find((b: any) => b.verified) || brandResp.data[0];
-          if (best?.icon) {
-            logo = best.icon;
+          const brandInformation = brandInformationResp.data[0];
+
+          if (brandInformation && brandInformation.image) {
+            logo = brandInformation.image;
             logoCache.current[symbol] = logo;
+          } else {
+            if (domain) {
+              const brandResp = await axios.get(
+                `https://api.brandfetch.io/v2/search/${domain}`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${BRANDFETCH_API_KEY}`,
+                  },
+                },
+              );
+              const best =
+                brandResp.data.find((b: any) => b.verified) ||
+                brandResp.data[0];
+              if (best?.icon) {
+                logo = best.icon;
+                logoCache.current[symbol] = logo;
+              }
+            }
           }
-        } catch {}
+
+          if (!longname && brandInformation && brandInformation.companyName) {
+            longname = brandInformation.companyName;
+          }
+        } catch (error) {
+          console.error(`Error fetching logo for ${symbol}:`, error);
+        }
       }
 
       return { price, weekly_change, logo, longname };
-    } catch {
+    } catch (error) {
+      console.error(`Error fetching stock data for ${symbol}:`, error);
       return {
         price: undefined,
         weekly_change: undefined,
@@ -93,13 +122,12 @@ export default function AddInvestmentView() {
   useEffect(() => {
     const load = async () => {
       setInitialLoading(true);
-      // Trending
       const trendResp = await axios.get(
         "https://query1.finance.yahoo.com/v1/finance/trending/US",
       );
       const quotes =
         trendResp.data.finance?.result?.[0]?.quotes.slice(0, 10) || [];
-
+      console.log(trendResp.data.finance.result[0].quotes);
       const trendData = await Promise.all(
         quotes.map(async (q: any) => {
           const { price, weekly_change, logo, longname } = await fetchStockData(
@@ -109,7 +137,6 @@ export default function AddInvestmentView() {
         }),
       );
       setTrending(trendData);
-
       // Positions
       const pos = await getInvestments(
         session?.access_token,
@@ -144,7 +171,6 @@ export default function AddInvestmentView() {
       );
       const quotes = resp.data?.quotes ?? [];
       const limited = quotes.filter((q: any) => q.symbol).slice(0, 10);
-
       const results = await Promise.all(
         limited.map(async (item: any) => {
           const { price, weekly_change, logo, longname } = await fetchStockData(
@@ -239,12 +265,12 @@ export default function AddInvestmentView() {
                             {item.longname || item.shortname || "Stock"}
                           </Text>
                           <Text className="text-sm text-gray-500">
-                            {item.symbol}
+                            {item.longname}
                           </Text>
                         </View>
                       </View>
                       <Text
-                        className={`font-bold  text-lg ${
+                        className={`font-bold text-lg ${
                           (item.weekly_change ?? 0) > 0
                             ? "text-green-600"
                             : "text-red-600"
@@ -332,7 +358,6 @@ export default function AddInvestmentView() {
                 </View>
               )}
             </View>
-
             {/* Trending */}
             <View>
               <Text className="text-2xl font-bold mb-4">Trending</Text>
@@ -397,7 +422,6 @@ export default function AddInvestmentView() {
             </View>
           </>
         )}
-
         <GestureHandlerRootView style={{ flex: 1 }}>
           <StockModal
             isVisible={modalVisible}

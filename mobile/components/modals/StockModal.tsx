@@ -19,7 +19,8 @@ import { PhantomChart } from "@/components/PhantomChart";
 import { useAuthStore } from "@/utils/authStore";
 import { getInvestments } from "@/utils/db/invest/invest";
 import AddInvestmentModal from "@/components/modals/AddInvestmentModal";
-import { ChevronDown } from "lucide-react-native";
+import { ChevronRight } from "lucide-react-native";
+import StockDescriptionModal from "./StockDescriptionModal";
 
 type Props = {
   isVisible: boolean;
@@ -37,8 +38,11 @@ export default function StockModal({
   const [chartLoading, setChartLoading] = useState(false);
   const [myPosition, setMyPosition] = useState<any | null>(null);
   const [showAddInvestment, setShowAddInvestment] = useState(false);
+  const [informationData, setInformationData] = useState(null);
   const [logo, setLogo] = useState<string | null>(null);
   const API_BASE = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
+  const FMP_API_KEY = process.env.EXPO_PUBLIC_FMP_API_KEY;
+  const [showDescriptionModal, setShowDescriptionModal] = useState(false);
   const { session } = useAuthStore();
 
   const logoCache = useRef<Record<string, string>>({});
@@ -96,7 +100,7 @@ export default function StockModal({
         const sym = selectedStock.symbol ?? selectedStock.ticker;
         fetchHistory(sym);
         fetchMyPosition(sym);
-        fetchLogo(sym);
+        fetchInformation(sym);
       }
     } else {
       Animated.timing(sheetPosition, {
@@ -112,31 +116,19 @@ export default function StockModal({
     }
   }, [isVisible, selectedStock]);
 
-  const fetchLogo = async (symbol: string) => {
+  const fetchInformation = async (sym) => {
     try {
-      // Check cache first
-      if (logoCache.current[symbol]) {
-        setLogo(logoCache.current[symbol]);
-        return;
-      }
-
-      // Fetch price data which includes domain
-      const res = await axios.get(`${API_BASE}/stock/${symbol}/price`);
-      const domain = res.data?.domain;
-
-      if (domain) {
-        const brandResp = await axios.get(
-          `https://api.brandfetch.io/v2/search/${domain}`,
-        );
-        const best =
-          brandResp.data.find((b: any) => b.verified) || brandResp.data[0];
-        if (best?.icon) {
-          logoCache.current[symbol] = best.icon;
-          setLogo(best.icon);
+      if (selectedStock && FMP_API_KEY) {
+        const url = `https://financialmodelingprep.com/stable/profile?symbol=${sym}&apikey=${FMP_API_KEY}`;
+        const resp = await axios.get(url);
+        if (resp) {
+          setInformationData(resp.data[0]);
+          console.log(informationData);
         }
       }
+      return "Error. No Stock Selected.";
     } catch (err) {
-      console.error("Logo fetch error:", err);
+      console.error(err);
     }
   };
 
@@ -253,9 +245,9 @@ export default function StockModal({
                   {selectedStock && (
                     <View className="p-4 flex-row items-center">
                       <View className="w-12 h-12 rounded-2xl items-center justify-center mr-4 overflow-hidden">
-                        {logo ? (
+                        {informationData?.image ? (
                           <Image
-                            source={{ uri: logo }}
+                            source={{ uri: informationData.image }}
                             className="w-full h-full"
                             resizeMode="contain"
                           />
@@ -276,22 +268,80 @@ export default function StockModal({
                             selectedStock.symbol}
                         </Text>
                         <Text className="text-gray-500 text-base">
-                          {selectedStock.symbol || selectedStock.ticker}
+                          {selectedStock.symbol || selectedStock.ticker} |{" "}
+                          {selectedStock.exchDisp}
                         </Text>
                       </View>
                     </View>
                   )}
 
                   {chartLoading ? (
-                    <Skeleton className="h-[260px] w-full rounded-2xl" />
+                    <View className={"px-8"}>
+                      <Skeleton className="h-[260px] w-full rounded-2xl" />
+                    </View>
                   ) : history ? (
-                    <View className="">
+                    <View className="h-[260px]">
                       <PhantomChart dataByTimeframe={history} />
                     </View>
                   ) : (
                     <Text className="text-center text-gray-500 mt-10">
                       No chart data
                     </Text>
+                  )}
+
+                  {informationData && (
+                    <View className={"px-8 mt-20"}>
+                      <View>
+                        <Text className={"font-bold text-2xl"}>About</Text>
+                      </View>
+                      <View>
+                        <View className={"my-2"}>
+                          <Text className={"font-medium"}>Description</Text>
+                          <TouchableOpacity
+                            onPress={() => setShowDescriptionModal(true)}
+                            className={"text-gray-500"}
+                          >
+                            <Text numberOfLines={3} ellipsizeMode={"tail"}>
+                              {String(informationData.description || "")}
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                        <View className={"my-2"}>
+                          <Text className={"font-medium"}>Sector</Text>
+                          <Text className={"text-gray-500"}>
+                            {String(informationData.sector || "")}
+                          </Text>
+                        </View>
+                        <View className={"my-2"}>
+                          <Text className={"font-medium"}>Volume</Text>
+                          <Text className={"text-gray-500"}>
+                            {String(informationData.volume || "")}
+                          </Text>
+                        </View>
+                        <View className={"my-2"}>
+                          <Text className={"font-medium"}>Market Cap</Text>
+                          <Text className={"text-gray-500"}>
+                            ${" "}
+                            {(() => {
+                              const raw = informationData?.marketCap;
+
+                              const n =
+                                typeof raw === "number"
+                                  ? raw
+                                  : typeof raw === "string"
+                                    ? Number(raw.replace(/[.,\s]/g, ""))
+                                    : NaN;
+
+                              if (!Number.isFinite(n)) return "";
+
+                              return Math.trunc(n)
+                                .toString()
+                                .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                            })()}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
                   )}
 
                   {myPosition && (
@@ -382,6 +432,11 @@ export default function StockModal({
             isVisible={showAddInvestment}
             onClose={() => setShowAddInvestment(false)}
             selectedStock={selectedStock}
+          />
+          <StockDescriptionModal
+            isVisible={showDescriptionModal}
+            onClose={() => setShowDescriptionModal(false)}
+            description={informationData?.description || ""}
           />
         </View>
       </Modal>
