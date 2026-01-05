@@ -431,8 +431,8 @@ export function InvestmentView() {
                             : "text-red-500"
                         }`}
                       >
-                        {(item.unrealized_pl ?? 0) >= 0 ? "+" : ""}
-                        ${Number(item.unrealized_pl ?? 0).toFixed(2)}
+                        {(item.unrealized_pl ?? 0) >= 0 ? "+" : ""}$
+                        {Number(item.unrealized_pl ?? 0).toFixed(2)}
                       </Text>
                       <Text
                         className={`font-semibold ${
