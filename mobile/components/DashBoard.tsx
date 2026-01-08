@@ -67,6 +67,7 @@ export default function DashBoard() {
     return Math.round(available * 100);
   };
 
+
   const normalizeTransactions = (list?: any[]) => {
     if (!Array.isArray(list)) return [];
     return list.map((t: any, index: number) => {

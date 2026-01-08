@@ -8,6 +8,7 @@ export default function NavBar({ onLaw = false }) {
     () => [
       { href: "/#about", label: "About" },
       { href: "/#plans", label: "Plans" },
+      { href: "/#features", label: "Features" },
       { href: "/#team", label: "The Team" },
     ],
     [],

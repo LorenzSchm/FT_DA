@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
-  ActivityIndicator,
 } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { getInvestments } from "@/utils/db/invest/invest";
@@ -17,12 +16,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PhantomChart } from "@/components/PhantomChart";
 import axios from "axios";
 
+// Base URL for backend API
 const API_BASE = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
 
 export function InvestmentView() {
   const { session } = useAuthStore();
   const [positions, setPositions] = useState<any[]>([]);
-  const [value, setValue] = useState("");
   const [selectedStock, setSelectedStock] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [showAddInvestmentModal, setShowAddInvestmentModal] = useState(false);
@@ -70,7 +69,6 @@ export function InvestmentView() {
           }
         } catch {}
       }
-
       return { price, weekly_change, logo, longname };
     } catch {
       return {
@@ -98,35 +96,17 @@ export function InvestmentView() {
           }),
         );
         setPositions(posData);
-        let total = 0;
-        (posData || []).forEach((p: any) => {
-          const ds = p?.dates || [];
-          if (ds.length > 0) {
-            const last = ds[ds.length - 1];
-            total += Number(last.market_value ?? 0);
-          }
-        });
-        setValue(total.toFixed(2));
 
+        // Build array of each position's current value
         const vals = (posData || []).map((p: any) => {
-          const ds = p?.dates || [];
-          const last = ds.length ? ds[ds.length - 1] : null;
-          // Prefer backend-provided market_value snapshot; fallback to price * quantity if needed
-          const fallbackQty =
-            Number(p?.quantity ?? last?.position_quantity ?? 0) || 0;
-          const fallbackPrice =
-            Number(p?.current_price ?? last?.current_price ?? 0) || 0;
-          const currentValue = Number(
-            (last?.market_value ?? fallbackQty * fallbackPrice) as number,
-          );
+          // Use backend-provided market_value from position level
+          const currentValue = Number(p?.market_value ?? 0);
           return {
             ticker: p.ticker,
             value: Number.isFinite(currentValue) ? currentValue : 0,
           };
         });
         setPositionValues(vals);
-        try {
-        } catch {}
       } catch (error) {
         console.error("Error fetching positions:", error);
       } finally {
@@ -136,6 +116,7 @@ export function InvestmentView() {
     fetchpositions();
   }, [session?.access_token, session?.refresh_token]);
 
+  // Build portfolio history that changes with stock price and position quantities
   useEffect(() => {
     let active = true;
     const buildCombinedHistory = async () => {
@@ -147,7 +128,6 @@ export function InvestmentView() {
         setChartLoading(true);
         type QtyStep = { ts: number; qty: number };
         const qtyStepsByTicker: Record<string, QtyStep[]> = {};
-        const qtyStepsByTickerEOD: Record<string, QtyStep[]> = {};
         const firstTradeTsByTicker: Record<string, number> = {};
         const uniqueTickers = Array.from(
           new Set((positions || []).map((p: any) => p?.ticker)),
@@ -166,17 +146,6 @@ export function InvestmentView() {
             .sort((a, b) => a.ts - b.ts);
           qtyStepsByTicker[ticker] = steps;
           if (steps.length > 0) firstTradeTsByTicker[ticker] = steps[0].ts;
-
-          const stepsEOD: QtyStep[] = ds
-            .filter((d) => d?.date)
-            .map((d, idx) => {
-              const base = Date.parse(`${d.date}T23:59:59Z`);
-              const ts = isNaN(base) ? Date.now() : base + idx;
-              const qty = Number(d.position_quantity ?? 0);
-              return { ts, qty };
-            })
-            .sort((a, b) => a.ts - b.ts);
-          qtyStepsByTickerEOD[ticker] = stepsEOD;
         });
 
         const qtyAt = (steps: QtyStep[], ts: number) => {
@@ -201,8 +170,7 @@ export function InvestmentView() {
             try {
               const res = await fetch(`${API_BASE}/stock/${ticker}/history`);
               if (!res.ok) return;
-              const data = (await res.json()) as HistoryResp;
-              historyByTicker[ticker] = data;
+              historyByTicker[ticker] = (await res.json()) as HistoryResp;
             } catch (e) {
               console.error(`History fetch failed for ${ticker}:`, e);
             }
@@ -232,6 +200,10 @@ export function InvestmentView() {
           const perTicker = uniqueTickers.map((ticker) => {
             const hist = historyByTicker[ticker];
             const list = hist && hist[tf] ? hist[tf] : [];
+            // For 1D we switch to start-of-day quantity steps to avoid multi-asset inconsistencies
+            // that can occur when applying EOD-only quantity changes. This ensures that existing
+            // holdings are reflected throughout the day, and same-day trades affect the series
+            // from the day's start (we lack precise intraday trade timestamps on client).
             const steps = qtyStepsByTicker[ticker] || [];
             const firstTs =
               firstTradeTsByTicker[ticker] ?? Number.POSITIVE_INFINITY;
@@ -305,13 +277,79 @@ export function InvestmentView() {
           "1W": trimSeries(toArray(combinedMaps["1W"])),
           "1D": trimSeries(toArray(combinedMaps["1D"])),
         };
+
+        // Add current portfolio value as the last point to ensure consistency
+        // This ensures the chart's final value matches the sum of position market values
+        // Calculate from positions to avoid state sync issues
+        let currentPortfolioValue = 0;
+        (positions || []).forEach((p: any) => {
+          currentPortfolioValue += Number(p?.market_value ?? 0);
+        });
+
+        const now = Date.now();
+
+        if (currentPortfolioValue > 0) {
+          for (const tf of tfs) {
+            const arr = combined[tf];
+            if (arr && arr.length > 0) {
+              const lastPoint = arr[arr.length - 1];
+              // Only add current point if it's not already there or if values differ
+              if (lastPoint.timestamp < now) {
+                arr.push({ timestamp: now, value: currentPortfolioValue });
+              }
+            }
+          }
+        }
+
+        // Fallback logic: if a timeframe has exactly 2 or fewer entries, use data from shorter timeframe
+        // Order: 1D -> 1W -> 1M -> 1Y -> ALL
+
+        // 1W fallback to 1D
+        if (combined["1W"].length <= 2 && combined["1D"].length > 2) {
+          combined["1W"] = combined["1D"];
+        }
+
+        // 1M fallback to 1W, then 1D
+        if (combined["1M"].length <= 2) {
+          if (combined["1W"].length > 2) {
+            combined["1M"] = combined["1W"];
+          } else if (combined["1D"].length > 2) {
+            combined["1M"] = combined["1D"];
+          }
+        }
+
+        // 1Y fallback to 1M, then 1W, then 1D
+        if (combined["1Y"].length <= 2) {
+          if (combined["1M"].length > 2) {
+            combined["1Y"] = combined["1M"];
+          } else if (combined["1W"].length > 2) {
+            combined["1Y"] = combined["1W"];
+          } else if (combined["1D"].length > 2) {
+            combined["1Y"] = combined["1D"];
+          }
+        }
+
+        // ALL fallback to 1Y, then 1M, then 1W, then 1D
+        if (combined["ALL"].length <= 2) {
+          if (combined["1Y"].length > 2) {
+            combined["ALL"] = combined["1Y"];
+          } else if (combined["1M"].length > 2) {
+            combined["ALL"] = combined["1M"];
+          } else if (combined["1W"].length > 2) {
+            combined["ALL"] = combined["1W"];
+          } else if (combined["1D"].length > 2) {
+            combined["ALL"] = combined["1D"];
+          }
+        }
+
         if (!active) return;
         setPortfolioHistory(combined);
       } catch (e) {
         console.error("Error building portfolio history:", e);
       } finally {
-        if (!active) return;
-        setChartLoading(false);
+        if (active) {
+          setChartLoading(false);
+        }
       }
     };
     buildCombinedHistory();
@@ -340,17 +378,13 @@ export function InvestmentView() {
   };
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <View>
+      <View className="pt-4">
         {chartLoading ? (
-          <View className={"px-8"}>
-            <Skeleton className="h-[260px] rounded-2xl" />
-          </View>
+          <Skeleton className="h-[260px] w-full rounded-2xl" />
         ) : portfolioHistory ? (
           <PhantomChart dataByTimeframe={portfolioHistory as any} />
         ) : (
-          <View className={"px-8"}>
-            <Skeleton className="h-[260px] rounded-2xl" />
-          </View>
+          <Skeleton className="h-[220px] w-full rounded-2xl" />
         )}
       </View>
       <View className="px-8">
@@ -386,6 +420,29 @@ export function InvestmentView() {
                           })()}
                         </Text>
                       </View>
+                    </View>
+                    {/* Unrealized P/L */}
+                    <View className="items-end">
+                      <Text
+                        className={`text-lg font-bold ${
+                          (item.unrealized_pl ?? 0) >= 0
+                            ? "text-green-500"
+                            : "text-red-500"
+                        }`}
+                      >
+                        {(item.unrealized_pl ?? 0) >= 0 ? "+" : "-"}$
+                        {Math.abs(Number(item.unrealized_pl ?? 0)).toFixed(2)}
+                      </Text>
+                      <Text
+                        className={`font-semibold ${
+                          (item.unrealized_pl_pct ?? 0) >= 0
+                            ? "text-green-500"
+                            : "text-red-500"
+                        }`}
+                      >
+                        {(item.unrealized_pl_pct ?? 0) >= 0 ? "+" : ""}
+                        {Number(item.unrealized_pl_pct ?? 0).toFixed(2)}%
+                      </Text>
                     </View>
                   </View>
                 </Pressable>
