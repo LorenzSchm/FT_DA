@@ -59,8 +59,8 @@ export default function FilterModal({
     start: normalizeDate(startDate),
     end: normalizeDate(endDate),
   }));
-  const [visibleMonth, setVisibleMonth] = useState(() =>
-    new Date(startDate.getFullYear(), startDate.getMonth(), 1),
+  const [visibleMonth, setVisibleMonth] = useState(
+    () => new Date(startDate.getFullYear(), startDate.getMonth(), 1),
   );
 
   const SCREEN_HEIGHT = Dimensions.get("window").height;
@@ -189,8 +189,8 @@ export default function FilterModal({
   };
 
   const changeMonth = (delta: number) => {
-    setVisibleMonth((prev) =>
-      new Date(prev.getFullYear(), prev.getMonth() + delta, 1),
+    setVisibleMonth(
+      (prev) => new Date(prev.getFullYear(), prev.getMonth() + delta, 1),
     );
   };
 
@@ -241,13 +241,19 @@ export default function FilterModal({
                 <Text className="text-sm text-gray-500">{rangeLabel}</Text>
               </View>
               <View className="flex-row items-center justify-between mb-3">
-                <TouchableOpacity onPress={() => changeMonth(-1)} className="p-2">
+                <TouchableOpacity
+                  onPress={() => changeMonth(-1)}
+                  className="p-2"
+                >
                   <Text className="text-lg">‹</Text>
                 </TouchableOpacity>
                 <Text className="text-base font-medium text-gray-700">
                   {`${monthNames[visibleMonth.getMonth()]} ${visibleMonth.getFullYear()}`}
                 </Text>
-                <TouchableOpacity onPress={() => changeMonth(1)} className="p-2">
+                <TouchableOpacity
+                  onPress={() => changeMonth(1)}
+                  className="p-2"
+                >
                   <Text className="text-lg">›</Text>
                 </TouchableOpacity>
               </View>
@@ -274,12 +280,14 @@ export default function FilterModal({
                   const isStart = sameDay(day, selection.start);
                   const isEnd = sameDay(day, selection.end);
                   const inRange = day > selection.start && day < selection.end;
-                  const bgClass = isStart || isEnd
-                    ? "bg-black"
-                    : inRange
-                      ? "bg-gray-200"
-                      : "bg-transparent";
-                  const textClass = isStart || isEnd ? "text-white" : "text-gray-800";
+                  const bgClass =
+                    isStart || isEnd
+                      ? "bg-black"
+                      : inRange
+                        ? "bg-gray-200"
+                        : "bg-transparent";
+                  const textClass =
+                    isStart || isEnd ? "text-white" : "text-gray-800";
                   return (
                     <View
                       key={day.toISOString()}
