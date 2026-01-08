@@ -7,6 +7,7 @@ import { getData } from "@/utils/db/connect_accounts/connectAccounts";
 import SpendingChart from "@/components/analysis/SpendingChart";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Feather } from "@expo/vector-icons";
+import FilterModal from "./FilterModal";
 
 type Props = {
   account: string | number | null;
@@ -54,6 +55,20 @@ export default function Overview({ account, accounts }: Props) {
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [connectBalance, setConnectBalance] = useState<number | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [dateRange, setDateRange] = useState(() => {
+    const now = new Date();
+    return {
+      start: new Date(now.getFullYear(), now.getMonth(), 1),
+      end: new Date(now.getFullYear(), now.getMonth() + 1, 0),
+    };
+  });
+
+  const handleCloseModal = () => setModalOpen(false);
+  const handleApplyDateRange = (range: { start: Date; end: Date }) => {
+    setDateRange({ start: new Date(range.start), end: new Date(range.end) });
+    setModalOpen(false);
+  };
 
   const fetchConnectBalanceMinor = async () => {
     if (!session?.access_token) return 0;
@@ -137,21 +152,19 @@ export default function Overview({ account, accounts }: Props) {
     }
   }, [account, session?.access_token, accounts, connectBalance]);
 
-  const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter((tx: any) => {
+      if (!tx.date) return false;
+      const txDate = new Date(tx.date);
+      return txDate >= dateRange.start && txDate <= dateRange.end;
+    });
+  }, [transactions, dateRange.start, dateRange.end]);
 
-  const monthlyTransactions = transactions.filter((tx: any) => {
-    if (!tx.date) return false;
-    const txDate = new Date(tx.date);
-    return txDate >= startOfMonth && txDate <= endOfMonth;
-  });
-
-  const monthlyIncome = monthlyTransactions
+  const monthlyIncome = filteredTransactions
     .filter((tx: any) => tx.amount_minor > 0)
     .reduce((sum: number, tx: any) => sum + tx.amount_minor, 0);
 
-  const monthlyExpenses = monthlyTransactions
+  const monthlyExpenses = filteredTransactions
     .filter((tx: any) => tx.amount_minor < 0)
     .reduce((sum: number, tx: any) => sum + Math.abs(tx.amount_minor), 0);
 
@@ -185,15 +198,17 @@ export default function Overview({ account, accounts }: Props) {
     return `${day}. ${monthNames[date.getMonth()]}`;
   };
 
-  const dateRange = `${formatDate(startOfMonth)} - ${formatDate(endOfMonth)}.`;
+  const rangeLabel = `${formatDate(dateRange.start)} - ${formatDate(
+    dateRange.end,
+  )}.`;
 
   const getCurrencySymbol = (code?: string) => (code === "USD" ? "$" : "€");
   const currency = transactions[0]?.currency || "EUR";
   const currencySymbol = getCurrencySymbol(currency);
 
-  const recentTransactions = transactions.slice(0, 5);
-  const subscriptionEntries = subscriptions.map((sub: any) => ({
-    id: `sub-${sub.id}`,
+  const recentTransactions = filteredTransactions.slice(0, 5);
+  const subscriptionEntries = subscriptions.map((sub: any, index: number) => ({
+    id: `sub-${sub.id ?? index}`,
     description: sub.merchant || sub.name || "Subscription",
     category_id: "Subscription",
     amount_minor: -(sub.amount_minor || 0),
@@ -250,9 +265,9 @@ export default function Overview({ account, accounts }: Props) {
               expenses={totalExpenses}
               currency={currencySymbol}
               label="Monthly standing"
-              dateRange={dateRange}
+              dateRange={rangeLabel}
             />
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => setModalOpen(true)}>
               <Feather name={"more-vertical"} size={20} />
             </TouchableOpacity>
           </View>
@@ -300,9 +315,9 @@ export default function Overview({ account, accounts }: Props) {
             </Text>
           ) : (
             <View className="gap-4">
-              {combinedEntries.map((item: any) => (
+              {combinedEntries.map((item: any, index: number) => (
                 <View
-                  key={item.id}
+                  key={`${item.id ?? "entry"}-${index}`}
                   className="flex-row justify-between items-center"
                 >
                   <View className="flex-1">
@@ -328,6 +343,13 @@ export default function Overview({ account, accounts }: Props) {
           )}
         </View>
       </View>
+      <FilterModal
+        isOpen={modalOpen}
+        startDate={dateRange.start}
+        endDate={dateRange.end}
+        onClose={handleCloseModal}
+        onApply={handleApplyDateRange}
+      />
     </ScrollView>
   );
 }
