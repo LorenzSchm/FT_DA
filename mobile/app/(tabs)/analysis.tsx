@@ -14,15 +14,15 @@ const STATE = {
   OVERVIEW: "Overview",
   EXPENSES: "Expenses",
   INCOME: "Income",
-  SUBSCRIPTIONS: "Subscriptions"
-}
+  SUBSCRIPTIONS: "Subscriptions",
+};
 
 export default function Analysis() {
-  const { session } = useAuthStore()
-  const [selectedState, setSelectedState] = useState<string>(STATE.OVERVIEW)
-  const [isfetchingAccounts, setIsFetchingAccounts] = useState<Boolean>(false)
-  const [accounts, setAccounts] = useState<any[]>([])
-  const [selectedAccountId, setSelectedAccountId] = useState<any>(null)
+  const { session } = useAuthStore();
+  const [selectedState, setSelectedState] = useState<string>(STATE.OVERVIEW);
+  const [isfetchingAccounts, setIsFetchingAccounts] = useState<Boolean>(false);
+  const [accounts, setAccounts] = useState<any[]>([]);
+  const [selectedAccountId, setSelectedAccountId] = useState<any>(null);
 
   const fetchConnectBalanceMinor = async () => {
     if (!session?.access_token) return 0;
@@ -52,9 +52,9 @@ export default function Analysis() {
           acc.kind !== "connect"
             ? acc
             : {
-              ...acc,
-              balance_minor: availableCents,
-            },
+                ...acc,
+                balance_minor: availableCents,
+              },
         );
       }
 
@@ -69,8 +69,8 @@ export default function Analysis() {
   };
 
   useEffect(() => {
-    loadAccounts()
-  }, [session?.access_token])
+    loadAccounts();
+  }, [session?.access_token]);
 
   const states = Object.values(STATE);
 
@@ -86,16 +86,14 @@ export default function Analysis() {
             <TouchableOpacity
               key={state}
               onPress={() => setSelectedState(state)}
-              className={`px-6 py-3 rounded-full ${selectedState === state
-                  ? "bg-black"
-                  : "bg-gray-100"
-                }`}
+              className={`px-6 py-3 rounded-full ${
+                selectedState === state ? "bg-black" : "bg-gray-100"
+              }`}
             >
               <Text
-                className={`text-base font-semibold ${selectedState === state
-                    ? "text-white"
-                    : "text-gray-600"
-                  }`}
+                className={`text-base font-semibold ${
+                  selectedState === state ? "text-white" : "text-gray-600"
+                }`}
               >
                 {state}
               </Text>
@@ -104,30 +102,32 @@ export default function Analysis() {
         </ScrollView>
       </View>
       <View className="px-4 py-1">
-        <CustomPicker 
+        <CustomPicker
           placeholder="Select an account"
           variant="input"
           value={selectedAccountId}
           onValueChange={setSelectedAccountId}
-          options={accounts.map((acc: any) => ({
-            label: `${acc?.name} (${acc.currency})`,
-            value: acc.id,
-          })) as any}
+          options={
+            accounts.map((acc: any) => ({
+              label: `${acc?.name} (${acc.currency})`,
+              value: acc.id,
+            })) as any
+          }
         />
       </View>
       <View className="flex-1">
-            { selectedState === STATE.OVERVIEW && (
-              <Overview accounts={accounts} account={selectedAccountId} />
-            )}
-            { selectedState === STATE.EXPENSES && (
-              <Expenses account={selectedAccountId}/>
-            )}
-            { selectedState === STATE.INCOME && (
-              <Incomes account={selectedAccountId}/>
-            )}
-            { selectedState === STATE.SUBSCRIPTIONS && (
-              <Subscriptions account={selectedAccountId}/>
-            )}
+        {selectedState === STATE.OVERVIEW && (
+          <Overview accounts={accounts} account={selectedAccountId} />
+        )}
+        {selectedState === STATE.EXPENSES && (
+          <Expenses account={selectedAccountId} />
+        )}
+        {selectedState === STATE.INCOME && (
+          <Incomes account={selectedAccountId} />
+        )}
+        {selectedState === STATE.SUBSCRIPTIONS && (
+          <Subscriptions account={selectedAccountId} />
+        )}
       </View>
     </View>
   );

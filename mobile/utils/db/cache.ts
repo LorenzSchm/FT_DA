@@ -1,4 +1,3 @@
-
 type CacheEntry<T> = {
   data: T;
   timestamp: number;
@@ -9,8 +8,10 @@ const CACHE_DURATION = 60 * 1000;
 const cache = new Map<string, CacheEntry<any>>();
 const backgroundRefetchPromises = new Map<string, Promise<any>>();
 
-
-function generateCacheKey(endpoint: string, params?: Record<string, any>): string {
+function generateCacheKey(
+  endpoint: string,
+  params?: Record<string, any>,
+): string {
   const paramString = params
     ? Object.entries(params)
         .sort(([a], [b]) => a.localeCompare(b))
@@ -132,4 +133,3 @@ export async function cachedFetch<T>(
     throw error;
   }
 }
-

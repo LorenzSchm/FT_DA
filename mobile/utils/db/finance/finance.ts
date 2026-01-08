@@ -42,14 +42,17 @@ export const getTransactions = async (
   return cachedFetch(
     `${BASE_URL}/finance/transactions/${account_id}`,
     async () => {
-      const res = await fetch(`${BASE_URL}/finance/transactions/${account_id}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-          "x-refresh-token": refreshToken,
+      const res = await fetch(
+        `${BASE_URL}/finance/transactions/${account_id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+            "x-refresh-token": refreshToken,
+          },
         },
-      });
+      );
 
       if (!res.ok) {
         const error = await res.json().catch(() => ({}));
@@ -96,8 +99,8 @@ export const addTransaction = async (
   }
 
   const result = await res.json();
-  
+
   invalidateCache(`/finance/transactions/${account_id}`);
-  
+
   return result;
 };

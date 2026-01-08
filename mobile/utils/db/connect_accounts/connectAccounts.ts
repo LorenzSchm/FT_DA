@@ -22,10 +22,10 @@ export const generateToken = async (
       },
     },
   );
-  
+
   // Invalidate bank data cache when a new token is generated
   invalidateCache("/bank/data");
-  
+
   return resp.data;
 };
 
@@ -33,7 +33,7 @@ export const getData = async (accessToken: string, refreshToken: string) => {
   if (!accessToken) {
     throw new Error("Missing access token");
   }
-  
+
   return cachedFetch(
     `${BASE_URL}/bank/data`,
     async () => {

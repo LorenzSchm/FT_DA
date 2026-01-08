@@ -130,23 +130,23 @@ export const handleAddAccount = async (
       },
     });
 
-      if (response.data) {
-        // Invalidate cache before fetching updated accounts
-        invalidateCache("/finance/saving-goals/");
-        
-        // Fetch updated accounts list and return normalized goals
-        const accountsResponse = await axios.get(url, {
-          headers,
-          maxRedirects: 5,
-          validateStatus: function (status) {
-            return status >= 200 && status < 400; // Accept status codes from 200 to 399
-          },
-        });
+    if (response.data) {
+      // Invalidate cache before fetching updated accounts
+      invalidateCache("/finance/saving-goals/");
 
-        if (accountsResponse.data && accountsResponse.data.goals) {
-          const normalized = accountsResponse.data.goals.map((g: any) =>
-            normalizeGoal(g),
-          );
+      // Fetch updated accounts list and return normalized goals
+      const accountsResponse = await axios.get(url, {
+        headers,
+        maxRedirects: 5,
+        validateStatus: function (status) {
+          return status >= 200 && status < 400; // Accept status codes from 200 to 399
+        },
+      });
+
+      if (accountsResponse.data && accountsResponse.data.goals) {
+        const normalized = accountsResponse.data.goals.map((g: any) =>
+          normalizeGoal(g),
+        );
 
         // If server didn't persist the initial amount, patch the created goal locally
         // Prefer matching by returned created id from response.data, otherwise fallback to name matching
