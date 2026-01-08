@@ -1,3 +1,5 @@
+import { cachedFetch, invalidateCache } from "../cache";
+
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
 
 export const getAccounts = async (accessToken, refreshToken) => {
@@ -5,21 +7,27 @@ export const getAccounts = async (accessToken, refreshToken) => {
     throw new Error("Missing access token");
   }
 
-  const res = await fetch(`${BASE_URL}/finance/`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-      "x-refresh-token": refreshToken,
+  return cachedFetch(
+    `${BASE_URL}/finance/`,
+    async () => {
+      const res = await fetch(`${BASE_URL}/finance/`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+          "x-refresh-token": refreshToken,
+        },
+      });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({}));
+        throw new Error(error.detail || "Failed to fetch accounts");
+      }
+
+      return res.json();
     },
-  });
-
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.detail || "Failed to fetch accounts");
-  }
-
-  return res.json();
+    { accessToken },
+  );
 };
 
 export const getTransactions = async (
@@ -31,21 +39,30 @@ export const getTransactions = async (
     throw new Error("Missing access token");
   }
 
-  const res = await fetch(`${BASE_URL}/finance/transactions/${account_id}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-      "x-refresh-token": refreshToken,
+  return cachedFetch(
+    `${BASE_URL}/finance/transactions/${account_id}`,
+    async () => {
+      const res = await fetch(
+        `${BASE_URL}/finance/transactions/${account_id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+            "x-refresh-token": refreshToken,
+          },
+        },
+      );
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({}));
+        throw new Error(error.detail || "Failed to fetch transactions");
+      }
+
+      return res.json();
     },
-  });
-
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.detail || "Failed to fetch transactions");
-  }
-
-  return res.json();
+    { account_id, accessToken },
+  );
 };
 
 export const addTransaction = async (
@@ -81,5 +98,9 @@ export const addTransaction = async (
     throw new Error(error.detail || "Failed to add transaction");
   }
 
-  return res.json();
+  const result = await res.json();
+
+  invalidateCache(`/finance/transactions/${account_id}`);
+
+  return result;
 };

@@ -1,4 +1,5 @@
 import axios from "axios";
+import { cachedFetch, invalidateCache } from "../cache";
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -21,6 +22,10 @@ export const generateToken = async (
       },
     },
   );
+
+  // Invalidate bank data cache when a new token is generated
+  invalidateCache("/bank/data");
+
   return resp.data;
 };
 
@@ -28,11 +33,18 @@ export const getData = async (accessToken: string, refreshToken: string) => {
   if (!accessToken) {
     throw new Error("Missing access token");
   }
-  const resp = await axios.get(`${BASE_URL}/bank/data`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "x-refresh-token": refreshToken,
+
+  return cachedFetch(
+    `${BASE_URL}/bank/data`,
+    async () => {
+      const resp = await axios.get(`${BASE_URL}/bank/data`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "x-refresh-token": refreshToken,
+        },
+      });
+      return resp.data;
     },
-  });
-  return resp.data;
+    { accessToken },
+  );
 };
