@@ -19,7 +19,6 @@ import { PhantomChart } from "@/components/PhantomChart";
 import { useAuthStore } from "@/utils/authStore";
 import { getInvestments } from "@/utils/db/invest/invest";
 import AddInvestmentModal from "@/components/modals/AddInvestmentModal";
-import { ChevronRight } from "lucide-react-native";
 import StockDescriptionModal from "./StockDescriptionModal";
 
 type Props = {
@@ -38,17 +37,16 @@ export default function StockModal({
   const [chartLoading, setChartLoading] = useState(false);
   const [myPosition, setMyPosition] = useState<any | null>(null);
   const [showAddInvestment, setShowAddInvestment] = useState(false);
-  const [informationData, setInformationData] = useState(null);
+  const [informationData, setInformationData] = useState<any>(null);
   const [logo, setLogo] = useState<string | null>(null);
   const API_BASE = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
   const FMP_API_KEY = process.env.EXPO_PUBLIC_FMP_API_KEY;
   const [showDescriptionModal, setShowDescriptionModal] = useState(false);
   const { session } = useAuthStore();
 
-  const logoCache = useRef<Record<string, string>>({});
-
   const SCREEN_HEIGHT = Dimensions.get("window").height;
   const sheetPosition = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+  const logoCache = useRef<Record<string, string>>({});
   const iosShadow = {
     shadowColor: "#000",
     shadowOffset: { width: 1, height: 1 },
@@ -114,21 +112,58 @@ export default function StockModal({
         setLogo(null);
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isVisible, selectedStock]);
 
-  const fetchInformation = async (sym) => {
+  const fetchInformation = async (sym: string) => {
     try {
-      if (selectedStock && FMP_API_KEY) {
-        const url = `https://financialmodelingprep.com/stable/profile?symbol=${sym}&apikey=${FMP_API_KEY}`;
-        const resp = await axios.get(url);
-        if (resp) {
-          setInformationData(resp.data[0]);
-          console.log(informationData);
-        }
+      if (!selectedStock || !FMP_API_KEY) {
+        return "Error. No Stock Selected.";
       }
-      return "Error. No Stock Selected.";
+
+      const url = `https://financialmodelingprep.com/stable/profile?symbol=${sym}&apikey=${FMP_API_KEY}`;
+      const resp = await axios.get(url);
+
+      if (resp && resp.data && resp.data[0]) {
+        const data = resp.data[0];
+
+        // Try to get logo from cache first
+        let logo = logoCache.current[sym];
+
+        if (!logo) {
+          // Try to fetch logo from brandfetch using domain
+          const domain = data.website;
+          if (domain) {
+            try {
+              const brandResp = await axios.get(
+                `https://api.brandfetch.io/v2/search/${domain}`,
+              );
+              const best =
+                brandResp.data.find((b: any) => b.verified) ||
+                brandResp.data[0];
+              if (best?.icon) {
+                logo = best.icon;
+                logoCache.current[sym] = logo;
+              }
+            } catch {
+              // Brandfetch failed, use FMP image as fallback
+              if (data.image) {
+                logo = data.image;
+                logoCache.current[sym] = logo;
+              }
+            }
+          } else if (data.image) {
+            // No domain, use FMP image directly
+            logo = data.image;
+            logoCache.current[sym] = logo;
+          }
+        }
+
+        setInformationData({ ...data, logo });
+        setLogo(logo || null);
+      }
     } catch (err) {
-      console.error(err);
+      console.error("fetchInformation error:", err);
     }
   };
 
@@ -220,6 +255,7 @@ export default function StockModal({
               minHeight: SCREEN_HEIGHT,
               ...shadowStyle,
             }}
+            className="gap-6"
           >
             <View className={"flex items-center"}>
               <View
@@ -245,7 +281,13 @@ export default function StockModal({
                   {selectedStock && (
                     <View className="p-4 flex-row items-center">
                       <View className="w-12 h-12 rounded-2xl items-center justify-center mr-4 overflow-hidden">
-                        {informationData?.image ? (
+                        {logo ? (
+                          <Image
+                            source={{ uri: logo }}
+                            className="w-full h-full"
+                            resizeMode="contain"
+                          />
+                        ) : informationData?.image ? (
                           <Image
                             source={{ uri: informationData.image }}
                             className="w-full h-full"
@@ -345,7 +387,7 @@ export default function StockModal({
                   )}
 
                   {myPosition && (
-                    <View className="px-8 mt-6">
+                    <View className="px-8 mt-12">
                       <Text className="text-xl font-semibold text-black mb-3">
                         My position
                       </Text>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,7 +8,6 @@ import {
   Image,
   TouchableOpacity,
   useWindowDimensions,
-  ActivityIndicator,
 } from "react-native";
 import axios from "axios";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -20,8 +19,6 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export default function AddInvestmentView() {
   const [trending, setTrending] = useState<any[]>([]);
-  const [prices, setPrices] = useState<Record<string, number>>({});
-  const [changes, setChanges] = useState<Record<string, number>>({});
   const [selectedStock, setSelectedStock] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [positions, setPositions] = useState<any[]>([]);
@@ -35,7 +32,6 @@ export default function AddInvestmentView() {
   const { width } = useWindowDimensions();
   const expandedWidth = width - 32;
   const FMP_API_KEY = process.env.EXPO_PUBLIC_FMP_API_KEY;
-  const BRANDFETCH_API_KEY = process.env.EXPO_PUBLIC_LOGO_API_KEY;
 
   const handleSearchChange = (text: string) => {
     setSearchQuery(text);
@@ -57,52 +53,46 @@ export default function AddInvestmentView() {
     setSelectedStock(null);
   };
 
-  const fetchStockData = async (symbol: string) => {
+  const fetchStockData = useCallback(async (symbol: string) => {
     try {
       const res = await axios.get(
         `http://localhost:8000/stock/${symbol}/price`,
       );
 
       let { price, weekly_change, domain, longname } = res.data;
-
       let logo = logoCache.current[symbol];
 
-      if (!logo && symbol) {
+      if (!logo && domain) {
         try {
-          console.log(symbol);
-          const brandInformationResp = await axios.get(
-            `https://financialmodelingprep.com/stable/profile?symbol=${symbol}&apikey=${FMP_API_KEY}`,
+          // Try brandfetch API first
+          const brandResp = await axios.get(
+            `https://api.brandfetch.io/v2/search/${domain}`,
           );
-          const brandInformation = brandInformationResp.data[0];
-
-          if (brandInformation && brandInformation.image) {
-            logo = brandInformation.image;
+          const best =
+            brandResp.data.find((b: any) => b.verified) || brandResp.data[0];
+          if (best?.icon) {
+            logo = best.icon;
             logoCache.current[symbol] = logo;
-          } else {
-            if (domain) {
-              const brandResp = await axios.get(
-                `https://api.brandfetch.io/v2/search/${domain}`,
-                {
-                  headers: {
-                    Authorization: `Bearer ${BRANDFETCH_API_KEY}`,
-                  },
-                },
+          }
+        } catch {
+          // Fallback to FMP API if brandfetch fails
+          try {
+            if (FMP_API_KEY) {
+              const fmpResp = await axios.get(
+                `https://financialmodelingprep.com/stable/profile?symbol=${symbol}&apikey=${FMP_API_KEY}`,
               );
-              const best =
-                brandResp.data.find((b: any) => b.verified) ||
-                brandResp.data[0];
-              if (best?.icon) {
-                logo = best.icon;
+              const brandInformation = fmpResp.data[0];
+              if (brandInformation && brandInformation.image) {
+                logo = brandInformation.image;
                 logoCache.current[symbol] = logo;
               }
+              if (!longname && brandInformation && brandInformation.companyName) {
+                longname = brandInformation.companyName;
+              }
             }
+          } catch (fmpError) {
+            console.error(`Error fetching logo from FMP for ${symbol}:`, fmpError);
           }
-
-          if (!longname && brandInformation && brandInformation.companyName) {
-            longname = brandInformation.companyName;
-          }
-        } catch (error) {
-          console.error(`Error fetching logo for ${symbol}:`, error);
         }
       }
 
@@ -116,7 +106,7 @@ export default function AddInvestmentView() {
         longname: undefined,
       };
     }
-  };
+  }, [FMP_API_KEY]);
 
   // Initial load
   useEffect(() => {
@@ -154,7 +144,7 @@ export default function AddInvestmentView() {
       setInitialLoading(false);
     };
     load();
-  }, []);
+  }, [session?.access_token, session?.refresh_token, fetchStockData]);
 
   // Search
   useEffect(() => {
@@ -187,7 +177,7 @@ export default function AddInvestmentView() {
       clearTimeout(t);
       active = false;
     };
-  }, [searchQuery]);
+  }, [searchQuery, fetchStockData]);
 
   const isSearching = searchQuery.trim().length > 0;
 

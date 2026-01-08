@@ -66,7 +66,6 @@ export default function DashBoard() {
     const available = Number(connectData?.balance?.[0]?.available ?? 0);
     return Math.round(available * 100);
   };
-  console.log(session.refresh_token);
   // Normalize transactions from different backends into a consistent shape
   const normalizeTransactions = (list?: any[]) => {
     if (!Array.isArray(list)) return [];

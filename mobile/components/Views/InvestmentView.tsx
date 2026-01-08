@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
-  ActivityIndicator,
 } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { getInvestments } from "@/utils/db/invest/invest";
@@ -23,7 +22,6 @@ const API_BASE = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
 export function InvestmentView() {
   const { session } = useAuthStore();
   const [positions, setPositions] = useState<any[]>([]);
-  const [value, setValue] = useState("");
   const [selectedStock, setSelectedStock] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [showAddInvestmentModal, setShowAddInvestmentModal] = useState(false);
@@ -71,7 +69,6 @@ export function InvestmentView() {
           }
         } catch {}
       }
-
       return { price, weekly_change, logo, longname };
     } catch {
       return {
@@ -100,13 +97,6 @@ export function InvestmentView() {
         );
         setPositions(posData);
 
-        // Calculate total portfolio value from position-level market_value
-        let total = 0;
-        (posData || []).forEach((p: any) => {
-          total += Number(p?.market_value ?? 0);
-        });
-        setValue(total.toFixed(2));
-
         // Build array of each position's current value
         const vals = (posData || []).map((p: any) => {
           // Use backend-provided market_value from position level
@@ -117,8 +107,6 @@ export function InvestmentView() {
           };
         });
         setPositionValues(vals);
-        try {
-        } catch {}
       } catch (error) {
         console.error("Error fetching positions:", error);
       } finally {
@@ -140,7 +128,6 @@ export function InvestmentView() {
         setChartLoading(true);
         type QtyStep = { ts: number; qty: number };
         const qtyStepsByTicker: Record<string, QtyStep[]> = {};
-        const qtyStepsByTickerEOD: Record<string, QtyStep[]> = {};
         const firstTradeTsByTicker: Record<string, number> = {};
         const uniqueTickers = Array.from(
           new Set((positions || []).map((p: any) => p?.ticker)),
@@ -159,17 +146,6 @@ export function InvestmentView() {
             .sort((a, b) => a.ts - b.ts);
           qtyStepsByTicker[ticker] = steps;
           if (steps.length > 0) firstTradeTsByTicker[ticker] = steps[0].ts;
-
-          const stepsEOD: QtyStep[] = ds
-            .filter((d) => d?.date)
-            .map((d, idx) => {
-              const base = Date.parse(`${d.date}T23:59:59Z`);
-              const ts = isNaN(base) ? Date.now() : base + idx;
-              const qty = Number(d.position_quantity ?? 0);
-              return { ts, qty };
-            })
-            .sort((a, b) => a.ts - b.ts);
-          qtyStepsByTickerEOD[ticker] = stepsEOD;
         });
 
         const qtyAt = (steps: QtyStep[], ts: number) => {
@@ -194,8 +170,7 @@ export function InvestmentView() {
             try {
               const res = await fetch(`${API_BASE}/stock/${ticker}/history`);
               if (!res.ok) return;
-              const data = (await res.json()) as HistoryResp;
-              historyByTicker[ticker] = data;
+              historyByTicker[ticker] = (await res.json()) as HistoryResp;
             } catch (e) {
               console.error(`History fetch failed for ${ticker}:`, e);
             }
@@ -303,6 +278,29 @@ export function InvestmentView() {
           "1D": trimSeries(toArray(combinedMaps["1D"])),
         };
 
+        // Add current portfolio value as the last point to ensure consistency
+        // This ensures the chart's final value matches the sum of position market values
+        // Calculate from positions to avoid state sync issues
+        let currentPortfolioValue = 0;
+        (positions || []).forEach((p: any) => {
+          currentPortfolioValue += Number(p?.market_value ?? 0);
+        });
+
+        const now = Date.now();
+
+        if (currentPortfolioValue > 0) {
+          for (const tf of tfs) {
+            const arr = combined[tf];
+            if (arr && arr.length > 0) {
+              const lastPoint = arr[arr.length - 1];
+              // Only add current point if it's not already there or if values differ
+              if (lastPoint.timestamp < now) {
+                arr.push({ timestamp: now, value: currentPortfolioValue });
+              }
+            }
+          }
+        }
+
         // Fallback logic: if a timeframe has exactly 2 or fewer entries, use data from shorter timeframe
         // Order: 1D -> 1W -> 1M -> 1Y -> ALL
 
@@ -349,8 +347,9 @@ export function InvestmentView() {
       } catch (e) {
         console.error("Error building portfolio history:", e);
       } finally {
-        if (!active) return;
-        setChartLoading(false);
+        if (active) {
+          setChartLoading(false);
+        }
       }
     };
     buildCombinedHistory();
@@ -431,8 +430,8 @@ export function InvestmentView() {
                             : "text-red-500"
                         }`}
                       >
-                        {(item.unrealized_pl ?? 0) >= 0 ? "+" : ""}$
-                        {Number(item.unrealized_pl ?? 0).toFixed(2)}
+                        {(item.unrealized_pl ?? 0) >= 0 ? "+" : "-"}$
+                        {Math.abs(Number(item.unrealized_pl ?? 0)).toFixed(2)}
                       </Text>
                       <Text
                         className={`font-semibold ${

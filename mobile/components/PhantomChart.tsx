@@ -78,12 +78,10 @@ export const PhantomChart: React.FC<Props> = ({
         </Text>
 
         <View
-          className={`rounded-full px-2 py-1 ${
-            isUp ? "bg-green-100" : "bg-red-100"
-          }`}
+
         >
           <Text
-            className={`text-xs font-medium ${
+            className={`text-s font-bold ${
               isUp ? "text-green-600" : "text-red-600"
             }`}
           >
