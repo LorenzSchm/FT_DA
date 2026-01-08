@@ -53,60 +53,70 @@ export default function AddInvestmentView() {
     setSelectedStock(null);
   };
 
-  const fetchStockData = useCallback(async (symbol: string) => {
-    try {
-      const res = await axios.get(
-        `http://localhost:8000/stock/${symbol}/price`,
-      );
+  const fetchStockData = useCallback(
+    async (symbol: string) => {
+      try {
+        const res = await axios.get(
+          `http://localhost:8000/stock/${symbol}/price`,
+        );
 
-      let { price, weekly_change, domain, longname } = res.data;
-      let logo = logoCache.current[symbol];
+        let { price, weekly_change, domain, longname } = res.data;
+        let logo = logoCache.current[symbol];
 
-      if (!logo && domain) {
-        try {
-          // Try brandfetch API first
-          const brandResp = await axios.get(
-            `https://api.brandfetch.io/v2/search/${domain}`,
-          );
-          const best =
-            brandResp.data.find((b: any) => b.verified) || brandResp.data[0];
-          if (best?.icon) {
-            logo = best.icon;
-            logoCache.current[symbol] = logo;
-          }
-        } catch {
-          // Fallback to FMP API if brandfetch fails
+        if (!logo && domain) {
           try {
-            if (FMP_API_KEY) {
-              const fmpResp = await axios.get(
-                `https://financialmodelingprep.com/stable/profile?symbol=${symbol}&apikey=${FMP_API_KEY}`,
-              );
-              const brandInformation = fmpResp.data[0];
-              if (brandInformation && brandInformation.image) {
-                logo = brandInformation.image;
-                logoCache.current[symbol] = logo;
-              }
-              if (!longname && brandInformation && brandInformation.companyName) {
-                longname = brandInformation.companyName;
-              }
+            // Try brandfetch API first
+            const brandResp = await axios.get(
+              `https://api.brandfetch.io/v2/search/${domain}`,
+            );
+            const best =
+              brandResp.data.find((b: any) => b.verified) || brandResp.data[0];
+            if (best?.icon) {
+              logo = best.icon;
+              logoCache.current[symbol] = logo;
             }
-          } catch (fmpError) {
-            console.error(`Error fetching logo from FMP for ${symbol}:`, fmpError);
+          } catch {
+            // Fallback to FMP API if brandfetch fails
+            try {
+              if (FMP_API_KEY) {
+                const fmpResp = await axios.get(
+                  `https://financialmodelingprep.com/stable/profile?symbol=${symbol}&apikey=${FMP_API_KEY}`,
+                );
+                const brandInformation = fmpResp.data[0];
+                if (brandInformation && brandInformation.image) {
+                  logo = brandInformation.image;
+                  logoCache.current[symbol] = logo;
+                }
+                if (
+                  !longname &&
+                  brandInformation &&
+                  brandInformation.companyName
+                ) {
+                  longname = brandInformation.companyName;
+                }
+              }
+            } catch (fmpError) {
+              console.error(
+                `Error fetching logo from FMP for ${symbol}:`,
+                fmpError,
+              );
+            }
           }
         }
-      }
 
-      return { price, weekly_change, logo, longname };
-    } catch (error) {
-      console.error(`Error fetching stock data for ${symbol}:`, error);
-      return {
-        price: undefined,
-        weekly_change: undefined,
-        logo: undefined,
-        longname: undefined,
-      };
-    }
-  }, [FMP_API_KEY]);
+        return { price, weekly_change, logo, longname };
+      } catch (error) {
+        console.error(`Error fetching stock data for ${symbol}:`, error);
+        return {
+          price: undefined,
+          weekly_change: undefined,
+          logo: undefined,
+          longname: undefined,
+        };
+      }
+    },
+    [FMP_API_KEY],
+  );
 
   // Initial load
   useEffect(() => {

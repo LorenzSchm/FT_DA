@@ -77,9 +77,7 @@ export const PhantomChart: React.FC<Props> = ({
           ${displayValue.toFixed(2)}
         </Text>
 
-        <View
-
-        >
+        <View>
           <Text
             className={`text-s font-bold ${
               isUp ? "text-green-600" : "text-red-600"

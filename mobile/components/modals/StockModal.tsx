@@ -129,7 +129,6 @@ export default function StockModal({
 
         // Try to get logo from cache first
         let logo = logoCache.current[sym];
-
         if (!logo) {
           // Try to fetch logo from brandfetch using domain
           const domain = data.website;
@@ -331,6 +330,60 @@ export default function StockModal({
                     </Text>
                   )}
 
+                  {myPosition && (
+                    <View className="px-8 mt-12">
+                      <Text className="text-xl font-semibold text-black mb-3">
+                        My position
+                      </Text>
+                      <View className="">
+                        <View className="flex-row justify-between mb-3">
+                          <Text className=" font-semibold text-gray-500">
+                            Total
+                          </Text>
+                          <Text className="text-black font-extrabold">
+                            {myPosition.total.toFixed(2)} {myPosition.currency}
+                          </Text>
+                        </View>
+                        <View className="flex-row justify-between mb-3">
+                          <Text className="font-semibold text-gray-500">
+                            Return
+                          </Text>
+                          <Text
+                            className={
+                              (myPosition.returnPct >= 0
+                                ? "text-green-600"
+                                : "text-red-600") + " font-semibold"
+                            }
+                          >
+                            {myPosition.returnPct.toFixed(2)}%
+                          </Text>
+                        </View>
+                        <View className="flex-row justify-between mb-3">
+                          <Text className="font-semibold text-gray-500">
+                            P/L
+                          </Text>
+                          <Text
+                            className={
+                              (myPosition.pl >= 0
+                                ? "text-green-600"
+                                : "text-red-600") + " font-semibold"
+                            }
+                          >
+                            {myPosition.pl.toFixed(2)} {myPosition.currency}
+                          </Text>
+                        </View>
+                        <View className="flex-row justify-between">
+                          <Text className="font-semibold text-gray-500">
+                            Shares
+                          </Text>
+                          <Text className="text-black font-medium">
+                            {myPosition.shares}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+                  )}
+
                   {informationData && (
                     <View className={"px-8 mt-20"}>
                       <View>
@@ -380,60 +433,6 @@ export default function StockModal({
                                 .toString()
                                 .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
                             })()}
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
-                  )}
-
-                  {myPosition && (
-                    <View className="px-8 mt-12">
-                      <Text className="text-xl font-semibold text-black mb-3">
-                        My position
-                      </Text>
-                      <View className="">
-                        <View className="flex-row justify-between mb-3">
-                          <Text className=" font-semibold text-gray-500">
-                            Total
-                          </Text>
-                          <Text className="text-black font-extrabold">
-                            {myPosition.total.toFixed(2)} {myPosition.currency}
-                          </Text>
-                        </View>
-                        <View className="flex-row justify-between mb-3">
-                          <Text className="font-semibold text-gray-500">
-                            Return
-                          </Text>
-                          <Text
-                            className={
-                              (myPosition.returnPct >= 0
-                                ? "text-green-600"
-                                : "text-red-600") + " font-semibold"
-                            }
-                          >
-                            {myPosition.returnPct.toFixed(2)}%
-                          </Text>
-                        </View>
-                        <View className="flex-row justify-between mb-3">
-                          <Text className="font-semibold text-gray-500">
-                            P/L
-                          </Text>
-                          <Text
-                            className={
-                              (myPosition.pl >= 0
-                                ? "text-green-600"
-                                : "text-red-600") + " font-semibold"
-                            }
-                          >
-                            {myPosition.pl.toFixed(2)} {myPosition.currency}
-                          </Text>
-                        </View>
-                        <View className="flex-row justify-between">
-                          <Text className="font-semibold text-gray-500">
-                            Shares
-                          </Text>
-                          <Text className="text-black font-medium">
-                            {myPosition.shares}
                           </Text>
                         </View>
                       </View>
