@@ -25,6 +25,7 @@ type Props = {
 type FormErrors = {
   quantity?: string;
   tradeDate?: string;
+  entryPrice?: string;
 };
 
 export default function AddInvestmentModal({
@@ -43,6 +44,7 @@ export default function AddInvestmentModal({
     new Date().toISOString().slice(0, 10),
   );
   const [price, setPrice] = useState<number | null>(null);
+  const [entryPrice, setEntryPrice] = useState<string>("");
   const [loadingPrice, setLoadingPrice] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -109,6 +111,7 @@ export default function AddInvestmentModal({
 
   const resetForm = () => {
     setQuantity("");
+    setEntryPrice("");
     setTradeDate(new Date().toISOString().slice(0, 10));
     setErrors({});
   };
@@ -150,6 +153,12 @@ export default function AddInvestmentModal({
     if (!/^\d{4}-\d{2}-\d{2}$/.test(tradeDate)) {
       newErrors.tradeDate = "Use YYYY-MM-DD";
     }
+    if (entryPrice.trim()) {
+      const ep = Number(String(entryPrice).replace(/,/g, "."));
+      if (Number.isNaN(ep) || ep <= 0) {
+        newErrors.entryPrice = "Enter a valid price";
+      }
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -167,11 +176,14 @@ export default function AddInvestmentModal({
     try {
       setSubmitting(true);
       const q = Number(String(quantity).replace(/,/g, "."));
+      const effectivePrice = entryPrice.trim()
+        ? Number(String(entryPrice).replace(/,/g, "."))
+        : (price ?? 0);
       const payload = {
         ticker: symbol,
         type: "buy",
         quantity: q,
-        price: price ?? 0,
+        price: effectivePrice,
         fee: 0,
         trade_date: tradeDate,
       };
@@ -198,8 +210,11 @@ export default function AddInvestmentModal({
 
   const totalCost = (() => {
     const q = Number(String(quantity).replace(/,/g, "."));
-    if (!price || Number.isNaN(q)) return 0;
-    return (price || 0) * (q || 0);
+    const effectivePrice = entryPrice.trim()
+      ? Number(String(entryPrice).replace(/,/g, "."))
+      : (price ?? 0);
+    if (!effectivePrice || Number.isNaN(q)) return 0;
+    return effectivePrice * (q || 0);
   })();
 
   const isButtonDisabled = submitting || loadingPrice || !quantity.trim();
@@ -288,6 +303,43 @@ export default function AddInvestmentModal({
                     </Text>
                   )}
                 </View>
+
+                {/* Entry Price */}
+                <View>
+                  <Text className="font-bold text-black mb-2 text-[20px]">
+                    Entry Price (USD)
+                  </Text>
+                  <View className="bg-neutral-100 rounded-full px-5 py-4 h-fit">
+                    <TextInput
+                      className="text-black text-[20px]"
+                      value={entryPrice}
+                      onChangeText={(text) => {
+                        setEntryPrice(text);
+                        if (errors.entryPrice) {
+                          setErrors((prev) => ({
+                            ...prev,
+                            entryPrice: undefined,
+                          }));
+                        }
+                      }}
+                      keyboardType="decimal-pad"
+                      placeholder={
+                        loadingPrice
+                          ? "Loading..."
+                          : `Current: ${price?.toFixed(2) ?? "0.00"}`
+                      }
+                    />
+                  </View>
+                  {errors.entryPrice && (
+                    <Text className="text-red-500 mb-3 text-sm">
+                      {errors.entryPrice}
+                    </Text>
+                  )}
+                  <Text className="text-gray-500 text-sm mt-1">
+                    Leave empty to use current price
+                  </Text>
+                </View>
+
                 {/* Transaction date */}
                 <View>
                   <Text className="font-bold text-black mb-2 text-[20px]">
@@ -323,7 +375,7 @@ export default function AddInvestmentModal({
                     Amount
                   </Text>
                   <Text className="text-black font-bold text-[20px]">
-                    {loadingPrice
+                    {loadingPrice && !entryPrice.trim()
                       ? "Fetching price…"
                       : `${totalCost.toFixed(2)} USD`}
                   </Text>

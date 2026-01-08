@@ -19,7 +19,7 @@ import { PhantomChart } from "@/components/PhantomChart";
 import { useAuthStore } from "@/utils/authStore";
 import { getInvestments } from "@/utils/db/invest/invest";
 import AddInvestmentModal from "@/components/modals/AddInvestmentModal";
-import { ChevronDown } from "lucide-react-native";
+import StockDescriptionModal from "./StockDescriptionModal";
 
 type Props = {
   isVisible: boolean;
@@ -37,15 +37,16 @@ export default function StockModal({
   const [chartLoading, setChartLoading] = useState(false);
   const [myPosition, setMyPosition] = useState<any | null>(null);
   const [showAddInvestment, setShowAddInvestment] = useState(false);
+  const [informationData, setInformationData] = useState<any>(null);
   const [logo, setLogo] = useState<string | null>(null);
   const API_BASE = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
+  const FMP_API_KEY = process.env.EXPO_PUBLIC_FMP_API_KEY;
+  const [showDescriptionModal, setShowDescriptionModal] = useState(false);
   const { session } = useAuthStore();
-
-  const logoCache = useRef<Record<string, string>>({});
 
   const SCREEN_HEIGHT = Dimensions.get("window").height;
   const sheetPosition = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
-
+  const logoCache = useRef<Record<string, string>>({});
   const iosShadow = {
     shadowColor: "#000",
     shadowOffset: { width: 1, height: 1 },
@@ -97,7 +98,7 @@ export default function StockModal({
         const sym = selectedStock.symbol ?? selectedStock.ticker;
         fetchHistory(sym);
         fetchMyPosition(sym);
-        fetchLogo(sym);
+        fetchInformation(sym);
       }
     } else {
       Animated.timing(sheetPosition, {
@@ -111,33 +112,57 @@ export default function StockModal({
         setLogo(null);
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isVisible, selectedStock]);
 
-  const fetchLogo = async (symbol: string) => {
+  const fetchInformation = async (sym: string) => {
     try {
-      // Check cache first
-      if (logoCache.current[symbol]) {
-        setLogo(logoCache.current[symbol]);
-        return;
+      if (!selectedStock || !FMP_API_KEY) {
+        return "Error. No Stock Selected.";
       }
 
-      // Fetch price data which includes domain
-      const res = await axios.get(`${API_BASE}/stock/${symbol}/price`);
-      const domain = res.data?.domain;
+      const url = `https://financialmodelingprep.com/stable/profile?symbol=${sym}&apikey=${FMP_API_KEY}`;
+      const resp = await axios.get(url);
 
-      if (domain) {
-        const brandResp = await axios.get(
-          `https://api.brandfetch.io/v2/search/${domain}`,
-        );
-        const best =
-          brandResp.data.find((b: any) => b.verified) || brandResp.data[0];
-        if (best?.icon) {
-          logoCache.current[symbol] = best.icon;
-          setLogo(best.icon);
+      if (resp && resp.data && resp.data[0]) {
+        const data = resp.data[0];
+
+        // Try to get logo from cache first
+        let logo = logoCache.current[sym];
+        if (!logo) {
+          // Try to fetch logo from brandfetch using domain
+          const domain = data.website;
+          if (domain) {
+            try {
+              const brandResp = await axios.get(
+                `https://api.brandfetch.io/v2/search/${domain}`,
+              );
+              const best =
+                brandResp.data.find((b: any) => b.verified) ||
+                brandResp.data[0];
+              if (best?.icon) {
+                logo = best.icon;
+                logoCache.current[sym] = logo;
+              }
+            } catch {
+              // Brandfetch failed, use FMP image as fallback
+              if (data.image) {
+                logo = data.image;
+                logoCache.current[sym] = logo;
+              }
+            }
+          } else if (data.image) {
+            // No domain, use FMP image directly
+            logo = data.image;
+            logoCache.current[sym] = logo;
+          }
         }
+
+        setInformationData({ ...data, logo });
+        setLogo(logo || null);
       }
     } catch (err) {
-      console.error("Logo fetch error:", err);
+      console.error("fetchInformation error:", err);
     }
   };
 
@@ -177,17 +202,11 @@ export default function StockModal({
         setMyPosition(null);
         return;
       }
-      const ds = pos?.dates || [];
-      const last = ds.length ? ds[ds.length - 1] : null;
-      if (!last) {
-        setMyPosition(null);
-        return;
-      }
       setMyPosition({
-        shares: Number(last.position_quantity ?? 0),
-        total: Number(last.market_value ?? 0),
-        pl: Number(last.unrealized_pl ?? 0),
-        returnPct: Number(last.unrealized_pl_pct ?? 0),
+        shares: Number(pos.quantity ?? 0),
+        total: Number(pos.market_value ?? 0),
+        pl: Number(pos.unrealized_pl ?? 0),
+        returnPct: Number(pos.unrealized_pl_pct ?? 0),
         currency: pos.currency,
       });
     } catch (e) {
@@ -235,6 +254,7 @@ export default function StockModal({
               minHeight: SCREEN_HEIGHT,
               ...shadowStyle,
             }}
+            className="gap-6"
           >
             <View className={"flex items-center"}>
               <View
@@ -266,6 +286,12 @@ export default function StockModal({
                             className="w-full h-full"
                             resizeMode="contain"
                           />
+                        ) : informationData?.image ? (
+                          <Image
+                            source={{ uri: informationData.image }}
+                            className="w-full h-full"
+                            resizeMode="contain"
+                          />
                         ) : (
                           <Text className="text-3xl font-bold text-orange-600">
                             {
@@ -283,16 +309,19 @@ export default function StockModal({
                             selectedStock.symbol}
                         </Text>
                         <Text className="text-gray-500 text-base">
-                          {selectedStock.symbol || selectedStock.ticker}
+                          {selectedStock.symbol || selectedStock.ticker} |{" "}
+                          {selectedStock.exchDisp}
                         </Text>
                       </View>
                     </View>
                   )}
 
                   {chartLoading ? (
-                    <Skeleton className="h-[260px] w-full rounded-2xl" />
+                    <View className={"px-8"}>
+                      <Skeleton className="h-[260px] w-full rounded-2xl" />
+                    </View>
                   ) : history ? (
-                    <View className="">
+                    <View className="h-[260px]">
                       <PhantomChart dataByTimeframe={history} />
                     </View>
                   ) : (
@@ -302,7 +331,7 @@ export default function StockModal({
                   )}
 
                   {myPosition && (
-                    <View className="px-8 mt-6">
+                    <View className="px-8 mt-12">
                       <Text className="text-xl font-semibold text-black mb-3">
                         My position
                       </Text>
@@ -354,6 +383,61 @@ export default function StockModal({
                       </View>
                     </View>
                   )}
+
+                  {informationData && (
+                    <View className={"px-8 mt-20"}>
+                      <View>
+                        <Text className={"font-bold text-2xl"}>About</Text>
+                      </View>
+                      <View>
+                        <View className={"my-2"}>
+                          <Text className={"font-medium"}>Description</Text>
+                          <TouchableOpacity
+                            onPress={() => setShowDescriptionModal(true)}
+                            className={"text-gray-500"}
+                          >
+                            <Text numberOfLines={3} ellipsizeMode={"tail"}>
+                              {String(informationData.description || "")}
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                        <View className={"my-2"}>
+                          <Text className={"font-medium"}>Sector</Text>
+                          <Text className={"text-gray-500"}>
+                            {String(informationData.sector || "")}
+                          </Text>
+                        </View>
+                        <View className={"my-2"}>
+                          <Text className={"font-medium"}>Volume</Text>
+                          <Text className={"text-gray-500"}>
+                            {String(informationData.volume || "")}
+                          </Text>
+                        </View>
+                        <View className={"my-2"}>
+                          <Text className={"font-medium"}>Market Cap</Text>
+                          <Text className={"text-gray-500"}>
+                            ${" "}
+                            {(() => {
+                              const raw = informationData?.marketCap;
+
+                              const n =
+                                typeof raw === "number"
+                                  ? raw
+                                  : typeof raw === "string"
+                                    ? Number(raw.replace(/[.,\s]/g, ""))
+                                    : NaN;
+
+                              if (!Number.isFinite(n)) return "";
+
+                              return Math.trunc(n)
+                                .toString()
+                                .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                            })()}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+                  )}
                 </View>
               </ScrollView>
             </SafeAreaView>
@@ -389,6 +473,11 @@ export default function StockModal({
             isVisible={showAddInvestment}
             onClose={() => setShowAddInvestment(false)}
             selectedStock={selectedStock}
+          />
+          <StockDescriptionModal
+            isVisible={showDescriptionModal}
+            onClose={() => setShowDescriptionModal(false)}
+            description={informationData?.description || ""}
           />
         </View>
       </Modal>

@@ -66,11 +66,10 @@ export default function DashBoard() {
     const available = Number(connectData?.balance?.[0]?.available ?? 0);
     return Math.round(available * 100);
   };
-
   // Normalize transactions from different backends into a consistent shape
   const normalizeTransactions = (list?: any[]) => {
     if (!Array.isArray(list)) return [];
-    return list.map((t: any) => {
+    return list.map((t: any, index: number) => {
       const amountMinor =
         t.amount_minor !== undefined
           ? Number(t.amount_minor)
@@ -82,7 +81,7 @@ export default function DashBoard() {
         id:
           t.id ??
           t.transaction_id ??
-          `${amountMinor}_${t.date ?? t.timestamp ?? ""}`,
+          `${amountMinor}_${t.date ?? t.timestamp ?? ""}_${index}`,
         description:
           t.description ||
           t.merchant ||
@@ -463,7 +462,6 @@ export default function DashBoard() {
           >
             <View className="gap-5 pb-5">
               {isLoadingSelectedAccount ? (
-                // Skeleton list while loading current account's activity
                 <View className="gap-4">
                   {[...Array(4)].map((_, idx) => (
                     <View
@@ -507,9 +505,9 @@ export default function DashBoard() {
                     );
                   }
 
-                  return combined.map((item: any) => (
+                  return combined.map((item: any, index: number) => (
                     <View
-                      key={item.id}
+                      key={`${selectedAccountId || "acc"}-tx-${index}`}
                       className="flex flex-row justify-between"
                       style={{ width: contentWidth }}
                     >

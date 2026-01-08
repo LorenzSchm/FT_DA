@@ -60,7 +60,9 @@ export const PhantomChart: React.FC<Props> = ({
       <View className={`rounded-3xl bg-[${backgroundColor}]`}>
         <View className="px-4 pt-4">
           <Skeleton className="h-6 w-40 mb-3 rounded-full" />
-          <Skeleton className="w-full rounded-2xl" style={{ height }} />
+          <View className={`h-[${height}]`}>
+            <Skeleton className="w-full rounded-2xl" />
+          </View>
         </View>
         <TimeframeRow active={timeframe} onChange={setTimeframe} />
         {emptyPlaceholder}
@@ -75,13 +77,9 @@ export const PhantomChart: React.FC<Props> = ({
           ${displayValue.toFixed(2)}
         </Text>
 
-        <View
-          className={`rounded-full px-2 py-1 ${
-            isUp ? "bg-green-100" : "bg-red-100"
-          }`}
-        >
+        <View>
           <Text
-            className={`text-xs font-medium ${
+            className={`text-s font-bold ${
               isUp ? "text-green-600" : "text-red-600"
             }`}
           >
