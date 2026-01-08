@@ -5,6 +5,7 @@ import LandingPage from "@/app/components/landing/LandingPage";
 import InfiniteMarqueeView from "@/app/components/marquee/InfiniteMarqueeView";
 import TeamPage from "@/app/components/team/TeamPage";
 import HeroBanner from "@/app/components/visuals/HeroBanner";
+import FeaturePage from "@/app/components/feature-page/FeaturePage";
 
 export default function Home() {
   const getAppButton = (
@@ -73,7 +74,11 @@ export default function Home() {
         />
       </section>
 
-      <section>
+      <section id="features">
+        <FeaturePage />
+      </section>
+
+      <section id="team">
         <TeamPage />
       </section>
     </div>
