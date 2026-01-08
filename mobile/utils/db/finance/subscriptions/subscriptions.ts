@@ -1,3 +1,5 @@
+import { cachedFetch, invalidateCache } from "../../cache";
+
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
 
 export const addSubscription = async (
@@ -44,6 +46,9 @@ export const addSubscription = async (
       throw new Error(responseData.detail || "Failed to add subscription");
     }
 
+    // Invalidate cache for subscriptions of this account
+    invalidateCache(`/finance/subscriptions/${account_id}`);
+
     return responseData;
   } catch (error) {
     throw error;
@@ -60,26 +65,29 @@ export const getSubscriptions = async (
   }
 
   const url = `${BASE_URL}/finance/subscriptions/${account_id}`;
-  const headers = {
-    Authorization: `Bearer ${accessToken}`,
-    "x-refresh-token": refreshToken,
-  };
 
-  try {
-    const res = await fetch(url, {
-      method: "GET",
-      headers,
-      redirect: "follow",
-    });
+  return cachedFetch(
+    url,
+    async () => {
+      const headers = {
+        Authorization: `Bearer ${accessToken}`,
+        "x-refresh-token": refreshToken,
+      };
 
-    const responseData = await res.json().catch(() => ({}));
+      const res = await fetch(url, {
+        method: "GET",
+        headers,
+        redirect: "follow",
+      });
 
-    if (!res.ok) {
-      throw new Error(responseData.detail || "Failed to fetch subscriptions");
-    }
+      const responseData = await res.json().catch(() => ({}));
 
-    return responseData;
-  } catch (error) {
-    throw error;
-  }
+      if (!res.ok) {
+        throw new Error(responseData.detail || "Failed to fetch subscriptions");
+      }
+
+      return responseData;
+    },
+    { account_id, accessToken },
+  );
 };

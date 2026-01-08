@@ -1,4 +1,6 @@
 import axios from "axios";
+import { cachedFetch, invalidateCache } from "../../cache";
+
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
 
 const normalizeGoal = (g: any) => {
@@ -44,23 +46,32 @@ export const fetchSavingsAccounts = async (session: any) => {
   if (!session?.access_token) return;
 
   const url = `${API_URL}/finance/saving-goals/`;
-  const headers = {
-    Authorization: `Bearer ${session.access_token}`,
-    "x-refresh-token": session.refresh_token,
-  };
 
   try {
-    const response = await axios.get(url, {
-      headers,
-      maxRedirects: 5,
-      validateStatus: function (status) {
-        return status >= 200 && status < 400; // Accept status codes from 200 to 399
-      },
-    });
+    const responseData = await cachedFetch(
+      url,
+      async () => {
+        const headers = {
+          Authorization: `Bearer ${session.access_token}`,
+          "x-refresh-token": session.refresh_token,
+        };
 
-    if (response.data && response.data.goals) {
+        const response = await axios.get(url, {
+          headers,
+          maxRedirects: 5,
+          validateStatus: function (status) {
+            return status >= 200 && status < 400; // Accept status codes from 200 to 399
+          },
+        });
+
+        return response.data;
+      },
+      { accessToken: session.access_token },
+    );
+
+    if (responseData && responseData.goals) {
       // normalize each goal before returning
-      return response.data.goals.map((g: any) => normalizeGoal(g));
+      return responseData.goals.map((g: any) => normalizeGoal(g));
     }
   } catch (error) {
     console.error("Error fetching savings accounts:", error);
@@ -119,20 +130,23 @@ export const handleAddAccount = async (
       },
     });
 
-    if (response.data) {
-      // Fetch updated accounts list and return normalized goals
-      const accountsResponse = await axios.get(url, {
-        headers,
-        maxRedirects: 5,
-        validateStatus: function (status) {
-          return status >= 200 && status < 400; // Accept status codes from 200 to 399
-        },
-      });
+      if (response.data) {
+        // Invalidate cache before fetching updated accounts
+        invalidateCache("/finance/saving-goals/");
+        
+        // Fetch updated accounts list and return normalized goals
+        const accountsResponse = await axios.get(url, {
+          headers,
+          maxRedirects: 5,
+          validateStatus: function (status) {
+            return status >= 200 && status < 400; // Accept status codes from 200 to 399
+          },
+        });
 
-      if (accountsResponse.data && accountsResponse.data.goals) {
-        const normalized = accountsResponse.data.goals.map((g: any) =>
-          normalizeGoal(g),
-        );
+        if (accountsResponse.data && accountsResponse.data.goals) {
+          const normalized = accountsResponse.data.goals.map((g: any) =>
+            normalizeGoal(g),
+          );
 
         // If server didn't persist the initial amount, patch the created goal locally
         // Prefer matching by returned created id from response.data, otherwise fallback to name matching
@@ -211,6 +225,9 @@ export const handleAddTransaction = async (
 
     if (response.data) {
       console.log("Transaction added successfully:", response.data);
+
+      // Invalidate cache before fetching updated accounts
+      invalidateCache("/finance/saving-goals/");
 
       const accountsUrl = `${API_URL}/finance/saving-goals/`;
 

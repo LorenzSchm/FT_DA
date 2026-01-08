@@ -1,0 +1,221 @@
+import { View, ScrollView, Text } from "react-native";
+import { useAuthStore } from "@/utils/authStore";
+import { useEffect, useMemo, useState } from "react";
+import { getTransactions } from "@/utils/db/finance/finance";
+import { getSubscriptions } from "@/utils/db/finance/subscriptions/subscriptions";
+import CategoryBreakdownChart from "@/components/analysis/CategoryBreakdownChart";
+import { Skeleton } from "@/components/ui/skeleton";
+
+type Props = {
+    account: string | number | null;
+};
+
+const normalizeTransactions = (list?: any[]) => {
+    if (!Array.isArray(list)) return [];
+    return list.map((t: any, index: number) => {
+        const amountMinor =
+            t.amount_minor !== undefined
+                ? Number(t.amount_minor)
+                : t.amount !== undefined
+                    ? Math.round(Number(t.amount) * 100)
+                    : 0;
+
+        return {
+            id:
+                t.id ??
+                t.transaction_id ??
+                `${amountMinor}_${t.date ?? t.timestamp ?? ""}_${index}`,
+            description:
+                t.description ||
+                t.merchant ||
+                t.name ||
+                t.merchant_name ||
+                "Transaction",
+            category_id:
+                t.category ||
+                t.category_id ||
+                t.category_name ||
+                t.categoryLabel ||
+                "Other",
+            amount_minor: Number(amountMinor || 0),
+            currency: t.currency || t.currency_code || "USD",
+            date: t.date || t.timestamp || t.created_at || null,
+            __raw: t,
+        };
+    });
+};
+
+export default function Expenses({ account }: Props) {
+    const { session } = useAuthStore();
+    const [expenses, setExpenses] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [subscriptions, setSubscriptions] = useState<any[]>([]);
+
+    const getCurrencySymbol = (code?: string) => {
+        if (!code) return "€";
+        if (code === "USD") return "$";
+        if (code === "GBP") return "£";
+        return code;
+    };
+
+    const loadTransactions = async () => {
+        if (!session?.access_token || !account) return;
+        try {
+            setIsLoading(true);
+
+            const data = await getTransactions(
+                session.access_token,
+                session.refresh_token,
+                account,
+            );
+            const list = (data.rows || data) as any[];
+            const normalized = normalizeTransactions(list);
+            const sorted = normalized.sort((a: any, b: any) => {
+                if (a.date && b.date) return Date.parse(b.date) - Date.parse(a.date);
+                return 0;
+            });
+            const filtered = sorted.filter((t: any) => t.amount_minor < 0);
+            setExpenses(filtered);
+        } catch (e: any) {
+            console.error("Failed to load expenses:", e?.message || "Unknown error");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const loadSubscriptions = async () => {
+        if (!session?.access_token || !account) return;
+        try {
+            const data = await getSubscriptions(
+                session.access_token,
+                session.refresh_token,
+                account,
+            );
+            const list = (data.rows || data) as any[];
+            setSubscriptions(list.filter((sub) => sub.active !== false));
+        } catch (e: any) {
+            console.error("Failed to load subscriptions:", e?.message || "Unknown error");
+        }
+    };
+
+    useEffect(() => {
+        if (account) {
+            loadTransactions();
+            loadSubscriptions();
+        }
+    }, [account, session?.access_token]);
+
+    const { startOfMonth, endOfMonth } = useMemo(() => {
+        const now = new Date();
+        return {
+            startOfMonth: new Date(now.getFullYear(), now.getMonth(), 1),
+            endOfMonth: new Date(now.getFullYear(), now.getMonth() + 1, 0),
+        };
+    }, []);
+
+    const monthlyExpenses = useMemo(() => {
+        return expenses.filter((tx: any) => {
+            if (!tx.date) return false;
+            const txDate = new Date(tx.date);
+            return txDate >= startOfMonth && txDate <= endOfMonth;
+        });
+    }, [expenses, startOfMonth, endOfMonth]);
+
+    const categoryData = useMemo(() => {
+        const map = monthlyExpenses.reduce<Record<string, number>>((acc, tx: any) => {
+            const key = tx.category_id || "Other";
+            acc[key] = (acc[key] || 0) + Math.abs(tx.amount_minor);
+            return acc;
+        }, {});
+        subscriptions.forEach((sub: any) => {
+            const key = sub.category || sub.merchant || sub.name || "Subscription";
+            const amount = Math.abs(sub.amount_minor || 0);
+            if (!amount) return;
+            map[key] = (map[key] || 0) + amount;
+        });
+        return Object.entries(map)
+            .map(([label, amount]) => ({ label, amount }))
+            .sort((a, b) => b.amount - a.amount);
+    }, [monthlyExpenses, subscriptions]);
+
+    const subscriptionEntries = useMemo(() => {
+        return subscriptions.map((sub: any) => ({
+            id: `sub-${sub.id}`,
+            description: sub.merchant || sub.name || "Subscription",
+            category_id: sub.category || "Subscription",
+            amount_minor: -(sub.amount_minor || 0),
+            currency: sub.currency,
+        }));
+    }, [subscriptions]);
+
+    const combinedExpenses = [...monthlyExpenses, ...subscriptionEntries];
+
+    const currency =
+        monthlyExpenses[0]?.currency || subscriptionEntries[0]?.currency || "EUR";
+    const currencySymbol = getCurrencySymbol(currency);
+
+    if (!account) {
+        return (
+            <View className="flex-1 items-center justify-center">
+                <Text className="text-gray-500 text-lg">Please select an account</Text>
+            </View>
+        );
+    }
+
+    return (
+        <ScrollView className="flex-1 bg-white" showsVerticalScrollIndicator={false}>
+            <View className="px-4 py-6">
+                <View className="mb-8">
+                    <CategoryBreakdownChart
+                        data={categoryData}
+                        currency={currencySymbol}
+                        title="Expenses"
+                        emptyLabel="No expenses"
+                    />
+                </View>
+
+                <View>
+                    <Text className="text-xl font-bold mb-4">Recent expenses</Text>
+                    {isLoading ? (
+                        <View className="gap-4">
+                            {[...Array(3)].map((_, idx) => (
+                                <View key={idx} className="flex-row justify-between items-center">
+                                    <View className="flex-1">
+                                        <Skeleton mode="light" className="h-5 w-44 mb-2" animated />
+                                        <Skeleton mode="light" className="h-4 w-24" animated />
+                                    </View>
+                                    <Skeleton mode="light" className="h-5 w-16" animated />
+                                </View>
+                            ))}
+                        </View>
+                    ) : combinedExpenses.length === 0 ? (
+                        <Text className="text-center text-gray-400 py-8">
+                            No expenses recorded this month
+                        </Text>
+                    ) : (
+                        <View className="gap-4">
+                            {combinedExpenses.map((item: any) => (
+                                <View
+                                    key={item.id}
+                                    className="flex-row justify-between items-center"
+                                >
+                                    <View className="flex-1">
+                                        <Text className="text-lg font-semibold text-black">
+                                            {item.description}
+                                        </Text>
+                                        <Text className="text-gray-400 text-sm">
+                                            {item.category_id || "Other"}
+                                        </Text>
+                                    </View>
+                                    <Text className="text-lg font-bold text-red-500">
+                                        {(item.amount_minor / 100).toFixed(2)} {getCurrencySymbol(item.currency || currency)}
+                                    </Text>
+                                </View>
+                            ))}
+                        </View>
+                    )}
+                </View>
+            </View>
+        </ScrollView>
+    );
+}

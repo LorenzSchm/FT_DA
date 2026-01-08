@@ -67,7 +67,6 @@ export default function DashBoard() {
     return Math.round(available * 100);
   };
 
-  // Normalize transactions from different backends into a consistent shape
   const normalizeTransactions = (list?: any[]) => {
     if (!Array.isArray(list)) return [];
     return list.map((t: any, index: number) => {
@@ -98,7 +97,6 @@ export default function DashBoard() {
         amount_minor: Number(amountMinor || 0),
         currency: t.currency || t.currency_code || "USD",
         date: t.date || t.timestamp || t.created_at || null,
-        // preserve original payload for debugging if needed
         __raw: t,
       };
     });
@@ -167,7 +165,6 @@ export default function DashBoard() {
         );
         const rawTx = txDataConnected?.transactions || [];
         const normalized = normalizeTransactions(rawTx);
-        // prefer sorting by date if present, fallback to array order reversed
         const sorted = normalized.sort((a: any, b: any) => {
           if (a.date && b.date) return Date.parse(b.date) - Date.parse(a.date);
           return 0;
