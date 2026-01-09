@@ -94,7 +94,7 @@ export default function LandingPage() {
                         focus:scale-90
                         "
             >
-              Get the App
+              App coming soon!
             </button>
           </motion.div>
         </div>
