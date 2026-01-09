@@ -2,6 +2,7 @@
 
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+import Image from "next/image";
 
 export default function FeaturePage() {
   const features = [
@@ -9,37 +10,37 @@ export default function FeaturePage() {
       title: "Track Expenses & Income",
       description:
         "Effortlessly log your daily transactions with our intuitive interface. Add expenses and income with just a few taps, categorize them for better insights, and watch your financial picture become crystal clear. Stay on top of your cash flow and make informed decisions about your spending habits.",
-      screenshotPlaceholder: true,
+      screenshot: "/screenshots/tracking_expenses.png",
     },
     {
       title: "Manage Subscriptions",
       description:
         "Never miss a subscription payment again. Keep track of all your recurring expenses in one place, from streaming services to gym memberships. Set reminders, view upcoming charges, and identify subscriptions you might want to cancel to save money.",
-      screenshotPlaceholder: true,
+      screenshot: "/screenshots/subs.png",
     },
     {
       title: "Financial Analytics",
       description:
         "Gain valuable insights into your financial habits with powerful analytics tools. Visualize spending patterns, track budget performance, and discover trends in your financial behavior. Interactive charts and detailed reports help you understand where your money goes and identify opportunities to optimize your finances.",
-      screenshotPlaceholder: true,
+      screenshot: "/screenshots/analytics.png",
     },
     {
       title: "Investment Portfolio",
       description:
         "Explore investment opportunities and build your wealth. Browse available investments, analyze performance metrics, and seamlessly add them to your personal portfolio. Monitor your investments' growth and make data-driven decisions to optimize your financial future.",
-      screenshotPlaceholder: true,
+      screenshot: "/screenshots/investments.png",
     },
     {
       title: "Savings Accounts",
       description:
         "Create and manage multiple savings goals with dedicated accounts. Whether you're saving for a vacation, emergency fund, or a major purchase, track your progress visually and stay motivated. Set targets, monitor growth, and celebrate milestones along the way.",
-      screenshotPlaceholder: true,
+      screenshot: "/screenshots/savings.png",
     },
     {
       title: "Account Management",
       description:
         "Add and organize all your financial accounts in one secure location. From checking accounts to credit cards, get a comprehensive overview of your entire financial landscape. Link multiple accounts and see your complete financial picture at a glance.",
-      screenshotPlaceholder: true,
+      screenshot: "/screenshots/accounts.png",
     },
   ];
 
@@ -129,26 +130,16 @@ export default function FeaturePage() {
               </div>
 
               <div className="flex-1 w-full">
-                {feature.screenshotPlaceholder && (
-                  <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl aspect-[9/16] max-w-xs mx-auto flex items-center justify-center border-2 border-gray-300">
-                    <div className="text-center p-4">
-                      <svg
-                        className="w-16 h-16 mx-auto mb-3 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                      <p className="font-swiss text-sm text-gray-500">
-                        Screenshot Placeholder
-                      </p>
-                    </div>
+                {feature.screenshot && (
+                  <div className="max-w-xs mx-auto">
+                    <Image
+                      src={feature.screenshot}
+                      alt={`${feature.title} screenshot`}
+                      width={400}
+                      height={711}
+                      className="rounded-xl shadow-md"
+                      priority={index < 2}
+                    />
                   </div>
                 )}
               </div>
