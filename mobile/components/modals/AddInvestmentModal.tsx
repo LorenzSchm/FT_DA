@@ -9,11 +9,13 @@ import {
   Animated,
   Dimensions,
   PanResponder,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import axios from "axios";
 import { useAuthStore } from "@/utils/authStore";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 type Props = {
   isVisible: boolean;
@@ -48,6 +50,8 @@ export default function AddInvestmentModal({
   const [loadingPrice, setLoadingPrice] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   const API_BASE = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
   const { session } = useAuthStore();
@@ -345,21 +349,22 @@ export default function AddInvestmentModal({
                   <Text className="font-bold text-black mb-2 text-[20px]">
                     Transaction Date
                   </Text>
-                  <View className="bg-neutral-100 rounded-full px-5 py-4 h-fit">
-                    <TextInput
-                      className="text-black text-[20px]"
-                      value={tradeDate}
-                      onChangeText={(text) => {
-                        setTradeDate(text);
-                        if (errors.tradeDate) {
-                          setErrors((prev) => ({
-                            ...prev,
-                            tradeDate: undefined,
-                          }));
-                        }
+                  <View className="flex flex-row items-center gap-3">
+                    <View className="flex-1 bg-neutral-100 rounded-full px-5 py-4 h-fit justify-center">
+                      <Text className="text-black text-[20px]">
+                        {tradeDate}
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      className="bg-black rounded-full px-4 py-4"
+                      onPress={() => {
+                        const [year, month, day] = tradeDate.split("-").map(Number);
+                        setSelectedDate(new Date(year, month - 1, day));
+                        setShowDatePicker(true);
                       }}
-                      placeholder="YYYY-MM-DD"
-                    />
+                    >
+                      <Text className="text-white font-bold text-lg">📅</Text>
+                    </TouchableOpacity>
                   </View>
                   {errors.tradeDate && (
                     <Text className="text-red-500 mb-3 text-sm">
@@ -367,6 +372,8 @@ export default function AddInvestmentModal({
                     </Text>
                   )}
                 </View>
+
+
               </View>
 
               <View className="mb-16">
@@ -381,9 +388,8 @@ export default function AddInvestmentModal({
                   </Text>
                 </View>
                 <TouchableOpacity
-                  className={`bg-black rounded-full py-4 ${
-                    isButtonDisabled ? "opacity-60" : ""
-                  }`}
+                  className={`bg-black rounded-full py-4 ${isButtonDisabled ? "opacity-60" : ""
+                    }`}
                   onPress={handleAdd}
                   disabled={isButtonDisabled}
                 >
@@ -395,6 +401,43 @@ export default function AddInvestmentModal({
             </View>
           </SafeAreaView>
         </Animated.View>
+
+        {/* Date Picker Modal Overlay */}
+        {showDatePicker && (
+          <View className="absolute bottom-0 left-0 right-0 bg-white shadow-2xl z-50 rounded-t-[20px] pb-10 border-t border-gray-200">
+            {/* Toolbar */}
+            <View className="flex-row justify-between items-center p-4 border-b border-gray-100 bg-gray-50 rounded-t-[20px]">
+              <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+                <Text className="text-gray-500 font-medium text-lg">Cancel</Text>
+              </TouchableOpacity>
+              <Text className="font-bold text-lg">Select Date</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  const dateStr = selectedDate.toISOString().slice(0, 10);
+                  setTradeDate(dateStr);
+                  if (errors.tradeDate) {
+                    setErrors((prev) => ({ ...prev, tradeDate: undefined }));
+                  }
+                  setShowDatePicker(false);
+                }}
+              >
+                <Text className="text-blue-600 font-bold text-lg">Done</Text>
+              </TouchableOpacity>
+            </View>
+            <View className="flex items-center">
+              <DateTimePicker
+                value={selectedDate}
+                mode="date"
+                display="spinner"
+                onChange={(event, date) => {
+                  if (date) setSelectedDate(date);
+                }}
+                textColor="black"
+                style={{ backgroundColor: "white" }}
+              />
+            </View>
+          </View>
+        )}
       </View>
     </Modal>
   );
