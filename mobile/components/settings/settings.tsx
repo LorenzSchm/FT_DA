@@ -195,7 +195,7 @@ export default function SettingsScreen() {
         <View className="p-6 mt-4">
           {isSaving && (
             <View className="absolute top-0 left-0 right-0 bottom-0 bg-black/10 z-10 flex justify-center items-center">
-              <ActivityIndicator size="large" color="#0000ff" />
+              <ActivityIndicator size="large" color="#f1f1f2" />
             </View>
           )}
 
