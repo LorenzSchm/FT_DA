@@ -358,7 +358,9 @@ export default function AddInvestmentModal({
                     <TouchableOpacity
                       className="bg-black rounded-full px-4 py-4"
                       onPress={() => {
-                        const [year, month, day] = tradeDate.split("-").map(Number);
+                        const [year, month, day] = tradeDate
+                          .split("-")
+                          .map(Number);
                         setSelectedDate(new Date(year, month - 1, day));
                         setShowDatePicker(true);
                       }}
@@ -372,8 +374,6 @@ export default function AddInvestmentModal({
                     </Text>
                   )}
                 </View>
-
-
               </View>
 
               <View className="mb-16">
@@ -388,8 +388,9 @@ export default function AddInvestmentModal({
                   </Text>
                 </View>
                 <TouchableOpacity
-                  className={`bg-black rounded-full py-4 ${isButtonDisabled ? "opacity-60" : ""
-                    }`}
+                  className={`bg-black rounded-full py-4 ${
+                    isButtonDisabled ? "opacity-60" : ""
+                  }`}
                   onPress={handleAdd}
                   disabled={isButtonDisabled}
                 >
@@ -408,7 +409,9 @@ export default function AddInvestmentModal({
             {/* Toolbar */}
             <View className="flex-row justify-between items-center p-4 border-b border-gray-100 bg-gray-50 rounded-t-[20px]">
               <TouchableOpacity onPress={() => setShowDatePicker(false)}>
-                <Text className="text-gray-500 font-medium text-lg">Cancel</Text>
+                <Text className="text-gray-500 font-medium text-lg">
+                  Cancel
+                </Text>
               </TouchableOpacity>
               <Text className="font-bold text-lg">Select Date</Text>
               <TouchableOpacity
