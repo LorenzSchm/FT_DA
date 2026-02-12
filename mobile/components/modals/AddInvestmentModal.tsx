@@ -349,25 +349,21 @@ export default function AddInvestmentModal({
                   <Text className="font-bold text-black mb-2 text-[20px]">
                     Transaction Date
                   </Text>
-                  <View className="flex flex-row items-center gap-3">
-                    <View className="flex-1 bg-neutral-100 rounded-full px-5 py-4 h-fit justify-center">
+                  <TouchableOpacity
+                    onPress={() => {
+                      const [year, month, day] = tradeDate
+                        .split("-")
+                        .map(Number);
+                      setSelectedDate(new Date(year, month - 1, day));
+                      setShowDatePicker(true);
+                    }}
+                  >
+                    <View className="bg-neutral-100 rounded-full px-5 py-4 h-fit justify-center">
                       <Text className="text-black text-[20px]">
                         {tradeDate}
                       </Text>
                     </View>
-                    <TouchableOpacity
-                      className="bg-black rounded-full px-4 py-4"
-                      onPress={() => {
-                        const [year, month, day] = tradeDate
-                          .split("-")
-                          .map(Number);
-                        setSelectedDate(new Date(year, month - 1, day));
-                        setShowDatePicker(true);
-                      }}
-                    >
-                      <Text className="text-white font-bold text-lg">📅</Text>
-                    </TouchableOpacity>
-                  </View>
+                  </TouchableOpacity>
                   {errors.tradeDate && (
                     <Text className="text-red-500 mb-3 text-sm">
                       {errors.tradeDate}

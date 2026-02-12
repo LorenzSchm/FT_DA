@@ -168,7 +168,6 @@ export default function DashBoard() {
           session.access_token,
           session.refresh_token,
         );
-        console.log("Connected Account Transactions:", txDataConnected);
         const rawTx = txDataConnected?.transactions || [];
         const normalized = normalizeTransactions(rawTx);
         const sorted = normalized.sort((a: any, b: any) => {
