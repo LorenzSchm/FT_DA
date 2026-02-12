@@ -18,9 +18,7 @@ const ImprintTextView = () => {
         <li className="mb-2">Loreine Maly</li>
       </ul>
 
-      <h2 className="text-2xl font-semibold mt-6 mb-3">
-        Contact Details
-      </h2>
+      <h2 className="text-2xl font-semibold mt-6 mb-3">Contact Details</h2>
       <p className="text-gray-700 mb-2">
         <a
           href="mailto:Lorenz.schmidt@htl.rennweg.at"
@@ -30,9 +28,7 @@ const ImprintTextView = () => {
         </a>
       </p>
 
-      <h2 className="text-2xl font-semibold mt-6 mb-3">
-        School
-      </h2>
+      <h2 className="text-2xl font-semibold mt-6 mb-3">School</h2>
       <p className="text-gray-700 mb-1">HTL Rennweg</p>
       <p className="text-gray-700 mb-1">Rennweg 89b</p>
       <p className="text-gray-700 mb-1">1030 Vienna, Austria</p>
@@ -45,62 +41,48 @@ const ImprintTextView = () => {
           sekretariat@htl.rennweg.at
         </a>
       </p>
-      <p className="text-gray-700 mb-4">
-        Phone: +43 1 242 15-10
-      </p>
+      <p className="text-gray-700 mb-4">Phone: +43 1 242 15-10</p>
 
-      <h2 className="text-2xl font-semibold mt-6 mb-3">
-        Type of Project
-      </h2>
+      <h2 className="text-2xl font-semibold mt-6 mb-3">Type of Project</h2>
       <p className="text-gray-700 mb-4">
         This application and the associated website are part of a non-commercial
-        diploma thesis at HTL Rennweg and are intended solely for educational and
-        demonstration purposes.
+        diploma thesis at HTL Rennweg and are intended solely for educational
+        and demonstration purposes.
       </p>
 
-      <h2 className="text-2xl font-semibold mt-6 mb-3">
-        Media Owner
-      </h2>
+      <h2 className="text-2xl font-semibold mt-6 mb-3">Media Owner</h2>
       <p className="text-gray-700 mb-4">
         Project Team “Finance Tracker”, HTL Rennweg
       </p>
 
-      <h2 className="text-2xl font-semibold mt-6 mb-3">
-        Editorial Line
-      </h2>
+      <h2 className="text-2xl font-semibold mt-6 mb-3">Editorial Line</h2>
       <p className="text-gray-700 mb-4">
-        This application and website provide information about the diploma thesis
-        “Finance Tracker” and offer functionality for visualizing personal
-        financial data.
+        This application and website provide information about the diploma
+        thesis “Finance Tracker” and offer functionality for visualizing
+        personal financial data.
       </p>
 
       <h2 className="text-2xl font-semibold mt-6 mb-3">
         Content Responsibility
       </h2>
-      <p className="text-gray-700 mb-4">
-        Project Team “Finance Tracker”
-      </p>
+      <p className="text-gray-700 mb-4">Project Team “Finance Tracker”</p>
 
-      <h2 className="text-2xl font-semibold mt-6 mb-3">
-        Legal Information
-      </h2>
+      <h2 className="text-2xl font-semibold mt-6 mb-3">Legal Information</h2>
       <p className="text-gray-700 mb-4">
         The services provided by Finance Tracker are subject to the laws of the
         Republic of Austria, including the E-Commerce Act (ECG) and the General
         Data Protection Regulation (GDPR).
       </p>
 
-      <h2 className="text-2xl font-semibold mt-6 mb-3">
-        Disclaimer
-      </h2>
+      <h2 className="text-2xl font-semibold mt-6 mb-3">Disclaimer</h2>
       <p className="text-gray-700 mb-4">
         The information provided on this website is for general informational
         purposes only. Finance Tracker assumes no responsibility for errors or
         omissions in the contents of the website.
       </p>
       <p className="text-gray-700 mb-4">
-        For further information or inquiries, please contact us using the details
-        provided above.
+        For further information or inquiries, please contact us using the
+        details provided above.
       </p>
     </div>
   );

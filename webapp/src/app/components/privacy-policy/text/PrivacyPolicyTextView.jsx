@@ -10,8 +10,9 @@ const PrivacyPolicyTextView = () => {
       <p className="text-gray-600 mb-6">Last updated: 2. January 2026</p>
 
       <p className="text-gray-700 mb-4">
-        This Privacy Notice explains how personal data is processed in connection
-        with the Finance Tracker application and the associated website.
+        This Privacy Notice explains how personal data is processed in
+        connection with the Finance Tracker application and the associated
+        website.
       </p>
       <p className="text-gray-700 mb-6">
         The project is a non-commercial diploma thesis developed at HTL Rennweg
@@ -42,19 +43,17 @@ const PrivacyPolicyTextView = () => {
       </h2>
       <ul className="list-disc pl-6 mb-4 text-gray-700">
         <li className="mb-2">
-          The Finance Tracker app is not a commercial product and does not provide
-          financial, investment, or banking advice.
+          The Finance Tracker app is not a commercial product and does not
+          provide financial, investment, or banking advice.
         </li>
         <li className="mb-2">
-          The app allows users to view and analyze their own financial data (e.g.
-          expenses, balances, savings) for informational and statistical purposes
-          only.
+          The app allows users to view and analyze their own financial data
+          (e.g. expenses, balances, savings) for informational and statistical
+          purposes only.
         </li>
       </ul>
 
-      <h2 className="text-2xl font-semibold mt-6 mb-3">
-        3. Data We Process
-      </h2>
+      <h2 className="text-2xl font-semibold mt-6 mb-3">3. Data We Process</h2>
       <p className="text-gray-700 mb-4">
         With the user’s explicit consent, the following categories of personal
         data may be processed:
@@ -68,8 +67,8 @@ const PrivacyPolicyTextView = () => {
         <li className="mb-2">Account and bank-related metadata</li>
       </ul>
       <p className="text-gray-700 mb-4">
-        No login credentials, passwords, PINs, or TANs are processed or stored by
-        the project team.
+        No login credentials, passwords, PINs, or TANs are processed or stored
+        by the project team.
       </p>
 
       <h2 className="text-2xl font-semibold mt-6 mb-3">
@@ -102,18 +101,14 @@ const PrivacyPolicyTextView = () => {
         <li className="mb-2">
           Generating statistics (e.g. expenses, income, savings)
         </li>
-        <li className="mb-2">
-          Visualizing financial trends for the user
-        </li>
+        <li className="mb-2">Visualizing financial trends for the user</li>
       </ul>
       <p className="text-gray-700 mb-4">
         The data is not modified, not shared, and not used for automated
         decision-making.
       </p>
 
-      <h2 className="text-2xl font-semibold mt-6 mb-3">
-        6. Storage of Data
-      </h2>
+      <h2 className="text-2xl font-semibold mt-6 mb-3">6. Storage of Data</h2>
       <ul className="list-disc pl-6 mb-4 text-gray-700">
         <li className="mb-2">
           Financial data is stored exclusively locally on the user’s device,
@@ -123,13 +118,12 @@ const PrivacyPolicyTextView = () => {
           documentation.
         </li>
         <li className="mb-2">
-          The project team and the school have no access to users’ financial data.
+          The project team and the school have no access to users’ financial
+          data.
         </li>
       </ul>
 
-      <h2 className="text-2xl font-semibold mt-6 mb-3">
-        7. Legal Basis
-      </h2>
+      <h2 className="text-2xl font-semibold mt-6 mb-3">7. Legal Basis</h2>
       <p className="text-gray-700 mb-4">
         The processing of personal data is based on:
       </p>
@@ -141,9 +135,7 @@ const PrivacyPolicyTextView = () => {
         uninstalling the app.
       </p>
 
-      <h2 className="text-2xl font-semibold mt-6 mb-3">
-        8. Data Retention
-      </h2>
+      <h2 className="text-2xl font-semibold mt-6 mb-3">8. Data Retention</h2>
       <ul className="list-disc pl-6 mb-4 text-gray-700">
         <li className="mb-2">The user actively uses the app, or</li>
         <li className="mb-2">
@@ -154,9 +146,7 @@ const PrivacyPolicyTextView = () => {
         When the app is uninstalled, all locally stored data is deleted.
       </p>
 
-      <h2 className="text-2xl font-semibold mt-6 mb-3">
-        9. User Rights
-      </h2>
+      <h2 className="text-2xl font-semibold mt-6 mb-3">9. User Rights</h2>
       <p className="text-gray-700 mb-4">
         Under the GDPR, users have the right to:
       </p>
@@ -169,16 +159,14 @@ const PrivacyPolicyTextView = () => {
         <li className="mb-2">Withdraw consent at any time</li>
       </ul>
 
-      <h2 className="text-2xl font-semibold mt-6 mb-3">
-        10. Data Security
-      </h2>
+      <h2 className="text-2xl font-semibold mt-6 mb-3">10. Data Security</h2>
       <p className="text-gray-700 mb-4">
         Appropriate technical and organizational measures are implemented to
         protect data against unauthorized access, loss, or misuse.
       </p>
       <p className="text-gray-700 mb-4">
-        However, as this is an educational project, no guarantee of uninterrupted
-        availability or absolute security can be provided.
+        However, as this is an educational project, no guarantee of
+        uninterrupted availability or absolute security can be provided.
       </p>
 
       <h2 className="text-2xl font-semibold mt-6 mb-3">
@@ -192,9 +180,7 @@ const PrivacyPolicyTextView = () => {
         The current version will always be available on the website.
       </p>
 
-      <h2 className="text-2xl font-semibold mt-6 mb-3">
-        12. Contact
-      </h2>
+      <h2 className="text-2xl font-semibold mt-6 mb-3">12. Contact</h2>
       <p className="text-gray-700 mb-2">Lorenz Schmidt</p>
       <p className="text-gray-700 mb-2">Rennweg 89b, 1030 Vienna</p>
       <p className="text-gray-700 mb-4">
