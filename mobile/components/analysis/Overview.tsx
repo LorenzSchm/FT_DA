@@ -257,7 +257,7 @@ export default function Overview({ account, accounts }: Props) {
     >
       <View className="px-4 py-6">
         <View className="mb-6 flex items-center">
-          <View className="mb-6 flex flex-row">
+          <View className="mb-6 flex flex-row items-center justify-center relative w-full">
             <SpendingChart
               size={200}
               strokeWidth={20}
@@ -267,8 +267,11 @@ export default function Overview({ account, accounts }: Props) {
               label="Monthly standing"
               dateRange={rangeLabel}
             />
-            <TouchableOpacity onPress={() => setModalOpen(true)}>
-              <Feather name={"more-vertical"} size={20} />
+            <TouchableOpacity
+              onPress={() => setModalOpen(true)}
+              className="absolute top-0 right-0 p-2"
+            >
+              <Feather name={"more-vertical"} size={20} color="#000" />
             </TouchableOpacity>
           </View>
         </View>
