@@ -23,6 +23,13 @@ export default function Footer() {
           Privacy Policy
         </Link>
         -
+        <Link
+          href={"/terms-and-conditions"}
+          className={"text-gray-700 hover:cursor-pointer hover:text-black"}
+        >
+          Terms & Conditions
+        </Link>
+        -
         <span className={"text-gray-700 hover:cursor-pointer hover:text-black"}>
           © 2025 Finance Tracker
         </span>
@@ -41,7 +48,7 @@ export default function Footer() {
         >
           𝕏
         </Link>
-        <Link href={"/"}>
+        <Link href={"https://www.linkedin.com/company/finance-tracker-app"}>
           <Linkedin
             className={"text-gray-700 hover:cursor-pointer hover:text-black"}
           />
