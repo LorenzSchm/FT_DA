@@ -38,8 +38,8 @@ const TermsAndConditionsTextView = () => {
       <h2 className="text-2xl font-semibold mt-6 mb-3">2. Eligibility</h2>
       <ul className="list-disc pl-6 mb-4 text-gray-700">
         <li className="mb-2">
-          The App is intended for users who are legally permitted to manage their
-          own financial data.
+          The App is intended for users who are legally permitted to manage
+          their own financial data.
         </li>
         <li className="mb-2">
           Use of the App by minors may require parental consent, depending on
@@ -97,7 +97,8 @@ const TermsAndConditionsTextView = () => {
       </h2>
       <ul className="list-disc pl-6 mb-4 text-gray-700">
         <li className="mb-2">
-          The App processes financial data only with the user's explicit consent.
+          The App processes financial data only with the user's explicit
+          consent.
         </li>
         <li className="mb-2">
           Depending on the configuration:
@@ -106,8 +107,8 @@ const TermsAndConditionsTextView = () => {
               Data is stored exclusively locally on the user's device,
             </li>
             <li className="mb-2">
-              or, if applicable, processed temporarily on a server defined in the
-              Privacy Policy.
+              or, if applicable, processed temporarily on a server defined in
+              the Privacy Policy.
             </li>
           </ul>
         </li>
@@ -117,10 +118,7 @@ const TermsAndConditionsTextView = () => {
         </li>
         <li className="mb-2">
           For full details, see the{" "}
-          <a
-            href="/privacy-policy"
-            className="text-blue-600 hover:underline"
-          >
+          <a href="/privacy-policy" className="text-blue-600 hover:underline">
             Privacy Policy
           </a>
           .
@@ -133,7 +131,9 @@ const TermsAndConditionsTextView = () => {
       <p className="text-gray-700 mb-4">
         The App is provided "as is" without any warranties of any kind.
       </p>
-      <p className="text-gray-700 mb-4">Because it is an educational project:</p>
+      <p className="text-gray-700 mb-4">
+        Because it is an educational project:
+      </p>
       <ul className="list-disc pl-6 mb-4 text-gray-700">
         <li className="mb-2">
           No guarantee is made regarding accuracy, reliability, completeness, or
@@ -154,8 +154,8 @@ const TermsAndConditionsTextView = () => {
         7. Limitation of Liability
       </h2>
       <p className="text-gray-700 mb-4">
-        To the maximum extent permitted by law, the project team, the school, and
-        all contributors disclaim liability for:
+        To the maximum extent permitted by law, the project team, the school,
+        and all contributors disclaim liability for:
       </p>
       <ul className="list-disc pl-6 mb-4 text-gray-700">
         <li className="mb-2">loss of data,</li>
@@ -176,9 +176,9 @@ const TermsAndConditionsTextView = () => {
         8. Intellectual Property
       </h2>
       <p className="text-gray-700 mb-4">
-        All code, text, graphics, and design elements created by the project team
-        remain the property of the diploma thesis developers or their respective
-        copyright holders.
+        All code, text, graphics, and design elements created by the project
+        team remain the property of the diploma thesis developers or their
+        respective copyright holders.
       </p>
       <p className="text-gray-700 mb-4">Users are not permitted to:</p>
       <ul className="list-disc pl-6 mb-4 text-gray-700">
@@ -208,7 +208,8 @@ const TermsAndConditionsTextView = () => {
 
       <h2 className="text-2xl font-semibold mt-6 mb-3">10. Governing Law</h2>
       <p className="text-gray-700 mb-4">
-        These Terms are governed by Austrian law, excluding conflict-of-law rules.
+        These Terms are governed by Austrian law, excluding conflict-of-law
+        rules.
       </p>
       <p className="text-gray-700 mb-4">
         Since the project is educational, no commercial jurisdiction or consumer

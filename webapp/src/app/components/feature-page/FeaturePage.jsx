@@ -101,8 +101,8 @@ export default function FeaturePage() {
             Mobile App Features
           </h1>
           <p className="font-swiss text-lg text-gray-600 max-w-2xl mx-auto">
-            Discover all the powerful tools designed to help you take control
-            of your financial journey
+            Discover all the powerful tools designed to help you take control of
+            your financial journey
           </p>
         </motion.div>
 

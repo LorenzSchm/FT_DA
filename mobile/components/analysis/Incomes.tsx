@@ -1,9 +1,11 @@
-import { View, Text, ScrollView } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { useEffect, useMemo, useState } from "react";
 import { useAuthStore } from "@/utils/authStore";
 import { getTransactions } from "@/utils/db/finance/finance";
-import CategoryBreakdownChart from "@/components/analysis/CategoryBreakdownChart";
+import SpendingChart from "@/components/analysis/SpendingChart";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Feather } from "@expo/vector-icons";
+import FilterModal from "./FilterModal";
 
 type Props = {
   account: string | number | null;
@@ -44,10 +46,44 @@ const normalizeTransactions = (list?: any[]) => {
   });
 };
 
+const formatRangeLabel = (start: Date, end: Date) => {
+  const monthNames = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sept",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+  const formatDate = (date: Date) =>
+    `${date.getDate()}. ${monthNames[date.getMonth()]}`;
+  return `${formatDate(start)} - ${formatDate(end)}.`;
+};
+
 export default function Incomes({ account }: Props) {
   const { session } = useAuthStore();
   const [incomes, setIncomes] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [dateRange, setDateRange] = useState(() => {
+    const now = new Date();
+    return {
+      start: new Date(now.getFullYear(), now.getMonth(), 1),
+      end: new Date(now.getFullYear(), now.getMonth() + 1, 0),
+    };
+  });
+
+  const handleCloseModal = () => setModalOpen(false);
+  const handleApplyDateRange = (range: { start: Date; end: Date }) => {
+    setDateRange({ start: new Date(range.start), end: new Date(range.end) });
+    setModalOpen(false);
+  };
 
   const getCurrencySymbol = (code?: string) => {
     if (!code) return "€";
@@ -84,37 +120,26 @@ export default function Incomes({ account }: Props) {
     if (account) {
       loadTransactions();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [account, session?.access_token]);
-
-  const { startOfMonth, endOfMonth } = useMemo(() => {
-    const now = new Date();
-    return {
-      startOfMonth: new Date(now.getFullYear(), now.getMonth(), 1),
-      endOfMonth: new Date(now.getFullYear(), now.getMonth() + 1, 0),
-    };
-  }, []);
 
   const monthlyIncomes = useMemo(() => {
     return incomes.filter((tx: any) => {
       if (!tx.date) return false;
       const txDate = new Date(tx.date);
-      return txDate >= startOfMonth && txDate <= endOfMonth;
+      return txDate >= dateRange.start && txDate <= dateRange.end;
     });
-  }, [incomes, startOfMonth, endOfMonth]);
+  }, [incomes, dateRange.start, dateRange.end]);
 
-  const categoryData = useMemo(() => {
-    const map = monthlyIncomes.reduce<Record<string, number>>(
-      (acc, tx: any) => {
-        const key = tx.category_id || "Other";
-        acc[key] = (acc[key] || 0) + tx.amount_minor;
-        return acc;
-      },
-      {},
+  const rangeLabel = useMemo(
+    () => formatRangeLabel(dateRange.start, dateRange.end),
+    [dateRange.start, dateRange.end],
+  );
+
+  const totalIncome = useMemo(() => {
+    return monthlyIncomes.reduce(
+      (sum: number, tx: any) => sum + tx.amount_minor,
+      0,
     );
-    return Object.entries(map)
-      .map(([label, amount]) => ({ label, amount }))
-      .sort((a, b) => b.amount - a.amount);
   }, [monthlyIncomes]);
 
   const currency = monthlyIncomes[0]?.currency || "EUR";
@@ -134,12 +159,21 @@ export default function Incomes({ account }: Props) {
       showsVerticalScrollIndicator={false}
     >
       <View className="px-4 py-6">
-        <View className="mb-8">
-          <CategoryBreakdownChart
-            data={categoryData}
+        <View className="mb-8 relative">
+          <TouchableOpacity
+            onPress={() => setModalOpen(true)}
+            className="absolute top-0 right-0 z-10 p-2"
+          >
+            <Feather name={"more-vertical"} size={20} color="#000" />
+          </TouchableOpacity>
+          <SpendingChart
+            size={220}
+            strokeWidth={24}
+            income={totalIncome}
+            expenses={0}
             currency={currencySymbol}
-            title="Income"
-            emptyLabel="No income"
+            label="Income"
+            dateRange={rangeLabel}
           />
         </View>
 
@@ -189,6 +223,13 @@ export default function Incomes({ account }: Props) {
           )}
         </View>
       </View>
+      <FilterModal
+        isOpen={modalOpen}
+        startDate={dateRange.start}
+        endDate={dateRange.end}
+        onClose={handleCloseModal}
+        onApply={handleApplyDateRange}
+      />
     </ScrollView>
   );
 }

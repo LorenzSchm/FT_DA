@@ -14,6 +14,7 @@ type Props = {
   currency?: string;
   title?: string;
   emptyLabel?: string;
+  rangeLabel?: string;
 };
 
 const SHADES = [
@@ -60,6 +61,7 @@ export default function CategoryBreakdownChart({
   currency = "€",
   title = "This month",
   emptyLabel = "No data",
+  rangeLabel,
 }: Props) {
   const radius = (size - strokeWidth) / 2;
   const center = size / 2;
@@ -145,6 +147,9 @@ export default function CategoryBreakdownChart({
           </Text>
         </View>
       </View>
+      {rangeLabel ? (
+        <Text className="text-sm text-gray-500 mt-3">{rangeLabel}</Text>
+      ) : null}
     </View>
   );
 }

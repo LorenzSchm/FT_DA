@@ -1,9 +1,11 @@
-import { View, Text, ScrollView } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { useEffect, useMemo, useState } from "react";
 import { useAuthStore } from "@/utils/authStore";
 import { getSubscriptions } from "@/utils/db/finance/subscriptions/subscriptions";
 import CategoryBreakdownChart from "@/components/analysis/CategoryBreakdownChart";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Feather } from "@expo/vector-icons";
+import FilterModal from "./FilterModal";
 
 type Props = {
   account: string | number | null;
@@ -13,6 +15,20 @@ export default function Subscriptions({ account }: Props) {
   const { session } = useAuthStore();
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [dateRange, setDateRange] = useState(() => {
+    const now = new Date();
+    return {
+      start: new Date(now.getFullYear(), now.getMonth(), 1),
+      end: new Date(now.getFullYear(), now.getMonth() + 1, 0),
+    };
+  });
+
+  const handleCloseModal = () => setModalOpen(false);
+  const handleApplyDateRange = (range: { start: Date; end: Date }) => {
+    setDateRange({ start: new Date(range.start), end: new Date(range.end) });
+    setModalOpen(false);
+  };
 
   const getCurrencySymbol = (code?: string) => {
     if (!code) return "€";
@@ -80,7 +96,13 @@ export default function Subscriptions({ account }: Props) {
       showsVerticalScrollIndicator={false}
     >
       <View className="px-4 py-6">
-        <View className="mb-8">
+        <View className="mb-8 relative">
+          <TouchableOpacity
+            onPress={() => setModalOpen(true)}
+            className="absolute top-0 right-0 z-10 p-2"
+          >
+            <Feather name={"more-vertical"} size={20} color="#000" />
+          </TouchableOpacity>
           <CategoryBreakdownChart
             data={categoryData}
             currency={currencySymbol}
@@ -135,6 +157,13 @@ export default function Subscriptions({ account }: Props) {
           )}
         </View>
       </View>
+      <FilterModal
+        isOpen={modalOpen}
+        startDate={dateRange.start}
+        endDate={dateRange.end}
+        onClose={handleCloseModal}
+        onApply={handleApplyDateRange}
+      />
     </ScrollView>
   );
 }
