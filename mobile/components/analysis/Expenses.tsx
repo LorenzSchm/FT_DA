@@ -119,8 +119,6 @@ export default function Expenses({ account }: Props) {
     }
   };
 
-
-
   useEffect(() => {
     if (account) {
       loadTransactions();

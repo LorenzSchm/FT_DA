@@ -137,8 +137,6 @@ export default function Overview({ account, accounts }: Props) {
     }
   };
 
-
-
   useEffect(() => {
     if (account) {
       loadTransactions(account);
@@ -315,8 +313,9 @@ export default function Overview({ account, accounts }: Props) {
                     </Text>
                   </View>
                   <Text
-                    className={`text-lg font-bold ${item.amount_minor < 0 ? "text-red-500" : "text-green-500"
-                      }`}
+                    className={`text-lg font-bold ${
+                      item.amount_minor < 0 ? "text-red-500" : "text-green-500"
+                    }`}
                   >
                     {item.amount_minor < 0 ? "" : "+"}
                     {(item.amount_minor / 100).toFixed(2)}{" "}

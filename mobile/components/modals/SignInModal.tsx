@@ -113,8 +113,9 @@ export default function SignInModal({ isVisible, onClose }: Props) {
             >
               <View>
                 <TextInput
-                  className={`text-black-400 text-[20px] border ${emailError ? "border-red-500" : "border-black"
-                    } rounded-full h-[50px] px-4 pb-1 mt-[60px]`}
+                  className={`text-black-400 text-[20px] border ${
+                    emailError ? "border-red-500" : "border-black"
+                  } rounded-full h-[50px] px-4 pb-1 mt-[60px]`}
                   placeholder="Enter your Email"
                   value={email}
                   onChangeText={handleEmailChange}
@@ -150,7 +151,10 @@ export default function SignInModal({ isVisible, onClose }: Props) {
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity className="flex flex-row items-center justify-center h-[50px] border border-black rounded-full gap-3 px-5">
-                  <Image source={require("../../assets/images/Google_Symbol_1.png")} style={{ width: 20, height: 20 }} />
+                  <Image
+                    source={require("../../assets/images/Google_Symbol_1.png")}
+                    style={{ width: 20, height: 20 }}
+                  />
                   <Text className="font-bold text-[15px]">
                     Continue with Google
                   </Text>
