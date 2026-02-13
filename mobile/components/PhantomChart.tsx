@@ -61,7 +61,7 @@ export const PhantomChart: React.FC<Props> = ({
         <View className="px-4 pt-4">
           <Skeleton className="h-6 w-40 mb-3 rounded-full" />
           <View className={`h-[${height}]`}>
-            <Skeleton className="w-full rounded-2xl" />
+            <Skeleton className="w-full h-[220px] rounded-2xl" />
           </View>
         </View>
         <TimeframeRow active={timeframe} onChange={setTimeframe} />

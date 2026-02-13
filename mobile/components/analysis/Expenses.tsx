@@ -1,10 +1,12 @@
-import { View, ScrollView, Text } from "react-native";
+import { View, ScrollView, Text, TouchableOpacity } from "react-native";
 import { useAuthStore } from "@/utils/authStore";
 import { useEffect, useMemo, useState } from "react";
 import { getTransactions } from "@/utils/db/finance/finance";
 import { getSubscriptions } from "@/utils/db/finance/subscriptions/subscriptions";
-import CategoryBreakdownChart from "@/components/analysis/CategoryBreakdownChart";
+import SpendingChart from "@/components/analysis/SpendingChart";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Feather } from "@expo/vector-icons";
+import FilterModal from "./FilterModal";
 
 type Props = {
   account: string | number | null;
@@ -45,11 +47,45 @@ const normalizeTransactions = (list?: any[]) => {
   });
 };
 
+const formatRangeLabel = (start: Date, end: Date) => {
+  const monthNames = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sept",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+  const formatDate = (date: Date) =>
+    `${date.getDate()}. ${monthNames[date.getMonth()]}`;
+  return `${formatDate(start)} - ${formatDate(end)}.`;
+};
+
 export default function Expenses({ account }: Props) {
   const { session } = useAuthStore();
   const [expenses, setExpenses] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [dateRange, setDateRange] = useState(() => {
+    const now = new Date();
+    return {
+      start: new Date(now.getFullYear(), now.getMonth(), 1),
+      end: new Date(now.getFullYear(), now.getMonth() + 1, 0),
+    };
+  });
+
+  const handleCloseModal = () => setModalOpen(false);
+  const handleApplyDateRange = (range: { start: Date; end: Date }) => {
+    setDateRange({ start: new Date(range.start), end: new Date(range.end) });
+    setModalOpen(false);
+  };
 
   const getCurrencySymbol = (code?: string) => {
     if (!code) return "€";
@@ -108,40 +144,29 @@ export default function Expenses({ account }: Props) {
     }
   }, [account, session?.access_token]);
 
-  const { startOfMonth, endOfMonth } = useMemo(() => {
-    const now = new Date();
-    return {
-      startOfMonth: new Date(now.getFullYear(), now.getMonth(), 1),
-      endOfMonth: new Date(now.getFullYear(), now.getMonth() + 1, 0),
-    };
-  }, []);
-
   const monthlyExpenses = useMemo(() => {
     return expenses.filter((tx: any) => {
       if (!tx.date) return false;
       const txDate = new Date(tx.date);
-      return txDate >= startOfMonth && txDate <= endOfMonth;
+      return txDate >= dateRange.start && txDate <= dateRange.end;
     });
-  }, [expenses, startOfMonth, endOfMonth]);
+  }, [expenses, dateRange.start, dateRange.end]);
 
-  const categoryData = useMemo(() => {
-    const map = monthlyExpenses.reduce<Record<string, number>>(
-      (acc, tx: any) => {
-        const key = tx.category_id || "Other";
-        acc[key] = (acc[key] || 0) + Math.abs(tx.amount_minor);
-        return acc;
-      },
-      {},
+  const rangeLabel = useMemo(
+    () => formatRangeLabel(dateRange.start, dateRange.end),
+    [dateRange.start, dateRange.end],
+  );
+
+  const totalExpensesAmount = useMemo(() => {
+    const txTotal = monthlyExpenses.reduce(
+      (sum: number, tx: any) => sum + Math.abs(tx.amount_minor),
+      0,
     );
-    subscriptions.forEach((sub: any) => {
-      const key = sub.category || sub.merchant || sub.name || "Subscription";
-      const amount = Math.abs(sub.amount_minor || 0);
-      if (!amount) return;
-      map[key] = (map[key] || 0) + amount;
-    });
-    return Object.entries(map)
-      .map(([label, amount]) => ({ label, amount }))
-      .sort((a, b) => b.amount - a.amount);
+    const subsTotal = subscriptions.reduce(
+      (sum: number, sub: any) => sum + Math.abs(sub.amount_minor || 0),
+      0,
+    );
+    return txTotal + subsTotal;
   }, [monthlyExpenses, subscriptions]);
 
   const subscriptionEntries = useMemo(() => {
@@ -174,12 +199,21 @@ export default function Expenses({ account }: Props) {
       showsVerticalScrollIndicator={false}
     >
       <View className="px-4 py-6">
-        <View className="mb-8">
-          <CategoryBreakdownChart
-            data={categoryData}
+        <View className="mb-8 relative">
+          <TouchableOpacity
+            onPress={() => setModalOpen(true)}
+            className="absolute top-0 right-0 z-10 p-2"
+          >
+            <Feather name={"more-vertical"} size={20} color="#000" />
+          </TouchableOpacity>
+          <SpendingChart
+            size={220}
+            strokeWidth={24}
+            income={0}
+            expenses={totalExpensesAmount}
             currency={currencySymbol}
-            title="Expenses"
-            emptyLabel="No expenses"
+            label="Expenses"
+            dateRange={rangeLabel}
           />
         </View>
 
@@ -229,6 +263,13 @@ export default function Expenses({ account }: Props) {
           )}
         </View>
       </View>
+      <FilterModal
+        isOpen={modalOpen}
+        startDate={dateRange.start}
+        endDate={dateRange.end}
+        onClose={handleCloseModal}
+        onApply={handleApplyDateRange}
+      />
     </ScrollView>
   );
 }

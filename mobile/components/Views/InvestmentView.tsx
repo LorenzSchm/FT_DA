@@ -97,9 +97,7 @@ export function InvestmentView() {
         );
         setPositions(posData);
 
-        // Build array of each position's current value
         const vals = (posData || []).map((p: any) => {
-          // Use backend-provided market_value from position level
           const currentValue = Number(p?.market_value ?? 0);
           return {
             ticker: p.ticker,
@@ -116,7 +114,6 @@ export function InvestmentView() {
     fetchpositions();
   }, [session?.access_token, session?.refresh_token]);
 
-  // Build portfolio history that changes with stock price and position quantities
   useEffect(() => {
     let active = true;
     const buildCombinedHistory = async () => {
@@ -200,10 +197,6 @@ export function InvestmentView() {
           const perTicker = uniqueTickers.map((ticker) => {
             const hist = historyByTicker[ticker];
             const list = hist && hist[tf] ? hist[tf] : [];
-            // For 1D we switch to start-of-day quantity steps to avoid multi-asset inconsistencies
-            // that can occur when applying EOD-only quantity changes. This ensures that existing
-            // holdings are reflected throughout the day, and same-day trades affect the series
-            // from the day's start (we lack precise intraday trade timestamps on client).
             const steps = qtyStepsByTicker[ticker] || [];
             const firstTs =
               firstTradeTsByTicker[ticker] ?? Number.POSITIVE_INFINITY;
@@ -278,9 +271,6 @@ export function InvestmentView() {
           "1D": trimSeries(toArray(combinedMaps["1D"])),
         };
 
-        // Add current portfolio value as the last point to ensure consistency
-        // This ensures the chart's final value matches the sum of position market values
-        // Calculate from positions to avoid state sync issues
         let currentPortfolioValue = 0;
         (positions || []).forEach((p: any) => {
           currentPortfolioValue += Number(p?.market_value ?? 0);
@@ -293,7 +283,6 @@ export function InvestmentView() {
             const arr = combined[tf];
             if (arr && arr.length > 0) {
               const lastPoint = arr[arr.length - 1];
-              // Only add current point if it's not already there or if values differ
               if (lastPoint.timestamp < now) {
                 arr.push({ timestamp: now, value: currentPortfolioValue });
               }
@@ -318,7 +307,6 @@ export function InvestmentView() {
           }
         }
 
-        // 1Y fallback to 1M, then 1W, then 1D
         if (combined["1Y"].length <= 2) {
           if (combined["1M"].length > 2) {
             combined["1Y"] = combined["1M"];
@@ -329,7 +317,6 @@ export function InvestmentView() {
           }
         }
 
-        // ALL fallback to 1Y, then 1M, then 1W, then 1D
         if (combined["ALL"].length <= 2) {
           if (combined["1Y"].length > 2) {
             combined["ALL"] = combined["1Y"];
@@ -380,11 +367,15 @@ export function InvestmentView() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View className="pt-4">
         {chartLoading ? (
-          <Skeleton className="h-[260px] w-full rounded-2xl" />
+          <View className="px-8">
+            <Skeleton className="h-[220px] w-full rounded-2xl" />
+          </View>
         ) : portfolioHistory ? (
           <PhantomChart dataByTimeframe={portfolioHistory as any} />
         ) : (
-          <Skeleton className="h-[220px] w-full rounded-2xl" />
+          <View className="px-8">
+            <Skeleton className="h-[220px] w-full rounded-2xl" />
+          </View>
         )}
       </View>
       <View className="px-8">

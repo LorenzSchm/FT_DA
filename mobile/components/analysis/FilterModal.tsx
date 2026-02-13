@@ -69,7 +69,7 @@ export default function FilterModal({
   const animateTo = (toValue: number, callback?: () => void) => {
     Animated.timing(sheetPosition, {
       toValue,
-      duration: 220,
+      duration: 300,
       useNativeDriver: true,
     }).start(() => callback && callback());
   };
@@ -85,14 +85,18 @@ export default function FilterModal({
       );
       setIsVisible(true);
       sheetPosition.setValue(SCREEN_HEIGHT);
-      animateTo(0);
-      return;
+      const timer = setTimeout(() => {
+        animateTo(0);
+      }, 50);
+      return () => clearTimeout(timer);
     }
 
-    animateTo(SCREEN_HEIGHT, () => {
-      setIsVisible(false);
-    });
-  }, [isOpen, startDate, endDate, SCREEN_HEIGHT, sheetPosition]);
+    if (isVisible && !isOpen) {
+      animateTo(SCREEN_HEIGHT, () => {
+        setIsVisible(false);
+      });
+    }
+  }, [isOpen, startDate, endDate]);
 
   const handleClose = () => {
     animateTo(SCREEN_HEIGHT, () => {
@@ -158,7 +162,6 @@ export default function FilterModal({
     setSelection((prev) => {
       const normalized = normalizeDate(day);
 
-      // start a new range if one already exists
       if (prev.start.getTime() !== prev.end.getTime()) {
         return { start: normalized, end: normalized };
       }
@@ -201,13 +204,9 @@ export default function FilterModal({
       visible={isVisible}
       onRequestClose={handleClose}
     >
-      <View style={{ flex: 1, justifyContent: "flex-end" }}>
-        <TouchableOpacity
-          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.35)" }}
-          activeOpacity={1}
-          onPress={handleClose}
-        />
+      <View>
         <Animated.View
+          {...panResponder.panHandlers}
           style={{
             transform: [{ translateY: sheetPosition }],
             backgroundColor: "white",
@@ -216,12 +215,13 @@ export default function FilterModal({
             paddingBottom: 20,
             borderTopLeftRadius: 28,
             borderTopRightRadius: 28,
+            width: "100%",
+            height: SCREEN_HEIGHT,
           }}
         >
-          <SafeAreaView style={{ flex: 1 }}>
-            <View className="flex items-center">
+          <SafeAreaView>
+            <View className="flex items-center mb-2">
               <View
-                {...panResponder.panHandlers}
                 style={{
                   height: 32,
                   width: "100%",
@@ -258,9 +258,9 @@ export default function FilterModal({
                 </TouchableOpacity>
               </View>
               <View className="flex-row justify-between mb-1 px-2">
-                {weekdays.map((day) => (
+                {weekdays.map((day, index) => (
                   <Text
-                    key={day}
+                    key={`weekday-${index}`}
                     className="flex-1 text-center text-xs font-semibold text-gray-400"
                   >
                     {day}

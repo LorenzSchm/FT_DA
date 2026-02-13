@@ -56,7 +56,7 @@ export default function DashBoard() {
   const maxListHeight = height * 0.35;
 
   const { user, session } = useAuthStore();
-
+  const test = useAuthStore();
   const fetchConnectBalanceMinor = async () => {
     if (!session?.access_token) return 0;
     const connectData = await getData(
@@ -67,16 +67,20 @@ export default function DashBoard() {
     return Math.round(available * 100);
   };
 
-
   const normalizeTransactions = (list?: any[]) => {
     if (!Array.isArray(list)) return [];
     return list.map((t: any, index: number) => {
-      const amountMinor =
+      let amountMinor =
         t.amount_minor !== undefined
           ? Number(t.amount_minor)
           : t.amount !== undefined
             ? Math.round(Number(t.amount) * 100)
             : 0;
+
+      // Handle transaction type: EXPENSE should be negative
+      if (t.type === "EXPENSE") {
+        amountMinor = -Math.abs(amountMinor);
+      }
 
       return {
         id:

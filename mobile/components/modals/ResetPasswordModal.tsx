@@ -82,7 +82,6 @@ export default function ResetPasswordModal({ isVisible, onClose }: Props) {
     }
 
     try {
-      // Call the API to send OTP to the email
       await axios.get(`${API_URL}/auth/otp/${email}`);
       setEmailError("");
       setStep("otp");
@@ -102,13 +101,11 @@ export default function ResetPasswordModal({ isVisible, onClose }: Props) {
 
   const handleVerify = async (otp: string) => {
     try {
-      // Call the API to verify OTP
       const response = await axios.post(`${API_URL}/auth/verify-otp`, {
         email,
         otp,
       });
 
-      // Store the session for later use in password reset
       if (response.data && response.data.session) {
         setSession({
           access_token: response.data.session.access_token,
@@ -122,13 +119,11 @@ export default function ResetPasswordModal({ isVisible, onClose }: Props) {
         "OTP verification failed:",
         error.response?.data?.detail || error.message,
       );
-      // We could show an error message here, but for now we'll just log it
     }
   };
 
   const handleResend = async () => {
     try {
-      // Call the API to resend OTP to the email
       await axios.get(`${API_URL}/auth/otp/${email}`);
       console.log("OTP resent to:", email);
     } catch (error: any) {
