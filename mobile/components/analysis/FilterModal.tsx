@@ -185,9 +185,11 @@ export default function FilterModal({
   };
 
   const handleApply = () => {
+    const endDate = new Date(selection.end);
+    endDate.setHours(23, 59, 59, 999);
     onApply({
       start: new Date(selection.start),
-      end: new Date(selection.end),
+      end: endDate,
     });
   };
 

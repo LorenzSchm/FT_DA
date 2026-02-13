@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { useEffect, useMemo, useState } from "react";
 import { getTransactions } from "@/utils/db/finance/finance";
-import { getSubscriptions } from "@/utils/db/finance/subscriptions/subscriptions";
+
 import { useAuthStore } from "@/utils/authStore";
 import { getData } from "@/utils/db/connect_accounts/connectAccounts";
 import SpendingChart from "@/components/analysis/SpendingChart";
@@ -52,7 +52,7 @@ const normalizeTransactions = (list?: any[]) => {
 export default function Overview({ account, accounts }: Props) {
   const { session } = useAuthStore();
   const [transactions, setTransactions] = useState<any[]>([]);
-  const [subscriptions, setSubscriptions] = useState<any[]>([]);
+
   const [isLoading, setIsLoading] = useState(false);
   const [connectBalance, setConnectBalance] = useState<number | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -81,8 +81,12 @@ export default function Overview({ account, accounts }: Props) {
     return Math.round(available * 100);
   };
 
-  const loadTransactions = async (accountId: number) => {
+  const loadTransactions = async (accountId: any) => {
+    console.log("In load");
+
     if (!session?.access_token || !accountId) return;
+    console.log("After if");
+
     try {
       setIsLoading(true);
       const matchingAccount = accounts?.find((acc) => acc.id === accountId);
@@ -105,11 +109,17 @@ export default function Overview({ account, accounts }: Props) {
         return;
       }
 
+      console.log(session.access_token);
+      console.log(session.refresh_token);
+      console.log(accountId);
+
       const data = await getTransactions(
         session.access_token,
         session.refresh_token,
         accountId,
       );
+      console.log(data);
+
       const list = (data.rows || data) as any[];
       const normalized = normalizeTransactions(list);
       const sorted = normalized.sort((a: any, b: any) => {
@@ -127,32 +137,18 @@ export default function Overview({ account, accounts }: Props) {
     }
   };
 
-  const loadSubscriptions = async () => {
-    if (!session?.access_token || !account) return;
-    try {
-      const data = await getSubscriptions(
-        session.access_token,
-        session.refresh_token,
-        account,
-      );
-      const list = (data.rows || data) as any[];
-      setSubscriptions(list.filter((s: any) => s.active));
-    } catch (e: any) {
-      console.error(
-        "Failed to load subscriptions:",
-        e?.message || "Unknown error",
-      );
-    }
-  };
+
 
   useEffect(() => {
     if (account) {
-      loadTransactions(Number(account));
-      loadSubscriptions();
+      loadTransactions(account);
     }
   }, [account, session?.access_token, accounts, connectBalance]);
 
   const filteredTransactions = useMemo(() => {
+    console.log("In filtered transactions");
+    console.log(transactions);
+    console.log(dateRange);
     return transactions.filter((tx: any) => {
       if (!tx.date) return false;
       const txDate = new Date(tx.date);
@@ -168,12 +164,7 @@ export default function Overview({ account, accounts }: Props) {
     .filter((tx: any) => tx.amount_minor < 0)
     .reduce((sum: number, tx: any) => sum + Math.abs(tx.amount_minor), 0);
 
-  const subscriptionCosts = subscriptions.reduce(
-    (sum: number, sub: any) => sum + (sub.amount_minor || 0),
-    0,
-  );
-
-  const totalExpenses = monthlyExpenses + subscriptionCosts;
+  const totalExpenses = monthlyExpenses;
   const netIncome = monthlyIncome - totalExpenses;
   const totalFlow = monthlyIncome + totalExpenses;
   const spendingPercentage =
@@ -207,15 +198,7 @@ export default function Overview({ account, accounts }: Props) {
   const currencySymbol = getCurrencySymbol(currency);
 
   const recentTransactions = filteredTransactions.slice(0, 5);
-  const subscriptionEntries = subscriptions.map((sub: any, index: number) => ({
-    id: `sub-${sub.id ?? index}`,
-    description: sub.merchant || sub.name || "Subscription",
-    category_id: "Subscription",
-    amount_minor: -(sub.amount_minor || 0),
-    currency: sub.currency || currency,
-  }));
-
-  const combinedEntries = [...recentTransactions, ...subscriptionEntries];
+  const combinedEntries = recentTransactions;
 
   const getSuggestion = () => {
     if (netIncome > 0) {
@@ -332,9 +315,8 @@ export default function Overview({ account, accounts }: Props) {
                     </Text>
                   </View>
                   <Text
-                    className={`text-lg font-bold ${
-                      item.amount_minor < 0 ? "text-red-500" : "text-green-500"
-                    }`}
+                    className={`text-lg font-bold ${item.amount_minor < 0 ? "text-red-500" : "text-green-500"
+                      }`}
                   >
                     {item.amount_minor < 0 ? "" : "+"}
                     {(item.amount_minor / 100).toFixed(2)}{" "}

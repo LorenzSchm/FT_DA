@@ -2,7 +2,7 @@ import { View, ScrollView, Text, TouchableOpacity } from "react-native";
 import { useAuthStore } from "@/utils/authStore";
 import { useEffect, useMemo, useState } from "react";
 import { getTransactions } from "@/utils/db/finance/finance";
-import { getSubscriptions } from "@/utils/db/finance/subscriptions/subscriptions";
+
 import SpendingChart from "@/components/analysis/SpendingChart";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Feather } from "@expo/vector-icons";
@@ -71,7 +71,7 @@ export default function Expenses({ account }: Props) {
   const { session } = useAuthStore();
   const [expenses, setExpenses] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [subscriptions, setSubscriptions] = useState<any[]>([]);
+
   const [modalOpen, setModalOpen] = useState(false);
   const [dateRange, setDateRange] = useState(() => {
     const now = new Date();
@@ -119,28 +119,11 @@ export default function Expenses({ account }: Props) {
     }
   };
 
-  const loadSubscriptions = async () => {
-    if (!session?.access_token || !account) return;
-    try {
-      const data = await getSubscriptions(
-        session.access_token,
-        session.refresh_token,
-        account,
-      );
-      const list = (data.rows || data) as any[];
-      setSubscriptions(list.filter((sub) => sub.active !== false));
-    } catch (e: any) {
-      console.error(
-        "Failed to load subscriptions:",
-        e?.message || "Unknown error",
-      );
-    }
-  };
+
 
   useEffect(() => {
     if (account) {
       loadTransactions();
-      loadSubscriptions();
     }
   }, [account, session?.access_token]);
 
@@ -162,27 +145,12 @@ export default function Expenses({ account }: Props) {
       (sum: number, tx: any) => sum + Math.abs(tx.amount_minor),
       0,
     );
-    const subsTotal = subscriptions.reduce(
-      (sum: number, sub: any) => sum + Math.abs(sub.amount_minor || 0),
-      0,
-    );
-    return txTotal + subsTotal;
-  }, [monthlyExpenses, subscriptions]);
+    return txTotal;
+  }, [monthlyExpenses]);
 
-  const subscriptionEntries = useMemo(() => {
-    return subscriptions.map((sub: any) => ({
-      id: `sub-${sub.id}`,
-      description: sub.merchant || sub.name || "Subscription",
-      category_id: sub.category || "Subscription",
-      amount_minor: -(sub.amount_minor || 0),
-      currency: sub.currency,
-    }));
-  }, [subscriptions]);
+  const combinedExpenses = monthlyExpenses;
 
-  const combinedExpenses = [...monthlyExpenses, ...subscriptionEntries];
-
-  const currency =
-    monthlyExpenses[0]?.currency || subscriptionEntries[0]?.currency || "EUR";
+  const currency = monthlyExpenses[0]?.currency || "EUR";
   const currencySymbol = getCurrencySymbol(currency);
 
   if (!account) {
