@@ -78,10 +78,18 @@ export default function Incomes({ account }: Props) {
       end: new Date(now.getFullYear(), now.getMonth() + 1, 0),
     };
   });
+  const [amountRange, setAmountRange] = useState<{
+    min: number;
+    max: number;
+  } | null>(null);
 
   const handleCloseModal = () => setModalOpen(false);
-  const handleApplyDateRange = (range: { start: Date; end: Date }) => {
+  const handleApplyDateRange = (
+    range: { start: Date; end: Date },
+    amountRange: { min: number; max: number },
+  ) => {
     setDateRange({ start: new Date(range.start), end: new Date(range.end) });
+    setAmountRange(amountRange);
     setModalOpen(false);
   };
 
@@ -126,9 +134,17 @@ export default function Incomes({ account }: Props) {
     return incomes.filter((tx: any) => {
       if (!tx.date) return false;
       const txDate = new Date(tx.date);
-      return txDate >= dateRange.start && txDate <= dateRange.end;
+      const amount = tx.amount_minor / 100;
+
+      const dateMatch =
+        txDate >= dateRange.start && txDate <= dateRange.end;
+      const amountMatch = amountRange
+        ? amount >= amountRange.min && amount <= amountRange.max
+        : true;
+
+      return dateMatch && amountMatch;
     });
-  }, [incomes, dateRange.start, dateRange.end]);
+  }, [incomes, dateRange.start, dateRange.end, amountRange]);
 
   const rangeLabel = useMemo(
     () => formatRangeLabel(dateRange.start, dateRange.end),
@@ -159,22 +175,24 @@ export default function Incomes({ account }: Props) {
       showsVerticalScrollIndicator={false}
     >
       <View className="px-4 py-6">
-        <View className="mb-8 relative">
-          <TouchableOpacity
-            onPress={() => setModalOpen(true)}
-            className="absolute top-0 right-0 z-10 p-2"
-          >
-            <Feather name={"more-vertical"} size={20} color="#000" />
-          </TouchableOpacity>
-          <SpendingChart
-            size={220}
-            strokeWidth={24}
-            income={totalIncome}
-            expenses={0}
-            currency={currencySymbol}
-            label="Income"
-            dateRange={rangeLabel}
-          />
+        <View className="mb-6 flex items-center">
+          <View className="mb-6 flex flex-row items-center justify-center relative w-full">
+            <SpendingChart
+              size={200}
+              strokeWidth={20}
+              income={totalIncome}
+              expenses={0}
+              currency={currencySymbol}
+              label="Income"
+              dateRange={rangeLabel}
+            />
+            <TouchableOpacity
+              onPress={() => setModalOpen(true)}
+              className="absolute top-0 right-0 p-2"
+            >
+              <Feather name={"more-vertical"} size={20} color="#000" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View>
@@ -229,6 +247,18 @@ export default function Incomes({ account }: Props) {
         endDate={dateRange.end}
         onClose={handleCloseModal}
         onApply={handleApplyDateRange}
+        minAmount={
+          incomes.length > 0
+            ? Math.min(...incomes.map((t) => t.amount_minor)) / 100
+            : 0
+        }
+        maxAmount={
+          incomes.length > 0
+            ? Math.max(...incomes.map((t) => t.amount_minor)) / 100
+            : 1000
+        }
+        selectedMin={amountRange?.min}
+        selectedMax={amountRange?.max}
       />
     </ScrollView>
   );

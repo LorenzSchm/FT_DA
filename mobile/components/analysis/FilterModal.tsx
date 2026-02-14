@@ -2,13 +2,20 @@ import {
   View,
   Modal,
   TouchableOpacity,
-  Animated,
-  SafeAreaView,
   Dimensions,
   PanResponder,
   Text,
+  Animated as RNAnimated,
+  SafeAreaView,
 } from "react-native";
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Feather } from "@expo/vector-icons";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+import AmountSlider from "./components/AmountSlider";
 
 type DateRange = {
   start: Date;
@@ -20,7 +27,14 @@ type Props = {
   startDate: Date;
   endDate: Date;
   onClose: () => void;
-  onApply: (range: DateRange) => void;
+  onApply: (
+    range: DateRange,
+    amountRange: { min: number; max: number },
+  ) => void;
+  minAmount: number;
+  maxAmount: number;
+  selectedMin?: number;
+  selectedMax?: number;
 };
 
 const weekdays = ["S", "M", "T", "W", "T", "F", "S"];
@@ -53,21 +67,49 @@ export default function FilterModal({
   endDate,
   onClose,
   onApply,
+  minAmount,
+  maxAmount,
+  selectedMin,
+  selectedMax,
 }: Props) {
   const [isVisible, setIsVisible] = useState(isOpen);
   const [selection, setSelection] = useState<DateRange>(() => ({
     start: normalizeDate(startDate),
     end: normalizeDate(endDate),
   }));
+  const [currentAmountRange, setCurrentAmountRange] = useState({
+    min: selectedMin ?? minAmount,
+    max: selectedMax ?? maxAmount,
+  });
   const [visibleMonth, setVisibleMonth] = useState(
     () => new Date(startDate.getFullYear(), startDate.getMonth(), 1),
   );
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const SCREEN_HEIGHT = Dimensions.get("window").height;
-  const sheetPosition = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+  const sheetPosition = useRef(new RNAnimated.Value(SCREEN_HEIGHT)).current;
+
+  const calendarHeight = useSharedValue(0);
+  const calendarOpacity = useSharedValue(0);
+
+  useEffect(() => {
+    if (isExpanded) {
+      calendarHeight.value = withTiming(400, { duration: 500 });
+      calendarOpacity.value = withTiming(1, { duration: 500 });
+    } else {
+      calendarHeight.value = withTiming(0, { duration: 500 });
+      calendarOpacity.value = withTiming(0, { duration: 500 });
+    }
+  }, [isExpanded]);
+
+  const animatedCalendarStyle = useAnimatedStyle(() => ({
+    maxHeight: calendarHeight.value,
+    opacity: calendarOpacity.value,
+    overflow: "hidden",
+  }));
 
   const animateTo = (toValue: number, callback?: () => void) => {
-    Animated.timing(sheetPosition, {
+    RNAnimated.timing(sheetPosition, {
       toValue,
       duration: 300,
       useNativeDriver: true,
@@ -79,6 +121,10 @@ export default function FilterModal({
       setSelection({
         start: normalizeDate(startDate),
         end: normalizeDate(endDate),
+      });
+      setCurrentAmountRange({
+        min: selectedMin ?? minAmount,
+        max: selectedMax ?? maxAmount,
       });
       setVisibleMonth(
         new Date(startDate.getFullYear(), startDate.getMonth(), 1),
@@ -96,7 +142,15 @@ export default function FilterModal({
         setIsVisible(false);
       });
     }
-  }, [isOpen, startDate, endDate]);
+  }, [
+    isOpen,
+    startDate,
+    endDate,
+    selectedMin,
+    selectedMax,
+    minAmount,
+    maxAmount,
+  ]);
 
   const handleClose = () => {
     animateTo(SCREEN_HEIGHT, () => {
@@ -187,10 +241,13 @@ export default function FilterModal({
   const handleApply = () => {
     const endDate = new Date(selection.end);
     endDate.setHours(23, 59, 59, 999);
-    onApply({
-      start: new Date(selection.start),
-      end: endDate,
-    });
+    onApply(
+      {
+        start: new Date(selection.start),
+        end: endDate,
+      },
+      currentAmountRange,
+    );
   };
 
   const changeMonth = (delta: number) => {
@@ -207,7 +264,7 @@ export default function FilterModal({
       onRequestClose={handleClose}
     >
       <View>
-        <Animated.View
+        <RNAnimated.View
           {...panResponder.panHandlers}
           style={{
             transform: [{ translateY: sheetPosition }],
@@ -238,76 +295,103 @@ export default function FilterModal({
               Filter
             </Text>
             <View>
-              <View className="flex-row items-center justify-between mb-3">
-                <Text className="text-xl font-extrabold text-black">Date</Text>
-                <Text className="text-sm text-gray-500">{rangeLabel}</Text>
-              </View>
-              <View className="flex-row items-center justify-between mb-3">
-                <TouchableOpacity
-                  onPress={() => changeMonth(-1)}
-                  className="p-2"
-                >
-                  <Text className="text-lg">‹</Text>
-                </TouchableOpacity>
-                <Text className="text-base font-medium text-gray-700">
-                  {`${monthNames[visibleMonth.getMonth()]} ${visibleMonth.getFullYear()}`}
-                </Text>
-                <TouchableOpacity
-                  onPress={() => changeMonth(1)}
-                  className="p-2"
-                >
-                  <Text className="text-lg">›</Text>
-                </TouchableOpacity>
-              </View>
-              <View className="flex-row justify-between mb-1 px-2">
-                {weekdays.map((day, index) => (
-                  <Text
-                    key={`weekday-${index}`}
-                    className="flex-1 text-center text-xs font-semibold text-gray-400"
+              <TouchableOpacity
+                onPress={() => setIsExpanded(!isExpanded)}
+                className="flex-row items-center justify-between mb-5"
+              >
+                <View>
+                  <Text className="text-xl font-extrabold text-black">Date</Text>
+                  <Text className="text-sm text-gray-500">{rangeLabel}</Text>
+                </View>
+                <Feather
+                  name={isExpanded ? "chevron-up" : "chevron-down"}
+                  size={24}
+                  color="black"
+                />
+              </TouchableOpacity>
+
+              <Animated.View style={animatedCalendarStyle}>
+                <View className="flex-row items-center justify-between mb-3">
+                  <TouchableOpacity
+                    onPress={() => changeMonth(-1)}
+                    className="p-2"
                   >
-                    {day}
+                    <Text className="text-lg">‹</Text>
+                  </TouchableOpacity>
+                  <Text className="text-base font-medium text-gray-700">
+                    {`${monthNames[visibleMonth.getMonth()]} ${visibleMonth.getFullYear()}`}
                   </Text>
-                ))}
-              </View>
-              <View className="flex-row flex-wrap">
-                {calendarDays.map((day, index) => {
-                  if (!day) {
+                  <TouchableOpacity
+                    onPress={() => changeMonth(1)}
+                    className="p-2"
+                  >
+                    <Text className="text-lg">›</Text>
+                  </TouchableOpacity>
+                </View>
+                <View className="flex-row justify-between mb-1 px-2">
+                  {weekdays.map((day, index) => (
+                    <Text
+                      key={`weekday-${index}`}
+                      className="flex-1 text-center text-xs font-semibold text-gray-400"
+                    >
+                      {day}
+                    </Text>
+                  ))}
+                </View>
+                <View className="flex-row flex-wrap">
+                  {calendarDays.map((day, index) => {
+                    if (!day) {
+                      return (
+                        <View
+                          key={`blank-${index}`}
+                          style={{ width: `${100 / 7}%`, height: 34 }}
+                        />
+                      );
+                    }
+                    const isStart = sameDay(day, selection.start);
+                    const isEnd = sameDay(day, selection.end);
+                    const inRange =
+                      day > selection.start && day < selection.end;
+                    const bgClass =
+                      isStart || isEnd
+                        ? "bg-black"
+                        : inRange
+                          ? "bg-gray-200"
+                          : "bg-transparent";
+                    const textClass =
+                      isStart || isEnd ? "text-white" : "text-gray-800";
                     return (
                       <View
-                        key={`blank-${index}`}
+                        key={day.toISOString()}
                         style={{ width: `${100 / 7}%`, height: 34 }}
-                      />
-                    );
-                  }
-                  const isStart = sameDay(day, selection.start);
-                  const isEnd = sameDay(day, selection.end);
-                  const inRange = day > selection.start && day < selection.end;
-                  const bgClass =
-                    isStart || isEnd
-                      ? "bg-black"
-                      : inRange
-                        ? "bg-gray-200"
-                        : "bg-transparent";
-                  const textClass =
-                    isStart || isEnd ? "text-white" : "text-gray-800";
-                  return (
-                    <View
-                      key={day.toISOString()}
-                      style={{ width: `${100 / 7}%`, height: 34 }}
-                      className="items-center mb-[2px]"
-                    >
-                      <TouchableOpacity
-                        onPress={() => handleSelectDay(day)}
-                        className={`w-8 h-8 rounded-full items-center justify-center ${bgClass}`}
+                        className="items-center mb-[2px]"
                       >
-                        <Text className={`text-xs font-semibold ${textClass}`}>
-                          {day.getDate()}
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                  );
-                })}
-              </View>
+                        <TouchableOpacity
+                          onPress={() => handleSelectDay(day)}
+                          className={`w-8 h-8 rounded-full items-center justify-center ${bgClass}`}
+                        >
+                          <Text
+                            className={`text-xs font-semibold ${textClass}`}
+                          >
+                            {day.getDate()}
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    );
+                  })}
+                </View>
+              </Animated.View>
+            </View>
+            <View>
+              <AmountSlider
+                minValue={minAmount}
+                maxValue={maxAmount}
+                initialMin={currentAmountRange.min}
+                initialMax={currentAmountRange.max}
+                onValueChange={(min, max) =>
+                  setCurrentAmountRange({ min, max })
+                }
+              />
             </View>
             <TouchableOpacity
               onPress={handleApply}
@@ -318,8 +402,8 @@ export default function FilterModal({
               </Text>
             </TouchableOpacity>
           </SafeAreaView>
-        </Animated.View>
+        </RNAnimated.View>
       </View>
-    </Modal>
+    </Modal >
   );
 }

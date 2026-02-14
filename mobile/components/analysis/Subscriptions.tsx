@@ -24,9 +24,18 @@ export default function Subscriptions({ account }: Props) {
     };
   });
 
+  const [amountRange, setAmountRange] = useState<{
+    min: number;
+    max: number;
+  } | null>(null);
+
   const handleCloseModal = () => setModalOpen(false);
-  const handleApplyDateRange = (range: { start: Date; end: Date }) => {
+  const handleApplyDateRange = (
+    range: { start: Date; end: Date },
+    amountRange: { min: number; max: number },
+  ) => {
     setDateRange({ start: new Date(range.start), end: new Date(range.end) });
+    setAmountRange(amountRange);
     setModalOpen(false);
   };
 
@@ -65,8 +74,18 @@ export default function Subscriptions({ account }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [account, session?.access_token]);
 
+  const filteredSubscriptions = useMemo(() => {
+    return subscriptions.filter((sub: any) => {
+      const amount = Math.abs(sub.amount_minor || 0) / 100;
+      const amountMatch = amountRange
+        ? amount >= amountRange.min && amount <= amountRange.max
+        : true;
+      return amountMatch;
+    });
+  }, [subscriptions, amountRange]);
+
   const categoryData = useMemo(() => {
-    const map = subscriptions.reduce<Record<string, number>>(
+    const map = filteredSubscriptions.reduce<Record<string, number>>(
       (acc, sub: any) => {
         const key = sub.category || sub.merchant || sub.name || "Subscription";
         acc[key] = (acc[key] || 0) + (sub.amount_minor || 0);
@@ -77,9 +96,9 @@ export default function Subscriptions({ account }: Props) {
     return Object.entries(map)
       .map(([label, amount]) => ({ label, amount }))
       .sort((a, b) => b.amount - a.amount);
-  }, [subscriptions]);
+  }, [filteredSubscriptions]);
 
-  const currency = subscriptions[0]?.currency || "EUR";
+  const currency = filteredSubscriptions[0]?.currency || "EUR";
   const currencySymbol = getCurrencySymbol(currency);
 
   if (!account) {
@@ -128,13 +147,13 @@ export default function Subscriptions({ account }: Props) {
                 </View>
               ))}
             </View>
-          ) : subscriptions.length === 0 ? (
+          ) : filteredSubscriptions.length === 0 ? (
             <Text className="text-center text-gray-400 py-8">
-              No subscriptions for this account
+              No subscriptions found
             </Text>
           ) : (
             <View className="gap-4">
-              {subscriptions.map((sub: any) => (
+              {filteredSubscriptions.map((sub: any) => (
                 <View
                   key={sub.id}
                   className="flex-row justify-between items-center"
@@ -163,6 +182,22 @@ export default function Subscriptions({ account }: Props) {
         endDate={dateRange.end}
         onClose={handleCloseModal}
         onApply={handleApplyDateRange}
+        minAmount={
+          subscriptions.length > 0
+            ? Math.min(
+              ...subscriptions.map((t) => Math.abs(t.amount_minor || 0)),
+            ) / 100
+            : 0
+        }
+        maxAmount={
+          subscriptions.length > 0
+            ? Math.max(
+              ...subscriptions.map((t) => Math.abs(t.amount_minor || 0)),
+            ) / 100
+            : 1000
+        }
+        selectedMin={amountRange?.min}
+        selectedMax={amountRange?.max}
       />
     </ScrollView>
   );
