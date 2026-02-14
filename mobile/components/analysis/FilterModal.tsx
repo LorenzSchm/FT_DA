@@ -300,7 +300,9 @@ export default function FilterModal({
                 className="flex-row items-center justify-between mb-5"
               >
                 <View>
-                  <Text className="text-xl font-extrabold text-black">Date</Text>
+                  <Text className="text-xl font-extrabold text-black">
+                    Date
+                  </Text>
                   <Text className="text-sm text-gray-500">{rangeLabel}</Text>
                 </View>
                 <Feather
@@ -404,6 +406,6 @@ export default function FilterModal({
           </SafeAreaView>
         </RNAnimated.View>
       </View>
-    </Modal >
+    </Modal>
   );
 }

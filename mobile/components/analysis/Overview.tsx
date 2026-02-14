@@ -161,8 +161,7 @@ export default function Overview({ account, accounts }: Props) {
       const txDate = new Date(tx.date);
       const amount = Math.abs(tx.amount_minor || 0) / 100;
 
-      const dateMatch =
-        txDate >= dateRange.start && txDate <= dateRange.end;
+      const dateMatch = txDate >= dateRange.start && txDate <= dateRange.end;
       const amountMatch = amountRange
         ? amount >= amountRange.min && amount <= amountRange.max
         : true;
@@ -330,8 +329,9 @@ export default function Overview({ account, accounts }: Props) {
                     </Text>
                   </View>
                   <Text
-                    className={`text-lg font-bold ${item.amount_minor < 0 ? "text-red-500" : "text-green-500"
-                      }`}
+                    className={`text-lg font-bold ${
+                      item.amount_minor < 0 ? "text-red-500" : "text-green-500"
+                    }`}
                   >
                     {item.amount_minor < 0 ? "" : "+"}
                     {(item.amount_minor / 100).toFixed(2)}{" "}
@@ -352,15 +352,15 @@ export default function Overview({ account, accounts }: Props) {
         minAmount={
           transactions.length > 0
             ? Math.min(
-              ...transactions.map((t) => Math.abs(t.amount_minor || 0)),
-            ) / 100
+                ...transactions.map((t) => Math.abs(t.amount_minor || 0)),
+              ) / 100
             : 0
         }
         maxAmount={
           transactions.length > 0
             ? Math.max(
-              ...transactions.map((t) => Math.abs(t.amount_minor || 0)),
-            ) / 100
+                ...transactions.map((t) => Math.abs(t.amount_minor || 0)),
+              ) / 100
             : 1000
         }
         selectedMin={amountRange?.min}

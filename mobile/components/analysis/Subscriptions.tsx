@@ -185,15 +185,15 @@ export default function Subscriptions({ account }: Props) {
         minAmount={
           subscriptions.length > 0
             ? Math.min(
-              ...subscriptions.map((t) => Math.abs(t.amount_minor || 0)),
-            ) / 100
+                ...subscriptions.map((t) => Math.abs(t.amount_minor || 0)),
+              ) / 100
             : 0
         }
         maxAmount={
           subscriptions.length > 0
             ? Math.max(
-              ...subscriptions.map((t) => Math.abs(t.amount_minor || 0)),
-            ) / 100
+                ...subscriptions.map((t) => Math.abs(t.amount_minor || 0)),
+              ) / 100
             : 1000
         }
         selectedMin={amountRange?.min}

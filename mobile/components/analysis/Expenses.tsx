@@ -140,8 +140,7 @@ export default function Expenses({ account }: Props) {
       const txDate = new Date(tx.date);
       const amount = Math.abs(tx.amount_minor) / 100;
 
-      const dateMatch =
-        txDate >= dateRange.start && txDate <= dateRange.end;
+      const dateMatch = txDate >= dateRange.start && txDate <= dateRange.end;
       const amountMatch = amountRange
         ? amount >= amountRange.min && amount <= amountRange.max
         : true;
