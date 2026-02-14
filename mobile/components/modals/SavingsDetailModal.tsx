@@ -296,6 +296,8 @@ export default function SavingsDetailModal({
                           contribution.contributed_minor ??
                           0) / 100;
                       const displayDate = formatDateYMD(contribution);
+                      const isPositive = amount >= 0;
+                      const formattedAmount = Math.abs(amount).toFixed(2);
 
                       return (
                         <View
@@ -312,9 +314,14 @@ export default function SavingsDetailModal({
                               {displayDate}
                             </Text>
                           </View>
-                          <Text className="text-lg font-bold text-green-600">
-                            +{currency}
-                            {amount.toFixed(2)}
+                          <Text
+                            className={`text-lg font-bold ${
+                              isPositive ? "text-green-600" : "text-red-600"
+                            }`}
+                          >
+                            {isPositive ? "+" : "-"}
+                            {currency}
+                            {formattedAmount}
                           </Text>
                         </View>
                       );
