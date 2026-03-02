@@ -125,9 +125,9 @@ export default function DashBoard() {
           acc.kind !== "connect"
             ? acc
             : {
-              ...acc,
-              balance_minor: availableCents,
-            },
+                ...acc,
+                balance_minor: availableCents,
+              },
         );
       }
 
@@ -158,9 +158,9 @@ export default function DashBoard() {
             acc.id !== accountId
               ? acc
               : {
-                ...acc,
-                balance_minor: availableCents,
-              },
+                  ...acc,
+                  balance_minor: availableCents,
+                },
           ),
         );
 
@@ -315,7 +315,7 @@ export default function DashBoard() {
     : [];
   const isLoadingSelectedAccount = selectedAccountId
     ? !!loadingTxByAccount[selectedAccountId] ||
-    !!loadingSubsByAccount[selectedAccountId]
+      !!loadingSubsByAccount[selectedAccountId]
     : false;
 
   useEffect(() => {
@@ -343,13 +343,13 @@ export default function DashBoard() {
         acc.id !== selectedAccountId
           ? acc
           : {
-            ...acc,
-            balance_minor: computeAccountBalance(
-              selectedAccountId,
-              transactionsByAccount,
-              subscriptionsByAccount,
-            ),
-          },
+              ...acc,
+              balance_minor: computeAccountBalance(
+                selectedAccountId,
+                transactionsByAccount,
+                subscriptionsByAccount,
+              ),
+            },
       ),
     );
   }, [selectedAccountId, transactionsByAccount, subscriptionsByAccount]);
@@ -438,10 +438,11 @@ export default function DashBoard() {
                       return (
                         <View
                           key={realIndex}
-                          className={`w-2 h-2 rounded-full ${realIndex === accountIndex
-                            ? "bg-black"
-                            : "bg-gray-300"
-                            }`}
+                          className={`w-2 h-2 rounded-full ${
+                            realIndex === accountIndex
+                              ? "bg-black"
+                              : "bg-gray-300"
+                          }`}
                         />
                       );
                     });
@@ -523,10 +524,11 @@ export default function DashBoard() {
                       </View>
 
                       <Text
-                        className={`self-center font-bold ${item.amount_minor < 0
-                          ? "text-red-500"
-                          : "text-green-500"
-                          }`}
+                        className={`self-center font-bold ${
+                          item.amount_minor < 0
+                            ? "text-red-500"
+                            : "text-green-500"
+                        }`}
                       >
                         {item.amount_minor < 0 ? "" : "+"}
                         {(item.amount_minor / 100).toFixed(2)}{" "}
@@ -552,10 +554,11 @@ export default function DashBoard() {
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={toggleExpanded}
-          className={`${expanded
-            ? "bg-black w-64 py-6 rounded-[25px]"
-            : "bg-black w-40 py-4 rounded-full"
-            }`}
+          className={`${
+            expanded
+              ? "bg-black w-64 py-6 rounded-[25px]"
+              : "bg-black w-40 py-4 rounded-full"
+          }`}
         >
           {!expanded ? (
             <View className="items-center justify-center">

@@ -130,12 +130,13 @@ const CustomPicker = ({
   const isSettings = variant === "settings";
 
   // Trigger container styles vary by variant to integrate with different form aesthetics
-  const triggerClass = `${isSettings
-    ? "bg-transparent py-1"
-    : isInput
-      ? "bg-neutral-100 rounded-full px-5 py-4 h-fit"
-      : "bg-white border border-black rounded-full px-4 h-[50px]"
-    } flex-row items-center justify-between ${disabled ? "opacity-50" : ""}`;
+  const triggerClass = `${
+    isSettings
+      ? "bg-transparent py-1"
+      : isInput
+        ? "bg-neutral-100 rounded-full px-5 py-4 h-fit"
+        : "bg-white border border-black rounded-full px-4 h-[50px]"
+  } flex-row items-center justify-between ${disabled ? "opacity-50" : ""}`;
 
   // Text colors for placeholder vs selected, adapt per variant
   const textClass = isSettings
@@ -220,12 +221,14 @@ const CustomPicker = ({
                     <TouchableOpacity
                       onPress={() => handleSelect(option)}
                       activeOpacity={0.6}
-                      className={`flex-row items-center justify-between py-4 px-4 my-1 rounded-full ${isSelected ? "bg-black" : "bg-gray-50"
-                        }`}
+                      className={`flex-row items-center justify-between py-4 px-4 my-1 rounded-full ${
+                        isSelected ? "bg-black" : "bg-gray-50"
+                      }`}
                     >
                       <Text
-                        className={`text-[18px] ${isSelected ? "text-white font-semibold" : "text-black"
-                          }`}
+                        className={`text-[18px] ${
+                          isSelected ? "text-white font-semibold" : "text-black"
+                        }`}
                       >
                         {option.label}
                       </Text>

@@ -16,8 +16,6 @@ import { LogOut } from "lucide-react-native";
 import CustomPicker from "@/components/ui/CustomPicker";
 import { useRouter } from "expo-router";
 
-
-
 const getPassword = () => "****************";
 const getPhone = () => "+43 660 6951513";
 const getDefaultCurrency = () => "EUR(€)";
@@ -32,7 +30,6 @@ const CURRENCY_OPTIONS = [
   { value: "CAD(C$)", label: "CAD (C$)" },
   { value: "AUD(A$)", label: "AUD (A$)" },
 ];
-
 
 type EditableFields = {
   display_name: string;
@@ -81,8 +78,8 @@ export default function SettingsScreen() {
         if (isMounted)
           setError(
             err?.response?.data?.detail ||
-            err.message ||
-            "Failed to load settings",
+              err.message ||
+              "Failed to load settings",
           );
       } finally {
         if (isMounted) setLoading(false);
@@ -153,7 +150,7 @@ export default function SettingsScreen() {
   if (loading) {
     return (
       <View className="flex-1 bg-white">
-        <SettingsNavBar isEditing={false} onEditToggle={() => { }} />
+        <SettingsNavBar isEditing={false} onEditToggle={() => {}} />
         <ScrollView>
           <View className="p-6 mt-4">
             <Text className="text-lg">Loading settings…</Text>
@@ -166,7 +163,7 @@ export default function SettingsScreen() {
   if (error) {
     return (
       <View className="flex-1 bg-white">
-        <SettingsNavBar isEditing={false} onEditToggle={() => { }} />
+        <SettingsNavBar isEditing={false} onEditToggle={() => {}} />
         <ScrollView>
           <View className="p-6 mt-4">
             <Text className="text-lg font-bold text-red-600">Error</Text>
@@ -180,7 +177,7 @@ export default function SettingsScreen() {
   const logOut = async () => {
     await signOut();
     router.replace("/");
-  }
+  };
 
   return (
     <View className="flex-1 bg-white">
@@ -242,7 +239,9 @@ export default function SettingsScreen() {
                 secureTextEntry
               />
             ) : (
-              <Text className="text-gray-500 mt-1">{editableFields.password}</Text>
+              <Text className="text-gray-500 mt-1">
+                {editableFields.password}
+              </Text>
             )}
           </View>
 
@@ -274,7 +273,9 @@ export default function SettingsScreen() {
                 className="mt-1"
               />
             ) : (
-              <Text className="text-gray-500 mt-1">{editableFields.defaultCurrency}</Text>
+              <Text className="text-gray-500 mt-1">
+                {editableFields.defaultCurrency}
+              </Text>
             )}
           </View>
 
@@ -287,7 +288,9 @@ export default function SettingsScreen() {
                 onChangeText={(value) => handleFieldChange("language", value)}
               />
             ) : (
-              <Text className="text-gray-500 mt-1">{editableFields.language}</Text>
+              <Text className="text-gray-500 mt-1">
+                {editableFields.language}
+              </Text>
             )}
           </View>
           <View className="flex flex-col gap-2 ">
