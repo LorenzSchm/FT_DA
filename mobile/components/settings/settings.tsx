@@ -26,9 +26,6 @@ const CURRENCY_OPTIONS = [
   { value: "USD($)", label: "USD ($)" },
   { value: "GBP(£)", label: "GBP (£)" },
   { value: "CHF(CHF)", label: "CHF" },
-  { value: "JPY(¥)", label: "JPY (¥)" },
-  { value: "CAD(C$)", label: "CAD (C$)" },
-  { value: "AUD(A$)", label: "AUD (A$)" },
 ];
 
 type EditableFields = {
@@ -190,7 +187,7 @@ export default function SettingsScreen() {
       <ScrollView>
         <View className="p-6 mt-4">
           {isSaving && (
-            <View className="absolute top-0 left-0 right-0 bottom-0 bg-black/10 z-10 flex justify-center items-center">
+            <View className="absolute top-0 left-0 right-0 bottom-0 z-10 flex justify-center items-center">
               <ActivityIndicator size="large" color="#000" />
             </View>
           )}
