@@ -78,8 +78,8 @@ export default function SettingsScreen() {
         if (isMounted)
           setError(
             err?.response?.data?.detail ||
-              err.message ||
-              "Failed to load settings",
+            err.message ||
+            "Failed to load settings",
           );
       } finally {
         if (isMounted) setLoading(false);
@@ -150,7 +150,7 @@ export default function SettingsScreen() {
   if (loading) {
     return (
       <View className="flex-1 bg-white">
-        <SettingsNavBar isEditing={false} onEditToggle={() => {}} />
+        <SettingsNavBar isEditing={false} onEditToggle={() => { }} />
         <ScrollView>
           <View className="p-6 mt-4">
             <Text className="text-lg">Loading settings…</Text>
@@ -163,7 +163,7 @@ export default function SettingsScreen() {
   if (error) {
     return (
       <View className="flex-1 bg-white">
-        <SettingsNavBar isEditing={false} onEditToggle={() => {}} />
+        <SettingsNavBar isEditing={false} onEditToggle={() => { }} />
         <ScrollView>
           <View className="p-6 mt-4">
             <Text className="text-lg font-bold text-red-600">Error</Text>
@@ -190,8 +190,8 @@ export default function SettingsScreen() {
       <ScrollView>
         <View className="p-6 mt-4">
           {isSaving && (
-            <View className="absolute top-0 left-0 right-0 bottom-0 flex justify-center items-center">
-              <ActivityIndicator size="large" color="#000000" />
+            <View className="absolute top-0 left-0 right-0 bottom-0 bg-black/10 z-10 flex justify-center items-center">
+              <ActivityIndicator size="large" color="#000" />
             </View>
           )}
 

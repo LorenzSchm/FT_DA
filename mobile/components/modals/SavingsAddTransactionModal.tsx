@@ -137,7 +137,6 @@ export default function SavingsAddTransactionModal({
         await onSave(selectedAccount, transactionType, name, amount);
       } catch (error) {
         console.error("Error saving transaction:", error);
-        return; // Don't close if there was an error
       }
     } else {
       console.log("Saving Savings Transaction:", {
