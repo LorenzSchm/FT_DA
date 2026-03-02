@@ -6,24 +6,33 @@ import {
   TextInput,
   ActivityIndicator,
   Alert,
+  TouchableOpacity,
 } from "react-native";
-import axios from "axios";
 import { useAuthStore } from "@/utils/authStore";
+import { getAccount, updateAccount, UserResponse } from "@/utils/accountApi";
 import SettingsNavBar from "./SettingsNavBar";
 import Toast from "react-native-toast-message";
+import { LogOut } from "lucide-react-native";
+import CustomPicker from "@/components/ui/CustomPicker";
+import { useRouter } from "expo-router";
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
+
 
 const getPassword = () => "****************";
 const getPhone = () => "+43 660 6951513";
 const getDefaultCurrency = () => "EUR(€)";
 const getLanguage = () => "EN-UK";
 
-type UserResponse = {
-  id: string;
-  display_name?: string | null;
-  email: string;
-};
+const CURRENCY_OPTIONS = [
+  { value: "EUR(€)", label: "EUR (€)" },
+  { value: "USD($)", label: "USD ($)" },
+  { value: "GBP(£)", label: "GBP (£)" },
+  { value: "CHF(CHF)", label: "CHF" },
+  { value: "JPY(¥)", label: "JPY (¥)" },
+  { value: "CAD(C$)", label: "CAD (C$)" },
+  { value: "AUD(A$)", label: "AUD (A$)" },
+];
+
 
 type EditableFields = {
   display_name: string;
@@ -35,7 +44,8 @@ type EditableFields = {
 };
 
 export default function SettingsScreen() {
-  const { session } = useAuthStore();
+  const { session, signOut } = useAuthStore();
+  const router = useRouter();
   const [data, setData] = useState<UserResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,14 +67,7 @@ export default function SettingsScreen() {
       setLoading(true);
       setError(null);
       try {
-        const headers: Record<string, string> = {};
-        if (session?.access_token) {
-          headers["Authorization"] = `Bearer ${session.access_token}`;
-        }
-
-        const res = await axios.get<UserResponse>(`${API_BASE_URL}/account/`, {
-          headers,
-        });
+        const res = await getAccount(session?.access_token);
         if (isMounted) {
           setData(res.data);
           setEditableFields((prev) => ({
@@ -78,8 +81,8 @@ export default function SettingsScreen() {
         if (isMounted)
           setError(
             err?.response?.data?.detail ||
-              err.message ||
-              "Failed to load settings",
+            err.message ||
+            "Failed to load settings",
           );
       } finally {
         if (isMounted) setLoading(false);
@@ -97,7 +100,6 @@ export default function SettingsScreen() {
   };
 
   const handleCancel = () => {
-    // Reset editable fields to original values
     if (data) {
       setEditableFields((prev) => ({
         ...prev,
@@ -116,20 +118,12 @@ export default function SettingsScreen() {
 
     setIsSaving(true);
     try {
-      const headers: Record<string, string> = {};
-      if (session?.access_token) {
-        headers["Authorization"] = `Bearer ${session.access_token}`;
-      }
-
-      const response = await axios.patch(
-        `${API_BASE_URL}/account/`,
-        {
-          email: editableFields.email,
-          display_name: editableFields.display_name,
-          refresh_token: session.refresh_token,
-        },
-        { headers },
-      );
+      const response = await updateAccount({
+        email: editableFields.email,
+        display_name: editableFields.display_name,
+        refresh_token: session.refresh_token,
+        access_token: session?.access_token,
+      });
 
       setData(response.data);
       setIsEditing(false);
@@ -159,7 +153,7 @@ export default function SettingsScreen() {
   if (loading) {
     return (
       <View className="flex-1 bg-white">
-        <SettingsNavBar isEditing={false} onEditToggle={() => {}} />
+        <SettingsNavBar isEditing={false} onEditToggle={() => { }} />
         <ScrollView>
           <View className="p-6 mt-4">
             <Text className="text-lg">Loading settings…</Text>
@@ -172,7 +166,7 @@ export default function SettingsScreen() {
   if (error) {
     return (
       <View className="flex-1 bg-white">
-        <SettingsNavBar isEditing={false} onEditToggle={() => {}} />
+        <SettingsNavBar isEditing={false} onEditToggle={() => { }} />
         <ScrollView>
           <View className="p-6 mt-4">
             <Text className="text-lg font-bold text-red-600">Error</Text>
@@ -181,6 +175,11 @@ export default function SettingsScreen() {
         </ScrollView>
       </View>
     );
+  }
+
+  const logOut = async () => {
+    await signOut();
+    router.replace("/");
   }
 
   return (
@@ -194,8 +193,8 @@ export default function SettingsScreen() {
       <ScrollView>
         <View className="p-6 mt-4">
           {isSaving && (
-            <View className="absolute top-0 left-0 right-0 bottom-0 bg-black/10 z-10 flex justify-center items-center">
-              <ActivityIndicator size="large" color="#0000ff" />
+            <View className="absolute top-0 left-0 right-0 bottom-0 flex justify-center items-center">
+              <ActivityIndicator size="large" color="#000000" />
             </View>
           )}
 
@@ -243,7 +242,7 @@ export default function SettingsScreen() {
                 secureTextEntry
               />
             ) : (
-              <Text className="text-gray-500 mt-1">{getPassword()}</Text>
+              <Text className="text-gray-500 mt-1">{editableFields.password}</Text>
             )}
           </View>
 
@@ -257,22 +256,25 @@ export default function SettingsScreen() {
                 keyboardType="phone-pad"
               />
             ) : (
-              <Text className="text-gray-500 mt-1">{getPhone()}</Text>
+              <Text className="text-gray-500 mt-1">{editableFields.phone}</Text>
             )}
           </View>
 
           <View className="mb-6">
             <Text className="text-lg font-bold">Default Currency</Text>
             {isEditing ? (
-              <TextInput
-                className="text-gray-500 mt-1"
+              <CustomPicker
+                placeholder="Select currency"
                 value={editableFields.defaultCurrency}
-                onChangeText={(value) =>
+                onValueChange={(value) =>
                   handleFieldChange("defaultCurrency", value)
                 }
+                options={CURRENCY_OPTIONS}
+                variant="settings"
+                className="mt-1"
               />
             ) : (
-              <Text className="text-gray-500 mt-1">{getDefaultCurrency()}</Text>
+              <Text className="text-gray-500 mt-1">{editableFields.defaultCurrency}</Text>
             )}
           </View>
 
@@ -285,8 +287,13 @@ export default function SettingsScreen() {
                 onChangeText={(value) => handleFieldChange("language", value)}
               />
             ) : (
-              <Text className="text-gray-500 mt-1">{getLanguage()}</Text>
+              <Text className="text-gray-500 mt-1">{editableFields.language}</Text>
             )}
+          </View>
+          <View className="flex flex-col gap-2 ">
+            <TouchableOpacity onPress={() => logOut()}>
+              <LogOut className="text-red-600" />
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>

@@ -168,7 +168,7 @@ export default function Incomes({ account }: Props) {
     );
   }
 
-  return (
+  return ( 
     <ScrollView
       className="flex-1 bg-white"
       showsVerticalScrollIndicator={false}
