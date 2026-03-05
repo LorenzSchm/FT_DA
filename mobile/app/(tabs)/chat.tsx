@@ -93,12 +93,12 @@ export default function Chat() {
       setMessages([
         botMsg(
           "Hi! I'm your AI finance assistant. I can help you:\n\n" +
-            '• Add transactions — "add expense 45 for groceries"\n' +
-            '• View balance — "what is my balance?"\n' +
-            '• List transactions — "show my recent transactions"\n' +
-            '• Manage subscriptions — "show my subscriptions"\n' +
-            '• Update/Delete — "delete transaction 67"\n\n' +
-            "How can I help?",
+          '• Add transactions — "add expense 45 for groceries"\n' +
+          '• View balance — "what is my balance?"\n' +
+          '• List transactions — "show my recent transactions"\n' +
+          '• Manage subscriptions — "show my subscriptions"\n' +
+          '• Update/Delete — "delete transaction 67"\n\n' +
+          "How can I help?",
         ),
       ]);
     }
@@ -308,8 +308,6 @@ export default function Chat() {
           style={{
             paddingHorizontal: 20,
             paddingVertical: 14,
-            borderBottomWidth: 1,
-            borderBottomColor: "#F1F1F2",
           }}
         >
           <Text style={{ fontSize: 22, fontWeight: "bold", color: "#000" }}>
@@ -338,8 +336,6 @@ export default function Chat() {
             alignItems: "center",
             paddingHorizontal: 16,
             paddingVertical: 10,
-            borderTopWidth: 1,
-            borderTopColor: "#F1F1F2",
             backgroundColor: "#fff",
           }}
         >
