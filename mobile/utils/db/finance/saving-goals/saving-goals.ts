@@ -213,6 +213,7 @@ export const handleAddTransaction = async (
     const requestBody = {
       goal_id: savingId.toString(),
       contributed_minor: type === "add" ? amountInCents : -amountInCents,
+      description: name || undefined,
     };
 
     const response = await axios.post(url, requestBody, {

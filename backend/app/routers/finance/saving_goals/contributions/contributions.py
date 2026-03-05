@@ -12,6 +12,8 @@ auth_scheme = HTTPBearer(auto_error=True)
 class ContributionRequest(BaseModel):
     goal_id: str
     contributed_minor: int
+    description: str | None = None
+    note: str | None = None
 
 @router.post("/")
 async def add_contribution(

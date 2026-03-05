@@ -52,15 +52,10 @@ type Props = {
 
 type TimeframeKey = "1D" | "1W" | "1M" | "1Y" | "ALL";
 
-/* -------------------------------------------------------------
-   Robust date parser – works with both created_at & contributed_at
-   and strips microseconds that sometimes break React Native
-   ------------------------------------------------------------- */
 const parseContributionDate = (contrib: Contribution): Date => {
   const raw = contrib.contributed_at ?? contrib.created_at;
   if (!raw) return new Date();
 
-  // Remove microseconds (everything after the first 3 decimal places or the dot entirely)
   const cleanIso = raw.split(".")[0] + (raw.includes(".") ? "Z" : "");
 
   const parsed = parseISO(cleanIso);

@@ -15,23 +15,21 @@ import Toast from "react-native-toast-message";
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
 
 const getPassword = () => "****************";
-const getPhone = () => "+43 660 6951513";
-const getDefaultCurrency = () => "EUR(€)";
 const getLanguage = () => "EN-UK";
 
 type UserResponse = {
   id: string;
   display_name?: string | null;
   email: string;
+  phone?: string | null;
+  default_currency?: string | null;
 };
 
 type EditableFields = {
   display_name: string;
   email: string;
-  password: string;
   phone: string;
-  defaultCurrency: string;
-  language: string;
+  default_currency: string;
 };
 
 export default function SettingsScreen() {
@@ -44,10 +42,8 @@ export default function SettingsScreen() {
   const [editableFields, setEditableFields] = useState<EditableFields>({
     display_name: "",
     email: "",
-    password: getPassword(),
-    phone: getPhone(),
-    defaultCurrency: getDefaultCurrency(),
-    language: getLanguage(),
+    phone: "",
+    default_currency: "",
   });
 
   useEffect(() => {
@@ -71,6 +67,8 @@ export default function SettingsScreen() {
             ...prev,
             display_name: res.data.display_name || "",
             email: res.data.email || "",
+            phone: res.data.phone || "",
+            default_currency: res.data.default_currency || "",
           }));
         }
       } catch (err: any) {
@@ -97,12 +95,13 @@ export default function SettingsScreen() {
   };
 
   const handleCancel = () => {
-    // Reset editable fields to original values
     if (data) {
       setEditableFields((prev) => ({
         ...prev,
         display_name: data.display_name || "",
         email: data.email || "",
+        phone: data.phone || "",
+        default_currency: data.default_currency || "",
       }));
     }
     setIsEditing(false);
@@ -126,6 +125,8 @@ export default function SettingsScreen() {
         {
           email: editableFields.email,
           display_name: editableFields.display_name,
+          phone: editableFields.phone || null,
+          default_currency: editableFields.default_currency || null,
           refresh_token: session.refresh_token,
         },
         { headers },
@@ -235,16 +236,10 @@ export default function SettingsScreen() {
 
           <View className="mb-6">
             <Text className="text-lg font-bold">Password</Text>
-            {isEditing ? (
-              <TextInput
-                className="text-gray-500 mt-1"
-                value={editableFields.password}
-                onChangeText={(value) => handleFieldChange("password", value)}
-                secureTextEntry
-              />
-            ) : (
-              <Text className="text-gray-500 mt-1">{getPassword()}</Text>
-            )}
+            <Text className="text-gray-500 mt-1">{getPassword()}</Text>
+            <Text className="text-sm text-gray-400 mt-1">
+              Click here to change Password
+            </Text>
           </View>
 
           <View className="mb-6">
@@ -255,9 +250,12 @@ export default function SettingsScreen() {
                 value={editableFields.phone}
                 onChangeText={(value) => handleFieldChange("phone", value)}
                 keyboardType="phone-pad"
+                placeholder="z.B. +43 660 1234567"
               />
             ) : (
-              <Text className="text-gray-500 mt-1">{getPhone()}</Text>
+              <Text className="text-gray-500 mt-1">
+                {data?.phone ?? "Not found"}
+              </Text>
             )}
           </View>
 
@@ -266,27 +264,25 @@ export default function SettingsScreen() {
             {isEditing ? (
               <TextInput
                 className="text-gray-500 mt-1"
-                value={editableFields.defaultCurrency}
+                value={editableFields.default_currency}
                 onChangeText={(value) =>
-                  handleFieldChange("defaultCurrency", value)
+                  handleFieldChange("default_currency", value)
                 }
+                placeholder="z.B. EUR(€)"
               />
             ) : (
-              <Text className="text-gray-500 mt-1">{getDefaultCurrency()}</Text>
+              <Text className="text-gray-500 mt-1">
+                {data?.default_currency ?? "Not found"}
+              </Text>
             )}
           </View>
 
           <View className="mb-6">
             <Text className="text-lg font-bold">Language</Text>
-            {isEditing ? (
-              <TextInput
-                className="text-gray-500 mt-1"
-                value={editableFields.language}
-                onChangeText={(value) => handleFieldChange("language", value)}
-              />
-            ) : (
-              <Text className="text-gray-500 mt-1">{getLanguage()}</Text>
-            )}
+            <Text className="text-gray-500 mt-1">{getLanguage()}</Text>
+            <Text className="text-sm text-gray-400 mt-1">
+              No other language available
+            </Text>
           </View>
         </View>
       </ScrollView>
