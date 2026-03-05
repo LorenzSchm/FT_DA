@@ -52,11 +52,17 @@ export default function Chat() {
   const [apiKeyInput, setApiKeyInput] = useState("");
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [conversationHistory, setConversationHistory] = useState<ConversationMessage[]>([]);
+  const [conversationHistory, setConversationHistory] = useState<
+    ConversationMessage[]
+  >([]);
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [defaultAccountId, setDefaultAccountId] = useState<number | undefined>();
-  const [defaultAccountCurrency, setDefaultAccountCurrency] = useState<string | undefined>();
+  const [defaultAccountId, setDefaultAccountId] = useState<
+    number | undefined
+  >();
+  const [defaultAccountCurrency, setDefaultAccountCurrency] = useState<
+    string | undefined
+  >();
 
   const flatListRef = useRef<FlatList>(null);
 
@@ -65,7 +71,10 @@ export default function Chat() {
     async function loadDefaultAccount() {
       if (!session?.access_token) return;
       try {
-        const data = await getAccounts(session.access_token, session.refresh_token);
+        const data = await getAccounts(
+          session.access_token,
+          session.refresh_token,
+        );
         const accounts = data.rows || data;
         if (accounts && accounts.length > 0) {
           setDefaultAccountId(accounts[0].id);
@@ -84,12 +93,12 @@ export default function Chat() {
       setMessages([
         botMsg(
           "Hi! I'm your AI finance assistant. I can help you:\n\n" +
-          "• Add transactions — \"add expense 45 for groceries\"\n" +
-          "• View balance — \"what is my balance?\"\n" +
-          "• List transactions — \"show my recent transactions\"\n" +
-          "• Manage subscriptions — \"show my subscriptions\"\n" +
-          "• Update/Delete — \"delete transaction 67\"\n\n" +
-          "How can I help?"
+            '• Add transactions — "add expense 45 for groceries"\n' +
+            '• View balance — "what is my balance?"\n' +
+            '• List transactions — "show my recent transactions"\n' +
+            '• Manage subscriptions — "show my subscriptions"\n' +
+            '• Update/Delete — "delete transaction 67"\n\n' +
+            "How can I help?",
         ),
       ]);
     }
@@ -133,13 +142,22 @@ export default function Chat() {
     } catch (err: any) {
       setMessages((prev) => [
         ...prev,
-        botMsg(`⚠️ Error: ${err?.message || "Something went wrong. Please try again."}`),
+        botMsg(
+          `⚠️ Error: ${err?.message || "Something went wrong. Please try again."}`,
+        ),
       ]);
     } finally {
       setIsTyping(false);
       scrollToEnd();
     }
-  }, [inputText, apiKey, session, defaultAccountId, conversationHistory, scrollToEnd]);
+  }, [
+    inputText,
+    apiKey,
+    session,
+    defaultAccountId,
+    conversationHistory,
+    scrollToEnd,
+  ]);
 
   // ─── Render ──────────────────────────────────────────────────────
 
@@ -181,7 +199,13 @@ export default function Chat() {
   const renderTypingIndicator = () => {
     if (!isTyping) return null;
     return (
-      <View style={{ alignSelf: "flex-start", marginHorizontal: 16, marginVertical: 4 }}>
+      <View
+        style={{
+          alignSelf: "flex-start",
+          marginHorizontal: 16,
+          marginVertical: 4,
+        }}
+      >
         <View
           style={{
             backgroundColor: "#F1F1F2",
@@ -195,7 +219,9 @@ export default function Chat() {
           }}
         >
           <ActivityIndicator size="small" color="#888" />
-          <Text style={{ color: "#888", fontSize: 14, marginLeft: 6 }}>Thinking...</Text>
+          <Text style={{ color: "#888", fontSize: 14, marginLeft: 6 }}>
+            Thinking...
+          </Text>
         </View>
       </View>
     );
@@ -205,12 +231,29 @@ export default function Chat() {
   if (!apiKeyConfirmed) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-        <View style={{ flex: 1, justifyContent: "center", paddingHorizontal: 24 }}>
-          <Text style={{ fontSize: 24, fontWeight: "bold", color: "#000", marginBottom: 8 }}>
+        <View
+          style={{ flex: 1, justifyContent: "center", paddingHorizontal: 24 }}
+        >
+          <Text
+            style={{
+              fontSize: 24,
+              fontWeight: "bold",
+              color: "#000",
+              marginBottom: 8,
+            }}
+          >
             AI Assistant
           </Text>
-          <Text style={{ fontSize: 15, color: "#666", marginBottom: 24, lineHeight: 22 }}>
-            Enter your OpenAI API key to enable the AI-powered chatbot. Your key is stored locally and never sent to our servers.
+          <Text
+            style={{
+              fontSize: 15,
+              color: "#666",
+              marginBottom: 24,
+              lineHeight: 22,
+            }}
+          >
+            Enter your OpenAI API key to enable the AI-powered chatbot. Your key
+            is stored locally and never sent to our servers.
           </Text>
           <TextInput
             style={{
@@ -234,7 +277,9 @@ export default function Chat() {
             onPress={handleConfirmApiKey}
             activeOpacity={0.8}
             style={{
-              backgroundColor: apiKeyInput.trim().startsWith("sk-") ? "#000" : "#ccc",
+              backgroundColor: apiKeyInput.trim().startsWith("sk-")
+                ? "#000"
+                : "#ccc",
               borderRadius: 12,
               paddingVertical: 16,
               alignItems: "center",
@@ -280,7 +325,9 @@ export default function Chat() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ paddingVertical: 12 }}
           showsVerticalScrollIndicator={false}
-          onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
+          onContentSizeChange={() =>
+            flatListRef.current?.scrollToEnd({ animated: false })
+          }
           ListFooterComponent={renderTypingIndicator}
         />
 
