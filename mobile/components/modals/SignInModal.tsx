@@ -9,16 +9,7 @@ import {
 } from "react-native";
 import { useEffect, useMemo, useState, useRef } from "react";
 import SignInForm from "@/components/sign-in/SignInForm";
-
-const BRANDFETCH_CLIENT_ID = process.env.EXPO_PUBLIC_LOGO_API_KEY;
-
-const getBrandfetchLogoUrl = (domain: string) => {
-  if (!BRANDFETCH_CLIENT_ID) {
-    return undefined;
-  }
-
-  return `https://cdn.brandfetch.io/${domain}/icon?c=${BRANDFETCH_CLIENT_ID}`;
-};
+import AppleLogo from "../../assets/images/Apple_Logo_0.svg";
 
 const isValidEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -153,21 +144,16 @@ export default function SignInModal({ isVisible, onClose }: Props) {
                 <View className={"bg-black h-[2px] w-[150px] rounded-full"} />
               </View>
               <View className="flex flex-col gap-[20px] mt-[20px]">
-                <TouchableOpacity className="flex flex-row items-center justify-center h-[50px] border border-black rounded-full px-5">
-                  <Image
-                    source={{ uri: getBrandfetchLogoUrl("apple.com") }}
-                    style={{ width: 40, height: 40 }}
-                    resizeMode="contain"
-                  />
+                <TouchableOpacity className="flex flex-row items-center justify-center h-[50px] border border-black rounded-full gap-3 px-5">
+                  <AppleLogo width={20} height={20} />
                   <Text className="font-bold text-[15px]">
                     Continue with Apple
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity className="flex flex-row items-center justify-center h-[50px] border border-black rounded-full gap-3 px-5">
                   <Image
-                    source={{ uri: getBrandfetchLogoUrl("google.com") }}
-                    style={{ width: 30, height: 30 }}
-                    resizeMode="contain"
+                    source={require("../../assets/images/Google_Symbol_1.png")}
+                    style={{ width: 20, height: 20 }}
                   />
                   <Text className="font-bold text-[15px]">
                     Continue with Google

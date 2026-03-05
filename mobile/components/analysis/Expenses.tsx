@@ -2,7 +2,7 @@ import { View, ScrollView, Text, TouchableOpacity } from "react-native";
 import { useAuthStore } from "@/utils/authStore";
 import { useEffect, useMemo, useState } from "react";
 import { getTransactions } from "@/utils/db/finance/finance";
-import { getSubscriptions } from "@/utils/db/finance/subscriptions/subscriptions";
+
 import SpendingChart from "@/components/analysis/SpendingChart";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Feather } from "@expo/vector-icons";
@@ -71,7 +71,7 @@ export default function Expenses({ account }: Props) {
   const { session } = useAuthStore();
   const [expenses, setExpenses] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [subscriptions, setSubscriptions] = useState<any[]>([]);
+
   const [modalOpen, setModalOpen] = useState(false);
   const [dateRange, setDateRange] = useState(() => {
     const now = new Date();
@@ -81,9 +81,18 @@ export default function Expenses({ account }: Props) {
     };
   });
 
+  const [amountRange, setAmountRange] = useState<{
+    min: number;
+    max: number;
+  } | null>(null);
+
   const handleCloseModal = () => setModalOpen(false);
-  const handleApplyDateRange = (range: { start: Date; end: Date }) => {
+  const handleApplyDateRange = (
+    range: { start: Date; end: Date },
+    amountRange: { min: number; max: number },
+  ) => {
     setDateRange({ start: new Date(range.start), end: new Date(range.end) });
+    setAmountRange(amountRange);
     setModalOpen(false);
   };
 
@@ -119,28 +128,9 @@ export default function Expenses({ account }: Props) {
     }
   };
 
-  const loadSubscriptions = async () => {
-    if (!session?.access_token || !account) return;
-    try {
-      const data = await getSubscriptions(
-        session.access_token,
-        session.refresh_token,
-        account,
-      );
-      const list = (data.rows || data) as any[];
-      setSubscriptions(list.filter((sub) => sub.active !== false));
-    } catch (e: any) {
-      console.error(
-        "Failed to load subscriptions:",
-        e?.message || "Unknown error",
-      );
-    }
-  };
-
   useEffect(() => {
     if (account) {
       loadTransactions();
-      loadSubscriptions();
     }
   }, [account, session?.access_token]);
 
@@ -148,9 +138,16 @@ export default function Expenses({ account }: Props) {
     return expenses.filter((tx: any) => {
       if (!tx.date) return false;
       const txDate = new Date(tx.date);
-      return txDate >= dateRange.start && txDate <= dateRange.end;
+      const amount = Math.abs(tx.amount_minor) / 100;
+
+      const dateMatch = txDate >= dateRange.start && txDate <= dateRange.end;
+      const amountMatch = amountRange
+        ? amount >= amountRange.min && amount <= amountRange.max
+        : true;
+
+      return dateMatch && amountMatch;
     });
-  }, [expenses, dateRange.start, dateRange.end]);
+  }, [expenses, dateRange.start, dateRange.end, amountRange]);
 
   const rangeLabel = useMemo(
     () => formatRangeLabel(dateRange.start, dateRange.end),
@@ -162,27 +159,12 @@ export default function Expenses({ account }: Props) {
       (sum: number, tx: any) => sum + Math.abs(tx.amount_minor),
       0,
     );
-    const subsTotal = subscriptions.reduce(
-      (sum: number, sub: any) => sum + Math.abs(sub.amount_minor || 0),
-      0,
-    );
-    return txTotal + subsTotal;
-  }, [monthlyExpenses, subscriptions]);
+    return txTotal;
+  }, [monthlyExpenses]);
 
-  const subscriptionEntries = useMemo(() => {
-    return subscriptions.map((sub: any) => ({
-      id: `sub-${sub.id}`,
-      description: sub.merchant || sub.name || "Subscription",
-      category_id: sub.category || "Subscription",
-      amount_minor: -(sub.amount_minor || 0),
-      currency: sub.currency,
-    }));
-  }, [subscriptions]);
+  const combinedExpenses = monthlyExpenses;
 
-  const combinedExpenses = [...monthlyExpenses, ...subscriptionEntries];
-
-  const currency =
-    monthlyExpenses[0]?.currency || subscriptionEntries[0]?.currency || "EUR";
+  const currency = monthlyExpenses[0]?.currency || "EUR";
   const currencySymbol = getCurrencySymbol(currency);
 
   if (!account) {
@@ -199,22 +181,24 @@ export default function Expenses({ account }: Props) {
       showsVerticalScrollIndicator={false}
     >
       <View className="px-4 py-6">
-        <View className="mb-8 relative">
-          <TouchableOpacity
-            onPress={() => setModalOpen(true)}
-            className="absolute top-0 right-0 z-10 p-2"
-          >
-            <Feather name={"more-vertical"} size={20} color="#000" />
-          </TouchableOpacity>
-          <SpendingChart
-            size={220}
-            strokeWidth={24}
-            income={0}
-            expenses={totalExpensesAmount}
-            currency={currencySymbol}
-            label="Expenses"
-            dateRange={rangeLabel}
-          />
+        <View className="mb-6 flex items-center">
+          <View className="mb-6 flex flex-row items-center justify-center relative w-full">
+            <SpendingChart
+              size={200}
+              strokeWidth={20}
+              income={0}
+              expenses={totalExpensesAmount}
+              currency={currencySymbol}
+              label="Expenses"
+              dateRange={rangeLabel}
+            />
+            <TouchableOpacity
+              onPress={() => setModalOpen(true)}
+              className="absolute top-0 right-0 p-2"
+            >
+              <Feather name={"more-vertical"} size={20} color="#000" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View>
@@ -269,6 +253,18 @@ export default function Expenses({ account }: Props) {
         endDate={dateRange.end}
         onClose={handleCloseModal}
         onApply={handleApplyDateRange}
+        minAmount={
+          expenses.length > 0
+            ? Math.min(...expenses.map((t) => Math.abs(t.amount_minor))) / 100
+            : 0
+        }
+        maxAmount={
+          expenses.length > 0
+            ? Math.max(...expenses.map((t) => Math.abs(t.amount_minor))) / 100
+            : 1000
+        }
+        selectedMin={amountRange?.min}
+        selectedMax={amountRange?.max}
       />
     </ScrollView>
   );

@@ -8,10 +8,11 @@ import React, { useEffect } from "react";
 import { Stack } from "expo-router";
 import { useAuthStore } from "@/utils/authStore";
 import Toast from "react-native-toast-message";
+import { toastConfig } from "@/components/ui/CustomToast";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export default function RootLayout() {
-  const { isLoggedIn, _hasHydrated, signOut } = useAuthStore();
+  const { isLoggedIn, _hasHydrated } = useAuthStore();
 
   const shouldCreateAccount = false;
 
@@ -33,7 +34,7 @@ export default function RootLayout() {
           </Stack.Protected>
         </Stack.Protected>
       </Stack>
-      <Toast topOffset={70} />
+      <Toast config={toastConfig} topOffset={70} />
     </GestureHandlerRootView>
   );
 }

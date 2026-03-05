@@ -78,7 +78,7 @@ export default function SpendingChart({
         {!hasData ? (
           <Path
             d={describeArc(center, center, radius, 0, 359.999)}
-            stroke="#F1F1F2"
+            stroke="#22c55e"
             strokeWidth={strokeWidth}
             fill="none"
           />
