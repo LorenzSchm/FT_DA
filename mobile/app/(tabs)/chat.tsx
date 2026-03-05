@@ -93,12 +93,12 @@ export default function Chat() {
       setMessages([
         botMsg(
           "Hi! I'm your AI finance assistant. I can help you:\n\n" +
-          '• Add transactions — "add expense 45 for groceries"\n' +
-          '• View balance — "what is my balance?"\n' +
-          '• List transactions — "show my recent transactions"\n' +
-          '• Manage subscriptions — "show my subscriptions"\n' +
-          '• Update/Delete — "delete transaction 67"\n\n' +
-          "How can I help?",
+            '• Add transactions — "add expense 45 for groceries"\n' +
+            '• View balance — "what is my balance?"\n' +
+            '• List transactions — "show my recent transactions"\n' +
+            '• Manage subscriptions — "show my subscriptions"\n' +
+            '• Update/Delete — "delete transaction 67"\n\n' +
+            "How can I help?",
         ),
       ]);
     }
