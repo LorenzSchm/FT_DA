@@ -45,10 +45,11 @@ export default function Card({
         <View>
           <Text className="text-white font-bold">{name}</Text>
           <Text
-            className={`text-[24px] font-bold ${amount < 0 ? "text-red-500" : "text-green-500"}`}
+            className={`text-[24px] font-bold ${isNaN(amount) ? "text-white" : amount < 0 ? "text-red-500" : "text-green-500"}`}
           >
-            {amount < 0 ? "-" : "+"}
-            {Math.abs(amount)} {currency === "USD" ? "$" : "€"}
+            {isNaN(amount)
+              ? "..."
+              : `${amount < 0 ? "-" : "+"}${Math.abs(amount).toFixed(2)} ${currency === "USD" ? "$" : "€"}`}
           </Text>
         </View>
         <View>{provider === "FT" && <Logo width={30} height={30} />}</View>

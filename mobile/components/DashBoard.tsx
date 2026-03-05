@@ -5,8 +5,9 @@ import {
   ScrollView,
   TouchableOpacity,
   TouchableWithoutFeedback,
+  RefreshControl,
 } from "react-native";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Card from "./Card";
 import {
   Carousel,
@@ -21,6 +22,7 @@ import { getAccounts, getTransactions } from "@/utils/db/finance/finance";
 import { getSubscriptions } from "@/utils/db/finance/subscriptions/subscriptions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getData } from "@/utils/db/connect_accounts/connectAccounts";
+import { invalidateCache } from "@/utils/db/cache";
 
 enum STATE {
   DEFAULT = "DEFAULT",
@@ -125,9 +127,9 @@ export default function DashBoard() {
           acc.kind !== "connect"
             ? acc
             : {
-                ...acc,
-                balance_minor: availableCents,
-              },
+              ...acc,
+              balance_minor: availableCents,
+            },
         );
       }
 
@@ -158,9 +160,9 @@ export default function DashBoard() {
             acc.id !== accountId
               ? acc
               : {
-                  ...acc,
-                  balance_minor: availableCents,
-                },
+                ...acc,
+                balance_minor: availableCents,
+              },
           ),
         );
 
@@ -306,6 +308,25 @@ export default function DashBoard() {
   const toggleExpanded = () => setExpanded(!expanded);
   const handleOutsidePress = () => setExpanded(false);
 
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    invalidateCache();
+    try {
+      const accs = await loadAccounts();
+      const accId = accs[accountIndex]?.id;
+      if (accId) {
+        await Promise.all([
+          loadTransactionsForAccount(accId, accs[accountIndex]),
+          loadSubscriptionsForAccount(accId),
+        ]);
+      }
+    } finally {
+      setRefreshing(false);
+    }
+  }, [accountIndex]);
+
   const selectedAccountId = accounts[accountIndex]?.id;
   const filteredTransactions = selectedAccountId
     ? transactionsByAccount[selectedAccountId] || []
@@ -315,7 +336,7 @@ export default function DashBoard() {
     : [];
   const isLoadingSelectedAccount = selectedAccountId
     ? !!loadingTxByAccount[selectedAccountId] ||
-      !!loadingSubsByAccount[selectedAccountId]
+    !!loadingSubsByAccount[selectedAccountId]
     : false;
 
   useEffect(() => {
@@ -343,205 +364,211 @@ export default function DashBoard() {
         acc.id !== selectedAccountId
           ? acc
           : {
-              ...acc,
-              balance_minor: computeAccountBalance(
-                selectedAccountId,
-                transactionsByAccount,
-                subscriptionsByAccount,
-              ),
-            },
+            ...acc,
+            balance_minor: computeAccountBalance(
+              selectedAccountId,
+              transactionsByAccount,
+              subscriptionsByAccount,
+            ),
+          },
       ),
     );
   }, [selectedAccountId, transactionsByAccount, subscriptionsByAccount]);
 
   return (
     <View className="flex-1 w-full bg-white mt-5">
-      <View className="items-center justify-center">
-        <View className="gap-3 items-center">
-          <Text className="text-center text-2xl font-bold">
-            {`Good morning ${user?.user_metadata?.display_name || "there"}!`}
-          </Text>
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#000" />
+        }
+      >
+        <View className="items-center justify-center">
+          <View className="gap-3 items-center">
+            <Text className="text-center text-2xl font-bold">
+              {`Good morning ${user?.user_metadata?.display_name || "there"}!`}
+            </Text>
 
-          {/* Accounts Carousel */}
-          <View className="w-full">
-            {isFetchingAccounts ? (
-              <View className="items-center justify-center">
-                {/* Accounts skeletons */}
-                <View className="w-full items-center">
-                  <View className="items-center justify-center">
-                    <View className="bg-white rounded-3xl p-6 w-[85%]">
-                      <Skeleton
-                        mode="light"
-                        className="h-6 w-40 mb-3"
-                        animated
-                      />
-                      <Skeleton
-                        mode="light"
-                        className="h-8 w-56 mb-2"
-                        animated
-                      />
-                      <Skeleton mode="light" className="h-4 w-24" animated />
-                    </View>
-                  </View>
-                </View>
-              </View>
-            ) : accounts.length === 0 ? (
-              <Text className="text-center text-lg text-gray-500">
-                No accounts yet
-              </Text>
-            ) : (
-              <Carousel onIndexChange={setAccountIndex}>
-                <CarouselContent>
-                  {accounts.map((account: any) => (
-                    <CarouselItem
-                      key={account.id}
-                      className="items-center justify-center"
-                    >
-                      <Card
-                        provider={account.institution}
-                        name={account.name}
-                        kind={account.kind}
-                        amount={parseFloat(
-                          (account.balance_minor / 100).toFixed(2),
-                        )}
-                        currency={account.currency}
-                      />
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-
-                {/* Pagination dots */}
-                <View className="flex-row mt-4 gap-1 justify-center">
-                  {(() => {
-                    const total = accounts.length;
-                    const maxDots = 5;
-
-                    let start = 0;
-                    let end = total;
-
-                    if (total > maxDots) {
-                      if (accountIndex <= 2) {
-                        start = 0;
-                        end = maxDots;
-                      } else if (accountIndex >= total - 3) {
-                        start = total - maxDots;
-                        end = total;
-                      } else {
-                        start = accountIndex - 2;
-                        end = accountIndex + 3;
-                      }
-                    }
-
-                    return accounts.slice(start, end).map((_, i) => {
-                      const realIndex = i + start;
-
-                      return (
-                        <View
-                          key={realIndex}
-                          className={`w-2 h-2 rounded-full ${
-                            realIndex === accountIndex
-                              ? "bg-black"
-                              : "bg-gray-300"
-                          }`}
-                        />
-                      );
-                    });
-                  })()}
-                </View>
-              </Carousel>
-            )}
-          </View>
-        </View>
-      </View>
-
-      {/* Transactions + Subscriptions */}
-      <View className="flex-1 items-center justify-start w-full pt-2">
-        <View className="gap-5" style={{ width: contentWidth }}>
-          <Text className="text-xl font-bold">Transactions</Text>
-
-          <ScrollView
-            style={{ maxHeight: maxListHeight }}
-            showsVerticalScrollIndicator={false}
-          >
-            <View className="gap-5 pb-5">
-              {isLoadingSelectedAccount ? (
-                <View className="gap-4">
-                  {[...Array(4)].map((_, idx) => (
-                    <View
-                      key={idx}
-                      className="flex-row justify-between"
-                      style={{ width: contentWidth }}
-                    >
-                      <View>
+            {/* Accounts Carousel */}
+            <View className="w-full">
+              {isFetchingAccounts ? (
+                <View className="items-center justify-center">
+                  {/* Accounts skeletons */}
+                  <View className="w-full items-center">
+                    <View className="items-center justify-center">
+                      <View className="bg-white rounded-3xl p-6 w-[85%]">
                         <Skeleton
                           mode="light"
-                          className="h-5 w-44 mb-2"
+                          className="h-6 w-40 mb-3"
+                          animated
+                        />
+                        <Skeleton
+                          mode="light"
+                          className="h-8 w-56 mb-2"
                           animated
                         />
                         <Skeleton mode="light" className="h-4 w-24" animated />
                       </View>
-                      <Skeleton mode="light" className="h-5 w-16" animated />
                     </View>
-                  ))}
+                  </View>
                 </View>
+              ) : accounts.length === 0 ? (
+                <Text className="text-center text-lg text-gray-500">
+                  No accounts yet
+                </Text>
               ) : (
-                (() => {
-                  const combined = filteredTransactions
-                    .concat(
-                      activeSubscriptions.map((sub) => ({
-                        id: `sub-${sub.id}`,
-                        description: sub.merchant,
-                        category_id: "Subscription",
-                        amount_minor: -sub.amount_minor,
-                        currency: sub.currency,
-                      })),
-                    )
-                    .sort((a: any, b: any) =>
-                      `${b.id}`.localeCompare(`${a.id}`),
-                    );
-
-                  if (combined.length === 0) {
-                    return (
-                      <Text className="text-center text-neutral-500">
-                        No transactions found
-                      </Text>
-                    );
-                  }
-
-                  return combined.map((item: any, index: number) => (
-                    <View
-                      key={`${selectedAccountId || "acc"}-tx-${index}`}
-                      className="flex flex-row justify-between"
-                      style={{ width: contentWidth }}
-                    >
-                      <View>
-                        <Text className="text-xl font-bold">
-                          {item.description}
-                        </Text>
-                        <Text className="text-gray-400 text-lg">
-                          {item.category_id}
-                        </Text>
-                      </View>
-
-                      <Text
-                        className={`self-center font-bold ${
-                          item.amount_minor < 0
-                            ? "text-red-500"
-                            : "text-green-500"
-                        }`}
+                <Carousel onIndexChange={setAccountIndex}>
+                  <CarouselContent>
+                    {accounts.map((account: any) => (
+                      <CarouselItem
+                        key={account.id}
+                        className="items-center justify-center"
                       >
-                        {item.amount_minor < 0 ? "" : "+"}
-                        {(item.amount_minor / 100).toFixed(2)}{" "}
-                        {item.currency === "USD" ? "$" : "€"}
-                      </Text>
-                    </View>
-                  ));
-                })()
+                        <Card
+                          provider={account.institution}
+                          name={account.name}
+                          kind={account.kind}
+                          amount={parseFloat(
+                            (account.balance_minor / 100).toFixed(2),
+                          )}
+                          currency={account.currency}
+                        />
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+
+                  {/* Pagination dots */}
+                  <View className="flex-row mt-4 gap-1 justify-center">
+                    {(() => {
+                      const total = accounts.length;
+                      const maxDots = 5;
+
+                      let start = 0;
+                      let end = total;
+
+                      if (total > maxDots) {
+                        if (accountIndex <= 2) {
+                          start = 0;
+                          end = maxDots;
+                        } else if (accountIndex >= total - 3) {
+                          start = total - maxDots;
+                          end = total;
+                        } else {
+                          start = accountIndex - 2;
+                          end = accountIndex + 3;
+                        }
+                      }
+
+                      return accounts.slice(start, end).map((_, i) => {
+                        const realIndex = i + start;
+
+                        return (
+                          <View
+                            key={realIndex}
+                            className={`w-2 h-2 rounded-full ${realIndex === accountIndex
+                              ? "bg-black"
+                              : "bg-gray-300"
+                              }`}
+                          />
+                        );
+                      });
+                    })()}
+                  </View>
+                </Carousel>
               )}
             </View>
-          </ScrollView>
+          </View>
         </View>
-      </View>
+
+        {/* Transactions + Subscriptions */}
+        <View className="flex-1 items-center justify-start w-full pt-2">
+          <View className="gap-5" style={{ width: contentWidth }}>
+            <Text className="text-xl font-bold">Transactions</Text>
+
+            <ScrollView
+              style={{ maxHeight: maxListHeight }}
+              showsVerticalScrollIndicator={false}
+            >
+              <View className="gap-5 pb-5">
+                {isLoadingSelectedAccount ? (
+                  <View className="gap-4">
+                    {[...Array(4)].map((_, idx) => (
+                      <View
+                        key={idx}
+                        className="flex-row justify-between"
+                        style={{ width: contentWidth }}
+                      >
+                        <View>
+                          <Skeleton
+                            mode="light"
+                            className="h-5 w-44 mb-2"
+                            animated
+                          />
+                          <Skeleton mode="light" className="h-4 w-24" animated />
+                        </View>
+                        <Skeleton mode="light" className="h-5 w-16" animated />
+                      </View>
+                    ))}
+                  </View>
+                ) : (
+                  (() => {
+                    const combined = filteredTransactions
+                      .concat(
+                        activeSubscriptions.map((sub) => ({
+                          id: `sub-${sub.id}`,
+                          description: sub.merchant,
+                          category_id: "Subscription",
+                          amount_minor: -sub.amount_minor,
+                          currency: sub.currency,
+                        })),
+                      )
+                      .sort((a: any, b: any) =>
+                        `${b.id}`.localeCompare(`${a.id}`),
+                      );
+
+                    if (combined.length === 0) {
+                      return (
+                        <Text className="text-center text-neutral-500">
+                          No transactions found
+                        </Text>
+                      );
+                    }
+
+                    return combined.map((item: any, index: number) => (
+                      <View
+                        key={`${selectedAccountId || "acc"}-tx-${index}`}
+                        className="flex flex-row justify-between"
+                        style={{ width: contentWidth }}
+                      >
+                        <View>
+                          <Text className="text-xl font-bold">
+                            {item.description}
+                          </Text>
+                          <Text className="text-gray-400 text-lg">
+                            {item.category_id}
+                          </Text>
+                        </View>
+
+                        <Text
+                          className={`self-center font-bold ${item.amount_minor < 0
+                            ? "text-red-500"
+                            : "text-green-500"
+                            }`}
+                        >
+                          {item.amount_minor < 0 ? "" : "+"}
+                          {(item.amount_minor / 100).toFixed(2)}{" "}
+                          {item.currency === "USD" ? "$" : "€"}
+                        </Text>
+                      </View>
+                    ));
+                  })()
+                )}
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </ScrollView>
 
       {/* Floating Add Button */}
       <View className="absolute bottom-12 right-5">
@@ -554,11 +581,10 @@ export default function DashBoard() {
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={toggleExpanded}
-          className={`${
-            expanded
-              ? "bg-black w-64 py-6 rounded-[25px]"
-              : "bg-black w-40 py-4 rounded-full"
-          }`}
+          className={`${expanded
+            ? "bg-black w-64 py-6 rounded-[25px]"
+            : "bg-black w-40 py-4 rounded-full"
+            }`}
         >
           {!expanded ? (
             <View className="items-center justify-center">
