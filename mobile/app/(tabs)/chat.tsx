@@ -303,7 +303,6 @@ export default function Chat() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
       >
-        {/* Header */}
         <View
           style={{
             paddingHorizontal: 20,
@@ -315,7 +314,6 @@ export default function Chat() {
           </Text>
         </View>
 
-        {/* Messages */}
         <FlatList
           ref={flatListRef}
           data={messages}

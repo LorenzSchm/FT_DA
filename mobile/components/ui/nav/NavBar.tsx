@@ -147,13 +147,15 @@ export default function NavBar() {
         }}
         pointerEvents={isSearchExpanded ? "none" : "auto"}
       >
-        <View
-          className={
-            "bg-[#F1F1F2] rounded-full p-2 w-[40px] h-[40px] flex justify-center items-center "
-          }
-        >
-          <Bell />
-        </View>
+        <TouchableOpacity onPress={() => router.push("/notifications")}>
+          <View
+            className={
+              "bg-[#F1F1F2] rounded-full p-2 w-[40px] h-[40px] flex justify-center items-center "
+            }
+          >
+            <Bell />
+          </View>
+        </TouchableOpacity>
       </Animated.View>
     </View>
   );
