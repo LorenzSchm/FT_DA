@@ -274,10 +274,11 @@ export default function AddInvestmentView({ onInvestmentAdded }: Props) {
                         </View>
                       </View>
                       <Text
-                        className={`font-bold text-lg ${(item.weekly_change ?? 0) > 0
+                        className={`font-bold text-lg ${
+                          (item.weekly_change ?? 0) > 0
                             ? "text-green-600"
                             : "text-red-600"
-                          }`}
+                        }`}
                       >
                         {item.weekly_change != null
                           ? `${Math.abs(item.weekly_change).toFixed(2)}%`
@@ -345,10 +346,11 @@ export default function AddInvestmentView({ onInvestmentAdded }: Props) {
                               )}
                             </View>
                             <Text
-                              className={`font-bold text-lg ${item.weekly_change > 0
+                              className={`font-bold text-lg ${
+                                item.weekly_change > 0
                                   ? "text-[#22C55E]"
                                   : "text-[#EF4444]"
-                                }`}
+                              }`}
                             >
                               {Math.abs(item.weekly_change).toFixed(2)}%
                             </Text>
@@ -407,10 +409,11 @@ export default function AddInvestmentView({ onInvestmentAdded }: Props) {
                             )}
                           </View>
                           <Text
-                            className={`font-bold text-lg ${item.weekly_change > 0
+                            className={`font-bold text-lg ${
+                              item.weekly_change > 0
                                 ? "text-[#22C55E]"
                                 : "text-[#EF4444]"
-                              }`}
+                            }`}
                           >
                             {Math.abs(item.weekly_change).toFixed(2)}%
                           </Text>

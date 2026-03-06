@@ -68,7 +68,7 @@ export function InvestmentView() {
             logo = best.icon;
             logoCache.current[symbol] = logo;
           }
-        } catch { }
+        } catch {}
       }
       return { price, weekly_change, logo, longname };
     } catch {
@@ -91,8 +91,9 @@ export function InvestmentView() {
       );
       const posData = await Promise.all(
         (pos?.positions || []).map(async (p: any) => {
-          const { price, weekly_change, logo, longname } =
-            await fetchStockData(p.ticker);
+          const { price, weekly_change, logo, longname } = await fetchStockData(
+            p.ticker,
+          );
           return { ...p, price, weekly_change, logo, longname };
         }),
       );
@@ -289,7 +290,11 @@ export function InvestmentView() {
               hasContribution = true;
             }
 
-            if (hasContribution && Number.isFinite(totalValue) && totalValue > 0) {
+            if (
+              hasContribution &&
+              Number.isFinite(totalValue) &&
+              totalValue > 0
+            ) {
               points.push({
                 timestamp: ts,
                 value: Math.round(totalValue * 100) / 100,
@@ -425,19 +430,21 @@ export function InvestmentView() {
                     {/* Unrealized P/L */}
                     <View className="items-end">
                       <Text
-                        className={`text-lg font-bold ${(item.unrealized_pl ?? 0) >= 0
-                          ? "text-green-500"
-                          : "text-red-500"
-                          }`}
+                        className={`text-lg font-bold ${
+                          (item.unrealized_pl ?? 0) >= 0
+                            ? "text-green-500"
+                            : "text-red-500"
+                        }`}
                       >
                         {(item.unrealized_pl ?? 0) >= 0 ? "+" : "-"}$
                         {Math.abs(Number(item.unrealized_pl ?? 0)).toFixed(2)}
                       </Text>
                       <Text
-                        className={`font-semibold ${(item.unrealized_pl_pct ?? 0) >= 0
-                          ? "text-green-500"
-                          : "text-red-500"
-                          }`}
+                        className={`font-semibold ${
+                          (item.unrealized_pl_pct ?? 0) >= 0
+                            ? "text-green-500"
+                            : "text-red-500"
+                        }`}
                       >
                         {(item.unrealized_pl_pct ?? 0) >= 0 ? "+" : ""}
                         {Number(item.unrealized_pl_pct ?? 0).toFixed(2)}%

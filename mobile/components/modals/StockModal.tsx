@@ -281,7 +281,7 @@ export default function StockModal({
                   {selectedStock && (
                     <View className="p-4 flex-row items-center">
                       <View className="w-12 h-12 rounded-2xl items-center justify-center mr-4 overflow-hidden">
-                        {(logo || selectedStock?.logo) ? (
+                        {logo || selectedStock?.logo ? (
                           <Image
                             source={{ uri: logo || selectedStock?.logo }}
                             className="w-full h-full"

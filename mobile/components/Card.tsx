@@ -22,10 +22,13 @@ export default function Card({
   const isPositive = amount >= 0;
   const currencySymbol = currency === "USD" ? "$" : "€";
 
-  const formattedAmount = `${currencySymbol}${Math.abs(amount).toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
+  const formattedAmount = `${currencySymbol}${Math.abs(amount).toLocaleString(
+    "en-US",
+    {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    },
+  )}`;
 
   return (
     <View
@@ -79,7 +82,13 @@ export default function Card({
         />
 
         {/* Top: Account kind + Logo */}
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+          }}
+        >
           <View style={{ flex: 1 }}>
             <Text
               style={{
@@ -134,11 +143,7 @@ export default function Card({
             Balance
           </Text>
           {showLoading ? (
-            <Skeleton
-              mode="dark"
-              className="h-8 w-44 rounded-lg"
-              animated
-            />
+            <Skeleton mode="dark" className="h-8 w-44 rounded-lg" animated />
           ) : (
             <Text
               style={{

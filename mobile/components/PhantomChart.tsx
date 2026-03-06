@@ -48,9 +48,10 @@ export const PhantomChart: React.FC<Props> = ({
   const lastValue = activeData[activeData.length - 1]?.value ?? firstValue;
 
   // displayValue is always derived — never stale
-  const displayValue = isCursorActive && cursorValueRef.current != null
-    ? cursorValueRef.current
-    : lastValue;
+  const displayValue =
+    isCursorActive && cursorValueRef.current != null
+      ? cursorValueRef.current
+      : lastValue;
 
   const diff = displayValue - firstValue;
   const diffPct = firstValue ? (diff / firstValue) * 100 : 0;
@@ -80,8 +81,9 @@ export const PhantomChart: React.FC<Props> = ({
 
         <View>
           <Text
-            className={`text-s font-bold ${isUp ? "text-green-600" : "text-red-600"
-              }`}
+            className={`text-s font-bold ${
+              isUp ? "text-green-600" : "text-red-600"
+            }`}
           >
             {isUp ? "+" : ""}
             {diff.toFixed(2)} ({isUp ? "+" : ""}
@@ -160,8 +162,9 @@ const TimeframeRow = ({ active, onChange }: any) => (
         className={`px-3 py-1 rounded-full ${active === tf ? "" : ""}`}
       >
         <Text
-          className={`text-l font-bold ${active === tf ? " text-black" : "text-gray-400"
-            }`}
+          className={`text-l font-bold ${
+            active === tf ? " text-black" : "text-gray-400"
+          }`}
         >
           {tf}
         </Text>

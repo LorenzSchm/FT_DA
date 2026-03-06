@@ -19,7 +19,11 @@ type Props = {
   onInvestmentAdded?: () => void | Promise<void>;
 };
 
-export default function SearchInvestmentsModal({ isVisible, onClose, onInvestmentAdded }: Props) {
+export default function SearchInvestmentsModal({
+  isVisible,
+  onClose,
+  onInvestmentAdded,
+}: Props) {
   const [isModalVisible, setIsModalVisible] = useState(isVisible);
   const SCREEN_HEIGHT = Dimensions.get("window").height;
   const sheetPosition = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
