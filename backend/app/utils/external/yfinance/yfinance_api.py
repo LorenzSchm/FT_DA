@@ -90,11 +90,16 @@ def get_chart_history(ticker_symbol: str):
                 "value": float(price)
             })
 
-        # For non-1D timeframes, append the latest 1D entry if it's newer
+        # For non-1D timeframes, ensure the last price matches the latest known price
         if label != "1D" and latest_entry and entries:
             last_entry_ts = entries[-1]["timestamp"]
             if latest_entry["timestamp"] > last_entry_ts:
+                # Latest price is newer than the last entry → append it
                 entries.append(latest_entry)
+            else:
+                # The last candle (e.g. incomplete week/month) already covers this time,
+                # but its close price may differ from the current price → update it
+                entries[-1]["value"] = latest_entry["value"]
 
         result[label] = entries
 

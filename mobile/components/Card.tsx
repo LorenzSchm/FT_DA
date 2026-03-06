@@ -1,19 +1,7 @@
-import { View, Text, useWindowDimensions, Platform, Image } from "react-native";
+import { View, Text, Platform } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import Logo from "../assets/icons/icon.svg";
-
-const iosShadow = {
-  shadowColor: "#000",
-  shadowOffset: { width: 1, height: 1 },
-  shadowOpacity: 0.5,
-  shadowRadius: 5,
-  overflow: "visible",
-  margin: 14,
-};
-const androidShadow = {
-  elevation: 6,
-  marginRight: 10,
-  marginBottom: 10,
-};
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Card({
   kind,
@@ -21,39 +9,151 @@ export default function Card({
   currency,
   name,
   provider,
+  isLoading,
 }: {
   kind: string;
   amount: number;
   currency: string;
   name: string;
   provider: string;
+  isLoading?: boolean;
 }) {
-  const { width } = useWindowDimensions();
+  const showLoading = isLoading || isNaN(amount);
+  const isPositive = amount >= 0;
+  const currencySymbol = currency === "USD" ? "$" : "€";
 
-  const shadowStyle = Platform.select({
-    ios: iosShadow,
-    android: androidShadow,
-    default: {},
-  });
+  const formattedAmount = `${currencySymbol}${Math.abs(amount).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 
   return (
     <View
-      className="bg-black gap-2 rounded-[25px] p-5"
-      style={[{ width: 317, height: 181 }, shadowStyle]}
+      style={{
+        width: 317,
+        height: 190,
+        borderRadius: 22,
+        margin: 14,
+        ...Platform.select({
+          android: { elevation: 10 },
+        }),
+      }}
     >
-      <View className={" flex-row justify-between items-center"}>
-        <View>
-          <Text className="text-white font-bold">{name}</Text>
-          <Text
-            className={`text-[24px] font-bold ${isNaN(amount) ? "text-white" : amount < 0 ? "text-red-500" : "text-green-500"}`}
-          >
-            {isNaN(amount)
-              ? "..."
-              : `${amount < 0 ? "-" : "+"}${Math.abs(amount).toFixed(2)} ${currency === "USD" ? "$" : "€"}`}
-          </Text>
+      <LinearGradient
+        colors={["#0a0a0a", "#111111", "#0d0d0d"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{
+          flex: 1,
+          borderRadius: 22,
+          padding: 22,
+          justifyContent: "space-between",
+          overflow: "hidden" as const,
+          borderWidth: 0.5,
+          borderColor: "rgba(255,255,255,0.08)",
+        }}
+      >
+        {/* Subtle accent glow top-right */}
+        <View
+          style={{
+            position: "absolute",
+            top: -50,
+            right: -30,
+            width: 140,
+            height: 140,
+            borderRadius: 70,
+            backgroundColor: "rgba(255,255,255,0.015)",
+          }}
+        />
+        {/* Subtle accent glow bottom-left */}
+        <View
+          style={{
+            position: "absolute",
+            bottom: -60,
+            left: -40,
+            width: 160,
+            height: 160,
+            borderRadius: 80,
+            backgroundColor: "rgba(255,255,255,0.01)",
+          }}
+        />
+
+        {/* Top: Account kind + Logo */}
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <View style={{ flex: 1 }}>
+            <Text
+              style={{
+                color: "rgba(255,255,255,0.35)",
+                fontSize: 10,
+                fontWeight: "700",
+                letterSpacing: 2,
+                textTransform: "uppercase",
+                marginBottom: 4,
+              }}
+            >
+              {kind || "Account"}
+            </Text>
+            <Text
+              style={{
+                color: "rgba(255,255,255,0.9)",
+                fontSize: 16,
+                fontWeight: "600",
+              }}
+              numberOfLines={1}
+            >
+              {name}
+            </Text>
+          </View>
+          {provider === "FT" && (
+            <View
+              style={{
+                backgroundColor: "rgba(255,255,255,0.06)",
+                borderRadius: 10,
+                padding: 6,
+                borderWidth: 0.5,
+                borderColor: "rgba(255,255,255,0.06)",
+              }}
+            >
+              <Logo width={22} height={22} />
+            </View>
+          )}
         </View>
-        <View>{provider === "FT" && <Logo width={30} height={30} />}</View>
-      </View>
+
+        {/* Bottom: Balance */}
+        <View>
+          <Text
+            style={{
+              color: "rgba(255,255,255,0.3)",
+              fontSize: 10,
+              fontWeight: "600",
+              letterSpacing: 1.5,
+              textTransform: "uppercase",
+              marginBottom: 5,
+            }}
+          >
+            Balance
+          </Text>
+          {showLoading ? (
+            <Skeleton
+              mode="dark"
+              className="h-8 w-44 rounded-lg"
+              animated
+            />
+          ) : (
+            <Text
+              style={{
+                fontSize: 26,
+                fontWeight: "700",
+                color: isPositive ? "#34d399" : "#fb7185",
+                letterSpacing: -0.5,
+              }}
+            >
+              {amount < 0 ? "−" : ""}
+              {formattedAmount}
+            </Text>
+          )}
+        </View>
+      </LinearGradient>
     </View>
   );
 }

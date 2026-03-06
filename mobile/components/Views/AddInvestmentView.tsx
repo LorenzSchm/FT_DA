@@ -17,7 +17,11 @@ import { getInvestments } from "@/utils/db/invest/invest";
 import { Search, Triangle, X } from "lucide-react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-export default function AddInvestmentView() {
+type Props = {
+  onInvestmentAdded?: () => void | Promise<void>;
+};
+
+export default function AddInvestmentView({ onInvestmentAdded }: Props) {
   const [trending, setTrending] = useState<any[]>([]);
   const [selectedStock, setSelectedStock] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -270,11 +274,10 @@ export default function AddInvestmentView() {
                         </View>
                       </View>
                       <Text
-                        className={`font-bold text-lg ${
-                          (item.weekly_change ?? 0) > 0
+                        className={`font-bold text-lg ${(item.weekly_change ?? 0) > 0
                             ? "text-green-600"
                             : "text-red-600"
-                        }`}
+                          }`}
                       >
                         {item.weekly_change != null
                           ? `${Math.abs(item.weekly_change).toFixed(2)}%`
@@ -342,11 +345,10 @@ export default function AddInvestmentView() {
                               )}
                             </View>
                             <Text
-                              className={`font-bold text-lg ${
-                                item.weekly_change > 0
+                              className={`font-bold text-lg ${item.weekly_change > 0
                                   ? "text-[#22C55E]"
                                   : "text-[#EF4444]"
-                              }`}
+                                }`}
                             >
                               {Math.abs(item.weekly_change).toFixed(2)}%
                             </Text>
@@ -405,11 +407,10 @@ export default function AddInvestmentView() {
                             )}
                           </View>
                           <Text
-                            className={`font-bold text-lg ${
-                              item.weekly_change > 0
+                            className={`font-bold text-lg ${item.weekly_change > 0
                                 ? "text-[#22C55E]"
                                 : "text-[#EF4444]"
-                            }`}
+                              }`}
                           >
                             {Math.abs(item.weekly_change).toFixed(2)}%
                           </Text>
@@ -427,6 +428,7 @@ export default function AddInvestmentView() {
             isVisible={modalVisible}
             onClose={closeModal}
             selectedStock={selectedStock}
+            onInvestmentAdded={onInvestmentAdded}
           />
         </GestureHandlerRootView>
       </ScrollView>

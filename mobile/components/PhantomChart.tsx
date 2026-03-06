@@ -36,6 +36,8 @@ export const PhantomChart: React.FC<Props> = ({
   const [timeframe, setTimeframe] =
     React.useState<TimeframeKey>(initialTimeframe);
   const [isCursorActive, setIsCursorActive] = React.useState(false);
+  const cursorValueRef = React.useRef<number | null>(null);
+  const [, forceRender] = React.useState(0);
 
   const activeData = React.useMemo(
     () => dataByTimeframe[timeframe] ?? [],
@@ -45,15 +47,14 @@ export const PhantomChart: React.FC<Props> = ({
   const firstValue = activeData[0]?.value ?? 0;
   const lastValue = activeData[activeData.length - 1]?.value ?? firstValue;
 
-  const [displayValue, setDisplayValue] = React.useState(lastValue);
+  // displayValue is always derived — never stale
+  const displayValue = isCursorActive && cursorValueRef.current != null
+    ? cursorValueRef.current
+    : lastValue;
 
   const diff = displayValue - firstValue;
   const diffPct = firstValue ? (diff / firstValue) * 100 : 0;
   const isUp = diff >= 0;
-
-  React.useEffect(() => {
-    if (!isCursorActive) setDisplayValue(lastValue);
-  }, [lastValue, timeframe, isCursorActive]);
 
   if (loading || !activeData.length) {
     return (
@@ -79,9 +80,8 @@ export const PhantomChart: React.FC<Props> = ({
 
         <View>
           <Text
-            className={`text-s font-bold ${
-              isUp ? "text-green-600" : "text-red-600"
-            }`}
+            className={`text-s font-bold ${isUp ? "text-green-600" : "text-red-600"
+              }`}
           >
             {isUp ? "+" : ""}
             {diff.toFixed(2)} ({isUp ? "+" : ""}
@@ -103,7 +103,10 @@ export const PhantomChart: React.FC<Props> = ({
         onCurrentIndexChange={(index) => {
           if (index == null) return;
           const point = activeData[index];
-          if (point) setDisplayValue(point.value);
+          if (point) {
+            cursorValueRef.current = point.value;
+            forceRender((n) => n + 1);
+          }
         }}
       >
         <LineChart height={height} className="mt-6">
@@ -157,9 +160,8 @@ const TimeframeRow = ({ active, onChange }: any) => (
         className={`px-3 py-1 rounded-full ${active === tf ? "" : ""}`}
       >
         <Text
-          className={`text-l font-bold ${
-            active === tf ? " text-black" : "text-gray-400"
-          }`}
+          className={`text-l font-bold ${active === tf ? " text-black" : "text-gray-400"
+            }`}
         >
           {tf}
         </Text>

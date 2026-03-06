@@ -25,12 +25,14 @@ type Props = {
   isVisible: boolean;
   onClose: () => void;
   selectedStock: any;
+  onInvestmentAdded?: () => void | Promise<void>;
 };
 
 export default function StockModal({
   isVisible,
   onClose,
   selectedStock,
+  onInvestmentAdded,
 }: Props) {
   const [isModalVisible, setIsModalVisible] = useState(isVisible);
   const [history, setHistory] = useState<any | null>(null);
@@ -89,6 +91,11 @@ export default function StockModal({
     if (isVisible) {
       setIsModalVisible(true);
 
+      // Use the logo from selectedStock immediately if available
+      if (selectedStock?.logo) {
+        setLogo(selectedStock.logo);
+      }
+
       Animated.spring(sheetPosition, {
         toValue: 0,
         useNativeDriver: true,
@@ -145,21 +152,15 @@ export default function StockModal({
                 logoCache.current[sym] = logo;
               }
             } catch {
-              // Brandfetch failed, use FMP image as fallback
-              if (data.image) {
-                logo = data.image;
-                logoCache.current[sym] = logo;
-              }
+              // Brandfetch failed, keep existing logo
             }
-          } else if (data.image) {
-            // No domain, use FMP image directly
-            logo = data.image;
-            logoCache.current[sym] = logo;
           }
         }
 
-        setInformationData({ ...data, logo });
-        setLogo(logo || null);
+        setInformationData(data);
+        if (logo) {
+          setLogo(logo);
+        }
       }
     } catch (err) {
       console.error("fetchInformation error:", err);
@@ -280,15 +281,9 @@ export default function StockModal({
                   {selectedStock && (
                     <View className="p-4 flex-row items-center">
                       <View className="w-12 h-12 rounded-2xl items-center justify-center mr-4 overflow-hidden">
-                        {logo ? (
+                        {(logo || selectedStock?.logo) ? (
                           <Image
-                            source={{ uri: logo }}
-                            className="w-full h-full"
-                            resizeMode="contain"
-                          />
-                        ) : informationData?.image ? (
-                          <Image
-                            source={{ uri: informationData.image }}
+                            source={{ uri: logo || selectedStock?.logo }}
                             className="w-full h-full"
                             resizeMode="contain"
                           />
@@ -473,6 +468,7 @@ export default function StockModal({
             isVisible={showAddInvestment}
             onClose={() => setShowAddInvestment(false)}
             selectedStock={selectedStock}
+            onAdded={onInvestmentAdded}
           />
           <StockDescriptionModal
             isVisible={showDescriptionModal}

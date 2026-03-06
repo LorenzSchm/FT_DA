@@ -6,7 +6,7 @@ import {
   Image,
   ScrollView,
 } from "react-native";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { getInvestments } from "@/utils/db/invest/invest";
 import { useAuthStore } from "@/utils/authStore";
 import StockModal from "@/components/modals/StockModal";
@@ -14,6 +14,7 @@ import SearchInvestmentsModal from "@/components/modals/SearchInvestmentsModal";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PhantomChart } from "@/components/PhantomChart";
+import { invalidateCache } from "@/utils/db/cache";
 import axios from "axios";
 
 // Base URL for backend API
@@ -67,7 +68,7 @@ export function InvestmentView() {
             logo = best.icon;
             logoCache.current[symbol] = logo;
           }
-        } catch {}
+        } catch { }
       }
       return { price, weekly_change, logo, longname };
     } catch {
@@ -80,39 +81,41 @@ export function InvestmentView() {
     }
   };
 
-  useEffect(() => {
-    const fetchpositions = async () => {
-      try {
-        setPositionsLoading(true);
-        const pos = await getInvestments(
-          session?.access_token,
-          session?.refresh_token,
-        );
-        const posData = await Promise.all(
-          (pos?.positions || []).map(async (p: any) => {
-            const { price, weekly_change, logo, longname } =
-              await fetchStockData(p.ticker);
-            return { ...p, price, weekly_change, logo, longname };
-          }),
-        );
-        setPositions(posData);
+  const reloadPositions = useCallback(async () => {
+    try {
+      setPositionsLoading(true);
+      invalidateCache("/investments/");
+      const pos = await getInvestments(
+        session?.access_token,
+        session?.refresh_token,
+      );
+      const posData = await Promise.all(
+        (pos?.positions || []).map(async (p: any) => {
+          const { price, weekly_change, logo, longname } =
+            await fetchStockData(p.ticker);
+          return { ...p, price, weekly_change, logo, longname };
+        }),
+      );
+      setPositions(posData);
 
-        const vals = (posData || []).map((p: any) => {
-          const currentValue = Number(p?.market_value ?? 0);
-          return {
-            ticker: p.ticker,
-            value: Number.isFinite(currentValue) ? currentValue : 0,
-          };
-        });
-        setPositionValues(vals);
-      } catch (error) {
-        console.error("Error fetching positions:", error);
-      } finally {
-        setPositionsLoading(false);
-      }
-    };
-    fetchpositions();
+      const vals = (posData || []).map((p: any) => {
+        const currentValue = Number(p?.market_value ?? 0);
+        return {
+          ticker: p.ticker,
+          value: Number.isFinite(currentValue) ? currentValue : 0,
+        };
+      });
+      setPositionValues(vals);
+    } catch (error) {
+      console.error("Error fetching positions:", error);
+    } finally {
+      setPositionsLoading(false);
+    }
   }, [session?.access_token, session?.refresh_token]);
+
+  useEffect(() => {
+    reloadPositions();
+  }, [reloadPositions]);
 
   useEffect(() => {
     let active = true;
@@ -123,43 +126,71 @@ export function InvestmentView() {
       }
       try {
         setChartLoading(true);
-        type QtyStep = { ts: number; qty: number };
-        const qtyStepsByTicker: Record<string, QtyStep[]> = {};
-        const firstTradeTsByTicker: Record<string, number> = {};
+
         const uniqueTickers = Array.from(
           new Set((positions || []).map((p: any) => p?.ticker)),
         );
-        (positions || []).forEach((p: any) => {
+
+        // Build trade events per ticker: sorted list of { tsMs, runningQty, costBasis }
+        const tradeInfoByTicker: Record<
+          string,
+          {
+            firstTradeMs: number;
+            events: { tsMs: number; runningQty: number; costBasis: number }[];
+          }
+        > = {};
+
+        for (const p of positions) {
           const ticker = p?.ticker;
           const ds: any[] = p?.dates || [];
-          const steps: QtyStep[] = ds
-            .filter((d) => d?.date)
-            .map((d, idx) => {
-              const base = Date.parse(`${d.date}T00:00:00Z`);
-              const ts = isNaN(base) ? Date.now() : base + idx; // preserve order for same-day trades
-              const qty = Number(d.position_quantity ?? 0);
-              return { ts, qty };
+          const events = ds
+            .filter((d: any) => d?.date)
+            .map((d: any) => {
+              const tsMs = Date.parse(`${d.date}T00:00:00Z`);
+              return {
+                tsMs: isNaN(tsMs) ? Date.now() : tsMs,
+                runningQty: Math.max(Number(d.position_quantity ?? 0), 0),
+                costBasis: Number(d.cost_basis ?? 0),
+              };
             })
-            .sort((a, b) => a.ts - b.ts);
-          qtyStepsByTicker[ticker] = steps;
-          if (steps.length > 0) firstTradeTsByTicker[ticker] = steps[0].ts;
-        });
+            .sort((a, b) => a.tsMs - b.tsMs);
 
-        const qtyAt = (steps: QtyStep[], ts: number) => {
-          if (!steps || steps.length === 0) return 0;
-          let lo = 0,
-            hi = steps.length - 1,
-            ans = -1;
-          while (lo <= hi) {
-            const mid = (lo + hi) >> 1;
-            if (steps[mid].ts <= ts) {
-              ans = mid;
-              lo = mid + 1;
-            } else hi = mid - 1;
+          tradeInfoByTicker[ticker] = {
+            firstTradeMs: events.length > 0 ? events[0].tsMs : Infinity,
+            events,
+          };
+        }
+
+        // Helper: get running quantity at a given timestamp for a ticker
+        const getQtyAt = (ticker: string, tsMs: number): number => {
+          const info = tradeInfoByTicker[ticker];
+          if (!info || info.events.length === 0) return 0;
+          if (tsMs < info.firstTradeMs) return 0;
+          let qty = 0;
+          for (const evt of info.events) {
+            if (evt.tsMs <= tsMs) {
+              qty = evt.runningQty;
+            } else {
+              break;
+            }
           }
-          return ans >= 0 ? Number(steps[ans].qty || 0) : 0;
+          return qty;
         };
 
+        // Helper: get total cost basis across all tickers at their first trade
+        const getTotalCostBasis = (): number => {
+          let total = 0;
+          for (const ticker of uniqueTickers) {
+            const info = tradeInfoByTicker[ticker];
+            if (!info || info.events.length === 0) continue;
+            // Use the latest cost basis (after all trades)
+            const lastEvent = info.events[info.events.length - 1];
+            total += lastEvent.costBasis;
+          }
+          return total;
+        };
+
+        // Fetch stock price history for each ticker
         type HistoryResp = Record<TimeframeKey, Point[]>;
         const historyByTicker: Record<string, HistoryResp> = {};
         await Promise.all(
@@ -174,158 +205,137 @@ export function InvestmentView() {
           }),
         );
 
-        const tfs: TimeframeKey[] = ["ALL", "1Y", "1M", "1W", "1D"];
-        const combinedMaps: Record<TimeframeKey, Map<number, number>> = {
-          ALL: new Map(),
-          "1Y": new Map(),
-          "1M": new Map(),
-          "1W": new Map(),
-          "1D": new Map(),
-        };
-
-        tfs.forEach((tf) => {
-          const unionSet = new Set<number>();
-          uniqueTickers.forEach((ticker) => {
-            const hist = historyByTicker[ticker];
-            if (!hist) return;
-            for (const pt of hist[tf] || []) {
-              unionSet.add(pt.timestamp);
-            }
-          });
-          const unionTimestamps = Array.from(unionSet).sort((a, b) => a - b);
-
-          const perTicker = uniqueTickers.map((ticker) => {
-            const hist = historyByTicker[ticker];
-            const list = hist && hist[tf] ? hist[tf] : [];
-            const steps = qtyStepsByTicker[ticker] || [];
-            const firstTs =
-              firstTradeTsByTicker[ticker] ?? Number.POSITIVE_INFINITY;
-            return {
-              ticker,
-              list,
-              idx: 0,
-              lastPrice: undefined as number | undefined,
-              steps,
-              firstTs,
-            };
-          });
-
-          const out = combinedMaps[tf];
-          for (const ts of unionTimestamps) {
-            let sum = 0;
-            let contributed = false;
-            for (const state of perTicker) {
-              const { list, steps, firstTs } = state;
-              while (
-                state.idx < list.length &&
-                list[state.idx].timestamp <= ts
-              ) {
-                const v = list[state.idx].value;
-                if (Number.isFinite(v as number)) state.lastPrice = Number(v);
-                state.idx++;
-              }
-              if (!Number.isFinite(state.lastPrice as number)) continue;
-              if (ts < firstTs) continue;
-              const q = qtyAt(steps, ts);
-              if (!q) continue;
-              sum += (state.lastPrice as number) * q;
-              contributed = true;
-            }
-            // Only record points where at least one ticker contributed a value
-            if (contributed && Number.isFinite(sum)) out.set(ts, sum);
-          }
-        });
-
-        const globalFirstTs = (() => {
-          const vals = Object.values(firstTradeTsByTicker || {}).filter((v) =>
-            Number.isFinite(v),
-          ) as number[];
-          if (!vals.length) return Number.POSITIVE_INFINITY;
-          return Math.min(...vals);
-        })();
-
-        const toArray = (m: Map<number, number>): Point[] =>
-          Array.from(m.entries())
-            .sort((a, b) => a[0] - b[0])
-            .map(([timestamp, value]) => ({ timestamp, value }));
-
-        const trimSeries = (arr: Point[]): Point[] => {
-          if (!arr || arr.length === 0) return arr;
-          let out = arr.filter((p) => p.timestamp >= globalFirstTs);
-          let i = 0;
-          while (
-            i < out.length &&
-            (!Number.isFinite(out[i].value) || out[i].value <= 0)
-          ) {
-            i++;
-          }
-          out = out.slice(i);
-          return out;
-        };
-
+        const tfs: TimeframeKey[] = ["1D", "1W", "1M", "1Y", "ALL"];
         const combined: HistoryMap = {
-          ALL: trimSeries(toArray(combinedMaps.ALL)),
-          "1Y": trimSeries(toArray(combinedMaps["1Y"])),
-          "1M": trimSeries(toArray(combinedMaps["1M"])),
-          "1W": trimSeries(toArray(combinedMaps["1W"])),
-          "1D": trimSeries(toArray(combinedMaps["1D"])),
+          "1D": [],
+          "1W": [],
+          "1M": [],
+          "1Y": [],
+          ALL: [],
         };
 
-        let currentPortfolioValue = 0;
-        (positions || []).forEach((p: any) => {
-          currentPortfolioValue += Number(p?.market_value ?? 0);
-        });
+        // Get earliest trade timestamp and total cost basis for the anchor point
+        const earliestTradeMs = Math.min(
+          ...uniqueTickers.map(
+            (t) => tradeInfoByTicker[t]?.firstTradeMs ?? Infinity,
+          ),
+        );
+        const totalCostBasis = getTotalCostBasis();
 
-        const now = Date.now();
-
-        if (currentPortfolioValue > 0) {
-          for (const tf of tfs) {
-            const arr = combined[tf];
-            if (arr && arr.length > 0) {
-              const lastPoint = arr[arr.length - 1];
-              if (lastPoint.timestamp < now) {
-                arr.push({ timestamp: now, value: currentPortfolioValue });
-              }
+        for (const tf of tfs) {
+          // Collect all unique timestamps across all tickers for this timeframe
+          const allTimestamps = new Set<number>();
+          for (const ticker of uniqueTickers) {
+            const hist = historyByTicker[ticker];
+            if (!hist || !hist[tf]) continue;
+            for (const pt of hist[tf]) {
+              allTimestamps.add(pt.timestamp);
             }
           }
-        }
 
-        // Fallback logic: if a timeframe has exactly 2 or fewer entries, use data from shorter timeframe
-        // Order: 1D -> 1W -> 1M -> 1Y -> ALL
+          const sortedTimestamps = Array.from(allTimestamps).sort(
+            (a, b) => a - b,
+          );
 
-        // 1W fallback to 1D
-        if (combined["1W"].length <= 2 && combined["1D"].length > 2) {
-          combined["1W"] = combined["1D"];
-        }
+          // For each ticker, build a map of timestamp -> price for quick lookup
+          const priceMaps: Record<string, Map<number, number>> = {};
+          const lastKnownPrice: Record<string, number> = {};
 
-        // 1M fallback to 1W, then 1D
-        if (combined["1M"].length <= 2) {
-          if (combined["1W"].length > 2) {
-            combined["1M"] = combined["1W"];
-          } else if (combined["1D"].length > 2) {
-            combined["1M"] = combined["1D"];
+          for (const ticker of uniqueTickers) {
+            const hist = historyByTicker[ticker];
+            const map = new Map<number, number>();
+            if (hist && hist[tf]) {
+              for (const pt of hist[tf]) {
+                if (Number.isFinite(pt.value)) {
+                  map.set(pt.timestamp, pt.value);
+                }
+              }
+            }
+            priceMaps[ticker] = map;
+            lastKnownPrice[ticker] = 0;
           }
-        }
 
-        if (combined["1Y"].length <= 2) {
-          if (combined["1M"].length > 2) {
-            combined["1Y"] = combined["1M"];
-          } else if (combined["1W"].length > 2) {
-            combined["1Y"] = combined["1W"];
-          } else if (combined["1D"].length > 2) {
-            combined["1Y"] = combined["1D"];
+          // Start with cost basis as the anchor/first point
+          const points: Point[] = [];
+          if (totalCostBasis > 0 && Number.isFinite(earliestTradeMs)) {
+            points.push({
+              timestamp: earliestTradeMs,
+              value: Math.round(totalCostBasis * 100) / 100,
+            });
           }
+
+          // Walk through timestamps and compute portfolio value
+          for (const ts of sortedTimestamps) {
+            // Skip timestamps before the first trade
+            if (ts < earliestTradeMs) continue;
+
+            let totalValue = 0;
+            let hasContribution = false;
+
+            for (const ticker of uniqueTickers) {
+              // Update last known price if this timestamp has a price
+              const priceAtTs = priceMaps[ticker].get(ts);
+              if (priceAtTs !== undefined) {
+                lastKnownPrice[ticker] = priceAtTs;
+              }
+
+              const price = lastKnownPrice[ticker];
+              if (!price) continue;
+
+              const qty = getQtyAt(ticker, ts);
+              if (qty <= 0) continue;
+
+              totalValue += price * qty;
+              hasContribution = true;
+            }
+
+            if (hasContribution && Number.isFinite(totalValue) && totalValue > 0) {
+              points.push({
+                timestamp: ts,
+                value: Math.round(totalValue * 100) / 100,
+              });
+            }
+          }
+
+          // Append current portfolio value as the final point
+          const currentValue = (positions || []).reduce(
+            (sum: number, p: any) => sum + Number(p?.market_value ?? 0),
+            0,
+          );
+          if (currentValue > 0 && points.length > 0) {
+            const now = Date.now();
+            const lastTs = points[points.length - 1].timestamp;
+            if (now > lastTs) {
+              points.push({
+                timestamp: now,
+                value: Math.round(currentValue * 100) / 100,
+              });
+            } else {
+              points[points.length - 1].value =
+                Math.round(currentValue * 100) / 100;
+            }
+          } else if (currentValue > 0 && points.length === 0) {
+            points.push({
+              timestamp: Date.now(),
+              value: Math.round(currentValue * 100) / 100,
+            });
+          }
+
+          combined[tf] = points;
         }
 
-        if (combined["ALL"].length <= 2) {
-          if (combined["1Y"].length > 2) {
-            combined["ALL"] = combined["1Y"];
-          } else if (combined["1M"].length > 2) {
-            combined["ALL"] = combined["1M"];
-          } else if (combined["1W"].length > 2) {
-            combined["ALL"] = combined["1W"];
-          } else if (combined["1D"].length > 2) {
-            combined["ALL"] = combined["1D"];
+        // Fallback: if a longer timeframe has ≤2 points, use data from shorter timeframe
+        const fallbackOrder: TimeframeKey[] = ["1D", "1W", "1M", "1Y", "ALL"];
+        for (let i = 1; i < fallbackOrder.length; i++) {
+          const tf = fallbackOrder[i];
+          if (combined[tf].length <= 2) {
+            // Find the best shorter timeframe with enough data
+            for (let j = i - 1; j >= 0; j--) {
+              if (combined[fallbackOrder[j]].length > 2) {
+                combined[tf] = combined[fallbackOrder[j]];
+                break;
+              }
+            }
           }
         }
 
@@ -415,21 +425,19 @@ export function InvestmentView() {
                     {/* Unrealized P/L */}
                     <View className="items-end">
                       <Text
-                        className={`text-lg font-bold ${
-                          (item.unrealized_pl ?? 0) >= 0
-                            ? "text-green-500"
-                            : "text-red-500"
-                        }`}
+                        className={`text-lg font-bold ${(item.unrealized_pl ?? 0) >= 0
+                          ? "text-green-500"
+                          : "text-red-500"
+                          }`}
                       >
                         {(item.unrealized_pl ?? 0) >= 0 ? "+" : "-"}$
                         {Math.abs(Number(item.unrealized_pl ?? 0)).toFixed(2)}
                       </Text>
                       <Text
-                        className={`font-semibold ${
-                          (item.unrealized_pl_pct ?? 0) >= 0
-                            ? "text-green-500"
-                            : "text-red-500"
-                        }`}
+                        className={`font-semibold ${(item.unrealized_pl_pct ?? 0) >= 0
+                          ? "text-green-500"
+                          : "text-red-500"
+                          }`}
                       >
                         {(item.unrealized_pl_pct ?? 0) >= 0 ? "+" : ""}
                         {Number(item.unrealized_pl_pct ?? 0).toFixed(2)}%
@@ -446,10 +454,22 @@ export function InvestmentView() {
         isVisible={modalVisible}
         onClose={closeModal}
         selectedStock={selectedStock}
+        onInvestmentAdded={async () => {
+          setModalVisible(false);
+          setSelectedStock(null);
+          setShowAddInvestmentModal(false);
+          await reloadPositions();
+        }}
       />
       <SearchInvestmentsModal
         isVisible={showAddInvestmentModal}
         onClose={() => setShowAddInvestmentModal(false)}
+        onInvestmentAdded={async () => {
+          setShowAddInvestmentModal(false);
+          setModalVisible(false);
+          setSelectedStock(null);
+          await reloadPositions();
+        }}
       />
       <View className="absolute bottom-12 right-5">
         <TouchableOpacity
