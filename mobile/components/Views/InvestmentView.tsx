@@ -84,7 +84,7 @@ export function InvestmentView() {
             logo = best.icon;
             logoCache.current[symbol] = logo;
           }
-        } catch { }
+        } catch {}
       }
       return { price, weekly_change, logo, longname };
     } catch {
@@ -474,10 +474,19 @@ export function InvestmentView() {
         stickyHeaderIndices={[0, 2]}
         showsVerticalScrollIndicator={false}
         bounces={false}
-        contentContainerStyle={{ paddingBottom: Math.max(chartAreaHeight, 120) }}
+        contentContainerStyle={{
+          paddingBottom: Math.max(chartAreaHeight, 120),
+        }}
       >
         {/* ─── Sticky value header (index 0) ─── */}
-        <View style={{ backgroundColor: "#fff", paddingHorizontal: 28, paddingTop: 16, paddingBottom: 8 }}>
+        <View
+          style={{
+            backgroundColor: "#fff",
+            paddingHorizontal: 28,
+            paddingTop: 16,
+            paddingBottom: 8,
+          }}
+        >
           {positionsLoading || chartLoading ? (
             <View>
               <Skeleton className="h-9 w-40 rounded-lg mb-2" />
@@ -515,7 +524,9 @@ export function InvestmentView() {
                   {totalUnrealizedPl.toFixed(2)} ({isPortfolioUp ? "+" : ""}
                   {totalPlPct.toFixed(2)}%)
                 </Text>
-                <Text style={{ fontSize: 13, fontWeight: "500", color: "#9ca3af" }}>
+                <Text
+                  style={{ fontSize: 13, fontWeight: "500", color: "#9ca3af" }}
+                >
                   Total return
                 </Text>
               </View>
@@ -590,7 +601,6 @@ export function InvestmentView() {
                   backgroundColor: COLORS.surface,
                   alignItems: "center",
                   justifyContent: "center",
-
                 }}
               >
                 <Text style={{ fontSize: 28 }}>📈</Text>
@@ -620,7 +630,8 @@ export function InvestmentView() {
               const plPct = Number(item.unrealized_pl_pct ?? 0);
               const isUp = pl >= 0;
               const marketVal =
-                positionValues.find((v) => v.ticker === item.ticker)?.value ?? 0;
+                positionValues.find((v) => v.ticker === item.ticker)?.value ??
+                0;
 
               return (
                 <Pressable

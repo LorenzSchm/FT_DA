@@ -193,8 +193,9 @@ const TimeframeRow = ({ active, onChange }: any) => (
         className={`px-3 py-1 rounded-full ${active === tf ? "" : ""}`}
       >
         <Text
-          className={`text-l font-bold ${active === tf ? " text-black" : "text-gray-400"
-            }`}
+          className={`text-l font-bold ${
+            active === tf ? " text-black" : "text-gray-400"
+          }`}
         >
           {tf}
         </Text>
