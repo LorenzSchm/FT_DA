@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
+  Platform,
 } from "react-native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { getInvestments } from "@/utils/db/invest/invest";
@@ -15,10 +16,25 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PhantomChart } from "@/components/PhantomChart";
 import { invalidateCache } from "@/utils/db/cache";
+import { LinearGradient } from "expo-linear-gradient";
 import axios from "axios";
 
 // Base URL for backend API
 const API_BASE = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
+
+/* ─── Color tokens ─── */
+const COLORS = {
+  positive: "#34d399",
+  positiveMuted: "rgba(52,211,153,0.10)",
+  negative: "#fb7185",
+  negativeMuted: "rgba(251,113,133,0.10)",
+  textPrimary: "#111827",
+  textSecondary: "#6b7280",
+  textTertiary: "#9ca3af",
+  cardBg: "#ffffff",
+  cardBorder: "rgba(0,0,0,0.04)",
+  surface: "#f9fafb",
+};
 
 export function InvestmentView() {
   const { session } = useAuthStore();
@@ -68,7 +84,7 @@ export function InvestmentView() {
             logo = best.icon;
             logoCache.current[symbol] = logo;
           }
-        } catch {}
+        } catch { }
       }
       return { price, weekly_change, logo, longname };
     } catch {
@@ -360,103 +376,353 @@ export function InvestmentView() {
     };
   }, [positions]);
 
+  /* ─── Computed portfolio aggregates ─── */
+  const totalPortfolioValue = positionValues.reduce((s, v) => s + v.value, 0);
+  const totalUnrealizedPl = positions.reduce(
+    (s, p) => s + Number(p.unrealized_pl ?? 0),
+    0,
+  );
+  const totalCostBasis = positions.reduce(
+    (s, p) => s + Number(p.cost_basis ?? 0),
+    0,
+  );
+  const totalPlPct =
+    totalCostBasis > 0 ? (totalUnrealizedPl / totalCostBasis) * 100 : 0;
+  const isPortfolioUp = totalUnrealizedPl >= 0;
+
+  /* ─── Logo renderer ─── */
   const Logo = ({ symbol }: { symbol: string }) => {
     const logo = logoCache.current[symbol];
     return (
-      <View className="w-10 h-10 items-center justify-center mr-4 overflow-hidden ">
+      <View
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: 14,
+          overflow: "hidden",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: logo ? "#f4f4f5" : undefined,
+          borderWidth: logo ? 0 : 0,
+        }}
+      >
         {logo ? (
           <Image
             source={{ uri: logo }}
-            className="w-full h-full"
+            style={{ width: 44, height: 44 }}
             resizeMode="contain"
           />
         ) : (
-          <Text className="text-3xl font-bold text-orange-600">
-            {symbol[0]}
-          </Text>
+          <LinearGradient
+            colors={["#1e1e1e", "#2d2d2d"]}
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 14,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: "800",
+                color: "rgba(255,255,255,0.8)",
+                letterSpacing: 0.5,
+              }}
+            >
+              {symbol.slice(0, 2)}
+            </Text>
+          </LinearGradient>
         )}
       </View>
     );
   };
+
+  /* ─── Position row skeleton ─── */
+  const PositionSkeleton = () => (
+    <View
+      style={{
+        backgroundColor: COLORS.cardBg,
+        borderRadius: 18,
+        padding: 16,
+        marginBottom: 10,
+        borderWidth: 1,
+        borderColor: COLORS.cardBorder,
+      }}
+    >
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <Skeleton className="w-11 h-11 rounded-[14px] mr-3" />
+        <View style={{ flex: 1 }}>
+          <Skeleton className="h-4 w-16 mb-2 rounded-md" />
+          <Skeleton className="h-3 w-24 rounded-md" />
+        </View>
+        <View style={{ alignItems: "flex-end" }}>
+          <Skeleton className="h-4 w-20 mb-2 rounded-md" />
+          <Skeleton className="h-3 w-14 rounded-md" />
+        </View>
+      </View>
+    </View>
+  );
+
+  const [chartAreaHeight, setChartAreaHeight] = useState(0);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <View className="pt-4">
-        {chartLoading ? (
-          <View className="px-8">
-            <Skeleton className="h-[220px] w-full rounded-2xl" />
-          </View>
-        ) : portfolioHistory ? (
-          <PhantomChart dataByTimeframe={portfolioHistory as any} />
-        ) : (
-          <View className="px-8">
-            <Skeleton className="h-[220px] w-full rounded-2xl" />
-          </View>
-        )}
-      </View>
-      <View className="px-8">
-        <View>
-          <Text className="text-2xl font-bold mb-2">Investments</Text>
-          {positionsLoading ? (
-            <View className="gap-3">
-              <Skeleton className="h-14 w-full rounded-xl" />
-              <Skeleton className="h-14 w-full rounded-xl" />
-              <Skeleton className="h-14 w-full rounded-xl" />
-            </View>
-          ) : positions.length === 0 ? (
-            <View className="items-center py-6">
-              <Text className="text-gray-400">No investments yet</Text>
+      <ScrollView
+        style={{ flex: 1 }}
+        stickyHeaderIndices={[0, 2]}
+        showsVerticalScrollIndicator={false}
+        bounces={false}
+        contentContainerStyle={{ paddingBottom: Math.max(chartAreaHeight, 120) }}
+      >
+        {/* ─── Sticky value header (index 0) ─── */}
+        <View style={{ backgroundColor: "#fff", paddingHorizontal: 28, paddingTop: 16, paddingBottom: 8 }}>
+          {positionsLoading || chartLoading ? (
+            <View>
+              <Skeleton className="h-9 w-40 rounded-lg mb-2" />
+              <Skeleton className="h-4 w-28 rounded-md" />
             </View>
           ) : (
-            <ScrollView className=" h-60" showsVerticalScrollIndicator={false}>
-              {positions.map((item) => (
-                <Pressable key={item.ticker} onPress={() => openModal(item)}>
-                  <View className="flex-row justify-between items-center py-3">
-                    <View className="flex-row items-center">
+            <>
+              <Text
+                style={{
+                  fontSize: 34,
+                  fontWeight: "800",
+                  color: "#111827",
+                  letterSpacing: -1.2,
+                }}
+              >
+                ${totalPortfolioValue.toFixed(2)}
+              </Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginTop: 4,
+                  gap: 8,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 13,
+                    fontWeight: "700",
+                    color: isPortfolioUp ? "#34d399" : "#fb7185",
+                    letterSpacing: -0.2,
+                  }}
+                >
+                  {isPortfolioUp ? "▲" : "▼"} {isPortfolioUp ? "+" : ""}
+                  {totalUnrealizedPl.toFixed(2)} ({isPortfolioUp ? "+" : ""}
+                  {totalPlPct.toFixed(2)}%)
+                </Text>
+                <Text style={{ fontSize: 13, fontWeight: "500", color: "#9ca3af" }}>
+                  Total return
+                </Text>
+              </View>
+            </>
+          )}
+        </View>
+
+        {/* ─── Chart area ─── */}
+        <View onLayout={(e) => setChartAreaHeight(e.nativeEvent.layout.height)}>
+          {chartLoading ? (
+            <View style={{ paddingHorizontal: 24, paddingTop: 8 }}>
+              <Skeleton className="h-[220px] w-full rounded-2xl" />
+            </View>
+          ) : portfolioHistory ? (
+            <PhantomChart
+              dataByTimeframe={portfolioHistory as any}
+              hideHeader
+            />
+          ) : (
+            <View style={{ paddingHorizontal: 24, paddingTop: 8 }}>
+              <Skeleton className="h-[220px] w-full rounded-2xl" />
+            </View>
+          )}
+        </View>
+
+        {/* ─── Sticky holdings header (index 2) ─── */}
+        <View
+          style={{
+            backgroundColor: "#fff",
+            paddingHorizontal: 24,
+            paddingTop: 12,
+            paddingBottom: 10,
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 22,
+              fontWeight: "800",
+              color: COLORS.textPrimary,
+              letterSpacing: -0.3,
+            }}
+          >
+            Holdings
+          </Text>
+        </View>
+
+        {/* ─── Holdings list (index 3) ─── */}
+        <View style={{ paddingHorizontal: 24 }}>
+          {/* Positions list (flat — no nested ScrollView) */}
+          {positionsLoading ? (
+            <View>
+              <PositionSkeleton />
+              <PositionSkeleton />
+              <PositionSkeleton />
+            </View>
+          ) : positions.length === 0 ? (
+            <View
+              style={{
+                alignItems: "center",
+                justifyContent: "center",
+                paddingVertical: 48,
+              }}
+            >
+              <View
+                style={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: 32,
+                  backgroundColor: COLORS.surface,
+                  alignItems: "center",
+                  justifyContent: "center",
+
+                }}
+              >
+                <Text style={{ fontSize: 28 }}>📈</Text>
+              </View>
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: "600",
+                  color: COLORS.textSecondary,
+                  marginBottom: 4,
+                }}
+              >
+                No investments yet
+              </Text>
+              <Text
+                style={{
+                  fontSize: 13,
+                  color: COLORS.textTertiary,
+                }}
+              >
+                Tap "Add +" to start tracking your portfolio
+              </Text>
+            </View>
+          ) : (
+            positions.map((item, index) => {
+              const pl = Number(item.unrealized_pl ?? 0);
+              const plPct = Number(item.unrealized_pl_pct ?? 0);
+              const isUp = pl >= 0;
+              const marketVal =
+                positionValues.find((v) => v.ticker === item.ticker)?.value ?? 0;
+
+              return (
+                <Pressable
+                  key={item.ticker}
+                  onPress={() => openModal(item)}
+                  style={({ pressed }) => ({
+                    transform: [{ scale: pressed ? 0.98 : 1 }],
+                    opacity: pressed ? 0.85 : 1,
+                  })}
+                >
+                  <View
+                    style={{
+                      backgroundColor: COLORS.cardBg,
+                      borderRadius: 18,
+                      padding: 14,
+                      marginBottom: 10,
+                      borderWidth: 1,
+                      borderColor: COLORS.cardBorder,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      ...Platform.select({
+                        ios: {
+                          shadowColor: "#000",
+                          shadowOffset: { width: 0, height: 2 },
+                          shadowOpacity: 0.04,
+                          shadowRadius: 8,
+                        },
+                        android: { elevation: 2 },
+                      }),
+                    }}
+                  >
+                    {/* Logo */}
+                    <View style={{ marginRight: 12 }}>
                       <Logo symbol={item.ticker} />
-                      <View>
-                        <Text className="text-lg font-bold">{item.ticker}</Text>
-                        <Text className="font-semibold text-gray-500">
-                          $
-                          {(() => {
-                            const found = positionValues.find(
-                              (v) => v.ticker === item.ticker,
-                            );
-                            const val = found?.value ?? 0;
-                            return Number(val).toFixed(2);
-                          })()}
+                    </View>
+
+                    {/* Ticker + Value */}
+                    <View style={{ flex: 1 }}>
+                      <Text
+                        style={{
+                          fontSize: 16,
+                          fontWeight: "700",
+                          color: COLORS.textPrimary,
+                          letterSpacing: -0.2,
+                        }}
+                      >
+                        {item.ticker}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 13,
+                          fontWeight: "500",
+                          color: COLORS.textTertiary,
+                          marginTop: 2,
+                        }}
+                        numberOfLines={1}
+                      >
+                        {item.longname || `$${Number(marketVal).toFixed(2)}`}
+                      </Text>
+                    </View>
+
+                    {/* P/L column */}
+                    <View style={{ alignItems: "flex-end" }}>
+                      <Text
+                        style={{
+                          fontSize: 16,
+                          fontWeight: "700",
+                          color: isUp ? COLORS.positive : COLORS.negative,
+                          letterSpacing: -0.2,
+                        }}
+                      >
+                        {isUp ? "+" : "−"}${Math.abs(pl).toFixed(2)}
+                      </Text>
+                      <View
+                        style={{
+                          paddingHorizontal: 6,
+                          paddingVertical: 2,
+                          borderRadius: 6,
+                          marginTop: 3,
+                        }}
+                      >
+                        <Text
+                          style={{
+                            fontSize: 11,
+                            fontWeight: "700",
+                            color: isUp ? COLORS.positive : COLORS.negative,
+                          }}
+                        >
+                          {isUp ? "+" : ""}
+                          {plPct.toFixed(2)}%
                         </Text>
                       </View>
                     </View>
-                    {/* Unrealized P/L */}
-                    <View className="items-end">
-                      <Text
-                        className={`text-lg font-bold ${
-                          (item.unrealized_pl ?? 0) >= 0
-                            ? "text-green-500"
-                            : "text-red-500"
-                        }`}
-                      >
-                        {(item.unrealized_pl ?? 0) >= 0 ? "+" : "-"}$
-                        {Math.abs(Number(item.unrealized_pl ?? 0)).toFixed(2)}
-                      </Text>
-                      <Text
-                        className={`font-semibold ${
-                          (item.unrealized_pl_pct ?? 0) >= 0
-                            ? "text-green-500"
-                            : "text-red-500"
-                        }`}
-                      >
-                        {(item.unrealized_pl_pct ?? 0) >= 0 ? "+" : ""}
-                        {Number(item.unrealized_pl_pct ?? 0).toFixed(2)}%
-                      </Text>
-                    </View>
                   </View>
                 </Pressable>
-              ))}
-            </ScrollView>
+              );
+            })
           )}
         </View>
-      </View>
+      </ScrollView>
+
+      {/* ─── Modals ─── */}
       <StockModal
         isVisible={modalVisible}
         onClose={closeModal}
@@ -478,15 +744,38 @@ export function InvestmentView() {
           await reloadPositions();
         }}
       />
-      <View className="absolute bottom-12 right-5">
+
+      {/* ─── Floating Add button ─── */}
+      <View style={{ position: "absolute", bottom: 48, right: 20 }}>
         <TouchableOpacity
           onPress={() => setShowAddInvestmentModal(true)}
           activeOpacity={0.9}
-          className={`${"bg-black w-40 py-4 rounded-full"}`}
+          style={{
+            backgroundColor: "#000",
+            paddingVertical: 16,
+            paddingHorizontal: 32,
+            borderRadius: 9999,
+            ...Platform.select({
+              ios: {
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.25,
+                shadowRadius: 12,
+              },
+              android: { elevation: 8 },
+            }),
+          }}
         >
-          <View className="items-center justify-center">
-            <Text className="text-white text-3xl font-semibold">Add +</Text>
-          </View>
+          <Text
+            style={{
+              color: "#fff",
+              fontSize: 18,
+              fontWeight: "700",
+              letterSpacing: -0.3,
+            }}
+          >
+            Add +
+          </Text>
         </TouchableOpacity>
       </View>
     </GestureHandlerRootView>

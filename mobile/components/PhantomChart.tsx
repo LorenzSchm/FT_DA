@@ -19,6 +19,8 @@ type Props = {
   backgroundColor?: string;
   loading?: boolean;
   emptyPlaceholder?: React.ReactNode;
+  /** When true, hides the value/change header — useful when rendering a sticky header externally */
+  hideHeader?: boolean;
 };
 
 const TIMEFRAMES: TimeframeKey[] = ["1D", "1W", "1M", "1Y", "ALL"];
@@ -32,6 +34,7 @@ export const PhantomChart: React.FC<Props> = ({
   backgroundColor = "#FFFFFF",
   loading = false,
   emptyPlaceholder,
+  hideHeader = false,
 }) => {
   const [timeframe, setTimeframe] =
     React.useState<TimeframeKey>(initialTimeframe);
@@ -74,27 +77,55 @@ export const PhantomChart: React.FC<Props> = ({
 
   return (
     <View className={`rounded-full bg-[${backgroundColor}]`}>
-      <View className="flex-row justify-between items-center px-8 pt-4">
-        <Text className="text-2xl font-semibold text-black">
-          ${displayValue.toFixed(2)}
-        </Text>
-
-        <View>
+      {/* ─── Value header ─── */}
+      {!hideHeader && (
+        <View
+          style={{
+            paddingHorizontal: 28,
+            paddingTop: 12,
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "flex-end",
+          }}
+        >
           <Text
-            className={`text-s font-bold ${
-              isUp ? "text-green-600" : "text-red-600"
-            }`}
+            style={{
+              fontSize: 34,
+              fontWeight: "800",
+              color: "#111827",
+              letterSpacing: -1.2,
+            }}
           >
-            {isUp ? "+" : ""}
-            {diff.toFixed(2)} ({isUp ? "+" : ""}
-            {diffPct.toFixed(2)}%)
+            ${displayValue.toFixed(2)}
           </Text>
-        </View>
-      </View>
 
-      <Text className="text-gray-500 text-xs px-8 mt-1">
-        {timeframe} · {isUp ? "Performance" : "Loss"}
-      </Text>
+          <View style={{ alignItems: "flex-end" }}>
+            <Text
+              style={{
+                fontSize: 13,
+                fontWeight: "700",
+                color: isUp ? "#34d399" : "#fb7185",
+                letterSpacing: -0.2,
+              }}
+            >
+              {isUp ? "▲" : "▼"} {isUp ? "+" : ""}
+              {diff.toFixed(2)} ({isUp ? "+" : ""}
+              {diffPct.toFixed(2)}%)
+            </Text>
+            <Text
+              style={{
+                fontSize: 11,
+                fontWeight: "500",
+                color: "#9ca3af",
+                marginTop: 2,
+              }}
+            >
+              {timeframe === "ALL" ? "All time" : timeframe}
+            </Text>
+          </View>
+        </View>
+      )}
+
       <View className="px-2">
         <TimeframeRow active={timeframe} onChange={setTimeframe} />
       </View>
@@ -162,9 +193,8 @@ const TimeframeRow = ({ active, onChange }: any) => (
         className={`px-3 py-1 rounded-full ${active === tf ? "" : ""}`}
       >
         <Text
-          className={`text-l font-bold ${
-            active === tf ? " text-black" : "text-gray-400"
-          }`}
+          className={`text-l font-bold ${active === tf ? " text-black" : "text-gray-400"
+            }`}
         >
           {tf}
         </Text>

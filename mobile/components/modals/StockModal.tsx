@@ -316,7 +316,7 @@ export default function StockModal({
                       <Skeleton className="h-[260px] w-full rounded-2xl" />
                     </View>
                   ) : history ? (
-                    <View className="h-[260px]">
+                    <View className="h-[260px] mb-10">
                       <PhantomChart dataByTimeframe={history} />
                     </View>
                   ) : (
