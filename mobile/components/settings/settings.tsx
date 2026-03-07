@@ -12,7 +12,7 @@ import { useAuthStore } from "@/utils/authStore";
 import { getAccount, updateAccount, UserResponse } from "@/utils/accountApi";
 import SettingsNavBar from "./SettingsNavBar";
 import Toast from "react-native-toast-message";
-import { LogOut } from "lucide-react-native";
+import { LogOut, Eye, EyeOff } from "lucide-react-native";
 import CustomPicker from "@/components/ui/CustomPicker";
 import { useRouter } from "expo-router";
 
@@ -45,6 +45,7 @@ export default function SettingsScreen() {
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
   const [editableFields, setEditableFields] = useState<EditableFields>({
     display_name: "",
     email: "",
@@ -229,16 +230,25 @@ export default function SettingsScreen() {
           <View className="mb-6">
             <Text className="text-lg font-bold">Password</Text>
             {isEditing ? (
-              <TextInput
-                className="text-gray-500 mt-1"
-                value={editableFields.password}
-                onChangeText={(value) => handleFieldChange("password", value)}
-                secureTextEntry
-              />
+              <View className="flex-row items-center mt-1">
+                <TextInput
+                  className="text-gray-500 flex-1"
+                  value={editableFields.password}
+                  onChangeText={(value) => handleFieldChange("password", value)}
+                  secureTextEntry={!showPassword}
+                />
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff size={20} color="#9FA1A4" />
+                  ) : (
+                    <Eye size={20} color="#9FA1A4" />
+                  )}
+                </TouchableOpacity>
+              </View>
             ) : (
-              <Text className="text-gray-500 mt-1">
-                {editableFields.password}
-              </Text>
+              <Text className="text-gray-500 mt-1">****************</Text>
             )}
           </View>
 
