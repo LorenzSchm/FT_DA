@@ -23,6 +23,7 @@ import { getSubscriptions } from "@/utils/db/finance/subscriptions/subscriptions
 import { Skeleton } from "@/components/ui/skeleton";
 import { getData } from "@/utils/db/connect_accounts/connectAccounts";
 import { invalidateCache } from "@/utils/db/cache";
+import { CarouselPaginationDots } from "@/components/ui/PaginationDots";
 
 enum STATE {
   DEFAULT = "DEFAULT",
@@ -437,49 +438,17 @@ export default function DashBoard() {
                             (account.balance_minor / 100).toFixed(2),
                           )}
                           currency={account.currency}
+                          isLoading={
+                            !!loadingTxByAccount[account.id] ||
+                            !!loadingSubsByAccount[account.id]
+                          }
                         />
                       </CarouselItem>
                     ))}
                   </CarouselContent>
 
-                  {/* Pagination dots */}
-                  <View className="flex-row mt-4 gap-1 justify-center">
-                    {(() => {
-                      const total = accounts.length;
-                      const maxDots = 5;
-
-                      let start = 0;
-                      let end = total;
-
-                      if (total > maxDots) {
-                        if (accountIndex <= 2) {
-                          start = 0;
-                          end = maxDots;
-                        } else if (accountIndex >= total - 3) {
-                          start = total - maxDots;
-                          end = total;
-                        } else {
-                          start = accountIndex - 2;
-                          end = accountIndex + 3;
-                        }
-                      }
-
-                      return accounts.slice(start, end).map((_, i) => {
-                        const realIndex = i + start;
-
-                        return (
-                          <View
-                            key={realIndex}
-                            className={`w-2 h-2 rounded-full ${
-                              realIndex === accountIndex
-                                ? "bg-black"
-                                : "bg-gray-300"
-                            }`}
-                          />
-                        );
-                      });
-                    })()}
-                  </View>
+                  {/* Animated pagination dots */}
+                  <CarouselPaginationDots />
                 </Carousel>
               )}
             </View>

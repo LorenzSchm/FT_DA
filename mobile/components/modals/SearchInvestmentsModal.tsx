@@ -16,9 +16,14 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 type Props = {
   isVisible: boolean;
   onClose: () => void;
+  onInvestmentAdded?: () => void | Promise<void>;
 };
 
-export default function SearchInvestmentsModal({ isVisible, onClose }: Props) {
+export default function SearchInvestmentsModal({
+  isVisible,
+  onClose,
+  onInvestmentAdded,
+}: Props) {
   const [isModalVisible, setIsModalVisible] = useState(isVisible);
   const SCREEN_HEIGHT = Dimensions.get("window").height;
   const sheetPosition = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
@@ -135,7 +140,7 @@ export default function SearchInvestmentsModal({ isVisible, onClose }: Props) {
 
             {/* Content */}
             <GestureHandlerRootView style={{ flex: 1 }}>
-              <AddInvestmentView />
+              <AddInvestmentView onInvestmentAdded={onInvestmentAdded} />
             </GestureHandlerRootView>
           </SafeAreaView>
         </Animated.View>

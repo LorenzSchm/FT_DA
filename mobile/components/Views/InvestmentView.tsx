@@ -5,8 +5,9 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
+  Platform,
 } from "react-native";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { getInvestments } from "@/utils/db/invest/invest";
 import { useAuthStore } from "@/utils/authStore";
 import StockModal from "@/components/modals/StockModal";
@@ -14,10 +15,26 @@ import SearchInvestmentsModal from "@/components/modals/SearchInvestmentsModal";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PhantomChart } from "@/components/PhantomChart";
+import { invalidateCache } from "@/utils/db/cache";
+import { LinearGradient } from "expo-linear-gradient";
 import axios from "axios";
 
 // Base URL for backend API
 const API_BASE = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
+
+/* ─── Color tokens ─── */
+const COLORS = {
+  positive: "#34d399",
+  positiveMuted: "rgba(52,211,153,0.10)",
+  negative: "#fb7185",
+  negativeMuted: "rgba(251,113,133,0.10)",
+  textPrimary: "#111827",
+  textSecondary: "#6b7280",
+  textTertiary: "#9ca3af",
+  cardBg: "#ffffff",
+  cardBorder: "rgba(0,0,0,0.04)",
+  surface: "#f9fafb",
+};
 
 export function InvestmentView() {
   const { session } = useAuthStore();
@@ -80,39 +97,42 @@ export function InvestmentView() {
     }
   };
 
-  useEffect(() => {
-    const fetchpositions = async () => {
-      try {
-        setPositionsLoading(true);
-        const pos = await getInvestments(
-          session?.access_token,
-          session?.refresh_token,
-        );
-        const posData = await Promise.all(
-          (pos?.positions || []).map(async (p: any) => {
-            const { price, weekly_change, logo, longname } =
-              await fetchStockData(p.ticker);
-            return { ...p, price, weekly_change, logo, longname };
-          }),
-        );
-        setPositions(posData);
+  const reloadPositions = useCallback(async () => {
+    try {
+      setPositionsLoading(true);
+      invalidateCache("/investments/");
+      const pos = await getInvestments(
+        session?.access_token,
+        session?.refresh_token,
+      );
+      const posData = await Promise.all(
+        (pos?.positions || []).map(async (p: any) => {
+          const { price, weekly_change, logo, longname } = await fetchStockData(
+            p.ticker,
+          );
+          return { ...p, price, weekly_change, logo, longname };
+        }),
+      );
+      setPositions(posData);
 
-        const vals = (posData || []).map((p: any) => {
-          const currentValue = Number(p?.market_value ?? 0);
-          return {
-            ticker: p.ticker,
-            value: Number.isFinite(currentValue) ? currentValue : 0,
-          };
-        });
-        setPositionValues(vals);
-      } catch (error) {
-        console.error("Error fetching positions:", error);
-      } finally {
-        setPositionsLoading(false);
-      }
-    };
-    fetchpositions();
+      const vals = (posData || []).map((p: any) => {
+        const currentValue = Number(p?.market_value ?? 0);
+        return {
+          ticker: p.ticker,
+          value: Number.isFinite(currentValue) ? currentValue : 0,
+        };
+      });
+      setPositionValues(vals);
+    } catch (error) {
+      console.error("Error fetching positions:", error);
+    } finally {
+      setPositionsLoading(false);
+    }
   }, [session?.access_token, session?.refresh_token]);
+
+  useEffect(() => {
+    reloadPositions();
+  }, [reloadPositions]);
 
   useEffect(() => {
     let active = true;
@@ -123,43 +143,71 @@ export function InvestmentView() {
       }
       try {
         setChartLoading(true);
-        type QtyStep = { ts: number; qty: number };
-        const qtyStepsByTicker: Record<string, QtyStep[]> = {};
-        const firstTradeTsByTicker: Record<string, number> = {};
+
         const uniqueTickers = Array.from(
           new Set((positions || []).map((p: any) => p?.ticker)),
         );
-        (positions || []).forEach((p: any) => {
+
+        // Build trade events per ticker: sorted list of { tsMs, runningQty, costBasis }
+        const tradeInfoByTicker: Record<
+          string,
+          {
+            firstTradeMs: number;
+            events: { tsMs: number; runningQty: number; costBasis: number }[];
+          }
+        > = {};
+
+        for (const p of positions) {
           const ticker = p?.ticker;
           const ds: any[] = p?.dates || [];
-          const steps: QtyStep[] = ds
-            .filter((d) => d?.date)
-            .map((d, idx) => {
-              const base = Date.parse(`${d.date}T00:00:00Z`);
-              const ts = isNaN(base) ? Date.now() : base + idx; // preserve order for same-day trades
-              const qty = Number(d.position_quantity ?? 0);
-              return { ts, qty };
+          const events = ds
+            .filter((d: any) => d?.date)
+            .map((d: any) => {
+              const tsMs = Date.parse(`${d.date}T00:00:00Z`);
+              return {
+                tsMs: isNaN(tsMs) ? Date.now() : tsMs,
+                runningQty: Math.max(Number(d.position_quantity ?? 0), 0),
+                costBasis: Number(d.cost_basis ?? 0),
+              };
             })
-            .sort((a, b) => a.ts - b.ts);
-          qtyStepsByTicker[ticker] = steps;
-          if (steps.length > 0) firstTradeTsByTicker[ticker] = steps[0].ts;
-        });
+            .sort((a, b) => a.tsMs - b.tsMs);
 
-        const qtyAt = (steps: QtyStep[], ts: number) => {
-          if (!steps || steps.length === 0) return 0;
-          let lo = 0,
-            hi = steps.length - 1,
-            ans = -1;
-          while (lo <= hi) {
-            const mid = (lo + hi) >> 1;
-            if (steps[mid].ts <= ts) {
-              ans = mid;
-              lo = mid + 1;
-            } else hi = mid - 1;
+          tradeInfoByTicker[ticker] = {
+            firstTradeMs: events.length > 0 ? events[0].tsMs : Infinity,
+            events,
+          };
+        }
+
+        // Helper: get running quantity at a given timestamp for a ticker
+        const getQtyAt = (ticker: string, tsMs: number): number => {
+          const info = tradeInfoByTicker[ticker];
+          if (!info || info.events.length === 0) return 0;
+          if (tsMs < info.firstTradeMs) return 0;
+          let qty = 0;
+          for (const evt of info.events) {
+            if (evt.tsMs <= tsMs) {
+              qty = evt.runningQty;
+            } else {
+              break;
+            }
           }
-          return ans >= 0 ? Number(steps[ans].qty || 0) : 0;
+          return qty;
         };
 
+        // Helper: get total cost basis across all tickers at their first trade
+        const getTotalCostBasis = (): number => {
+          let total = 0;
+          for (const ticker of uniqueTickers) {
+            const info = tradeInfoByTicker[ticker];
+            if (!info || info.events.length === 0) continue;
+            // Use the latest cost basis (after all trades)
+            const lastEvent = info.events[info.events.length - 1];
+            total += lastEvent.costBasis;
+          }
+          return total;
+        };
+
+        // Fetch stock price history for each ticker
         type HistoryResp = Record<TimeframeKey, Point[]>;
         const historyByTicker: Record<string, HistoryResp> = {};
         await Promise.all(
@@ -174,158 +222,141 @@ export function InvestmentView() {
           }),
         );
 
-        const tfs: TimeframeKey[] = ["ALL", "1Y", "1M", "1W", "1D"];
-        const combinedMaps: Record<TimeframeKey, Map<number, number>> = {
-          ALL: new Map(),
-          "1Y": new Map(),
-          "1M": new Map(),
-          "1W": new Map(),
-          "1D": new Map(),
-        };
-
-        tfs.forEach((tf) => {
-          const unionSet = new Set<number>();
-          uniqueTickers.forEach((ticker) => {
-            const hist = historyByTicker[ticker];
-            if (!hist) return;
-            for (const pt of hist[tf] || []) {
-              unionSet.add(pt.timestamp);
-            }
-          });
-          const unionTimestamps = Array.from(unionSet).sort((a, b) => a - b);
-
-          const perTicker = uniqueTickers.map((ticker) => {
-            const hist = historyByTicker[ticker];
-            const list = hist && hist[tf] ? hist[tf] : [];
-            const steps = qtyStepsByTicker[ticker] || [];
-            const firstTs =
-              firstTradeTsByTicker[ticker] ?? Number.POSITIVE_INFINITY;
-            return {
-              ticker,
-              list,
-              idx: 0,
-              lastPrice: undefined as number | undefined,
-              steps,
-              firstTs,
-            };
-          });
-
-          const out = combinedMaps[tf];
-          for (const ts of unionTimestamps) {
-            let sum = 0;
-            let contributed = false;
-            for (const state of perTicker) {
-              const { list, steps, firstTs } = state;
-              while (
-                state.idx < list.length &&
-                list[state.idx].timestamp <= ts
-              ) {
-                const v = list[state.idx].value;
-                if (Number.isFinite(v as number)) state.lastPrice = Number(v);
-                state.idx++;
-              }
-              if (!Number.isFinite(state.lastPrice as number)) continue;
-              if (ts < firstTs) continue;
-              const q = qtyAt(steps, ts);
-              if (!q) continue;
-              sum += (state.lastPrice as number) * q;
-              contributed = true;
-            }
-            // Only record points where at least one ticker contributed a value
-            if (contributed && Number.isFinite(sum)) out.set(ts, sum);
-          }
-        });
-
-        const globalFirstTs = (() => {
-          const vals = Object.values(firstTradeTsByTicker || {}).filter((v) =>
-            Number.isFinite(v),
-          ) as number[];
-          if (!vals.length) return Number.POSITIVE_INFINITY;
-          return Math.min(...vals);
-        })();
-
-        const toArray = (m: Map<number, number>): Point[] =>
-          Array.from(m.entries())
-            .sort((a, b) => a[0] - b[0])
-            .map(([timestamp, value]) => ({ timestamp, value }));
-
-        const trimSeries = (arr: Point[]): Point[] => {
-          if (!arr || arr.length === 0) return arr;
-          let out = arr.filter((p) => p.timestamp >= globalFirstTs);
-          let i = 0;
-          while (
-            i < out.length &&
-            (!Number.isFinite(out[i].value) || out[i].value <= 0)
-          ) {
-            i++;
-          }
-          out = out.slice(i);
-          return out;
-        };
-
+        const tfs: TimeframeKey[] = ["1D", "1W", "1M", "1Y", "ALL"];
         const combined: HistoryMap = {
-          ALL: trimSeries(toArray(combinedMaps.ALL)),
-          "1Y": trimSeries(toArray(combinedMaps["1Y"])),
-          "1M": trimSeries(toArray(combinedMaps["1M"])),
-          "1W": trimSeries(toArray(combinedMaps["1W"])),
-          "1D": trimSeries(toArray(combinedMaps["1D"])),
+          "1D": [],
+          "1W": [],
+          "1M": [],
+          "1Y": [],
+          ALL: [],
         };
 
-        let currentPortfolioValue = 0;
-        (positions || []).forEach((p: any) => {
-          currentPortfolioValue += Number(p?.market_value ?? 0);
-        });
+        // Get earliest trade timestamp and total cost basis for the anchor point
+        const earliestTradeMs = Math.min(
+          ...uniqueTickers.map(
+            (t) => tradeInfoByTicker[t]?.firstTradeMs ?? Infinity,
+          ),
+        );
+        const totalCostBasis = getTotalCostBasis();
 
-        const now = Date.now();
-
-        if (currentPortfolioValue > 0) {
-          for (const tf of tfs) {
-            const arr = combined[tf];
-            if (arr && arr.length > 0) {
-              const lastPoint = arr[arr.length - 1];
-              if (lastPoint.timestamp < now) {
-                arr.push({ timestamp: now, value: currentPortfolioValue });
-              }
+        for (const tf of tfs) {
+          // Collect all unique timestamps across all tickers for this timeframe
+          const allTimestamps = new Set<number>();
+          for (const ticker of uniqueTickers) {
+            const hist = historyByTicker[ticker];
+            if (!hist || !hist[tf]) continue;
+            for (const pt of hist[tf]) {
+              allTimestamps.add(pt.timestamp);
             }
           }
-        }
 
-        // Fallback logic: if a timeframe has exactly 2 or fewer entries, use data from shorter timeframe
-        // Order: 1D -> 1W -> 1M -> 1Y -> ALL
+          const sortedTimestamps = Array.from(allTimestamps).sort(
+            (a, b) => a - b,
+          );
 
-        // 1W fallback to 1D
-        if (combined["1W"].length <= 2 && combined["1D"].length > 2) {
-          combined["1W"] = combined["1D"];
-        }
+          // For each ticker, build a map of timestamp -> price for quick lookup
+          const priceMaps: Record<string, Map<number, number>> = {};
+          const lastKnownPrice: Record<string, number> = {};
 
-        // 1M fallback to 1W, then 1D
-        if (combined["1M"].length <= 2) {
-          if (combined["1W"].length > 2) {
-            combined["1M"] = combined["1W"];
-          } else if (combined["1D"].length > 2) {
-            combined["1M"] = combined["1D"];
+          for (const ticker of uniqueTickers) {
+            const hist = historyByTicker[ticker];
+            const map = new Map<number, number>();
+            if (hist && hist[tf]) {
+              for (const pt of hist[tf]) {
+                if (Number.isFinite(pt.value)) {
+                  map.set(pt.timestamp, pt.value);
+                }
+              }
+            }
+            priceMaps[ticker] = map;
+            lastKnownPrice[ticker] = 0;
           }
-        }
 
-        if (combined["1Y"].length <= 2) {
-          if (combined["1M"].length > 2) {
-            combined["1Y"] = combined["1M"];
-          } else if (combined["1W"].length > 2) {
-            combined["1Y"] = combined["1W"];
-          } else if (combined["1D"].length > 2) {
-            combined["1Y"] = combined["1D"];
+          // Start with cost basis as the anchor/first point
+          const points: Point[] = [];
+          if (totalCostBasis > 0 && Number.isFinite(earliestTradeMs)) {
+            points.push({
+              timestamp: earliestTradeMs,
+              value: Math.round(totalCostBasis * 100) / 100,
+            });
           }
+
+          // Walk through timestamps and compute portfolio value
+          for (const ts of sortedTimestamps) {
+            // Skip timestamps before the first trade
+            if (ts < earliestTradeMs) continue;
+
+            let totalValue = 0;
+            let hasContribution = false;
+
+            for (const ticker of uniqueTickers) {
+              // Update last known price if this timestamp has a price
+              const priceAtTs = priceMaps[ticker].get(ts);
+              if (priceAtTs !== undefined) {
+                lastKnownPrice[ticker] = priceAtTs;
+              }
+
+              const price = lastKnownPrice[ticker];
+              if (!price) continue;
+
+              const qty = getQtyAt(ticker, ts);
+              if (qty <= 0) continue;
+
+              totalValue += price * qty;
+              hasContribution = true;
+            }
+
+            if (
+              hasContribution &&
+              Number.isFinite(totalValue) &&
+              totalValue > 0
+            ) {
+              points.push({
+                timestamp: ts,
+                value: Math.round(totalValue * 100) / 100,
+              });
+            }
+          }
+
+          // Append current portfolio value as the final point
+          const currentValue = (positions || []).reduce(
+            (sum: number, p: any) => sum + Number(p?.market_value ?? 0),
+            0,
+          );
+          if (currentValue > 0 && points.length > 0) {
+            const now = Date.now();
+            const lastTs = points[points.length - 1].timestamp;
+            if (now > lastTs) {
+              points.push({
+                timestamp: now,
+                value: Math.round(currentValue * 100) / 100,
+              });
+            } else {
+              points[points.length - 1].value =
+                Math.round(currentValue * 100) / 100;
+            }
+          } else if (currentValue > 0 && points.length === 0) {
+            points.push({
+              timestamp: Date.now(),
+              value: Math.round(currentValue * 100) / 100,
+            });
+          }
+
+          combined[tf] = points;
         }
 
-        if (combined["ALL"].length <= 2) {
-          if (combined["1Y"].length > 2) {
-            combined["ALL"] = combined["1Y"];
-          } else if (combined["1M"].length > 2) {
-            combined["ALL"] = combined["1M"];
-          } else if (combined["1W"].length > 2) {
-            combined["ALL"] = combined["1W"];
-          } else if (combined["1D"].length > 2) {
-            combined["ALL"] = combined["1D"];
+        // Fallback: if a longer timeframe has ≤2 points, use data from shorter timeframe
+        const fallbackOrder: TimeframeKey[] = ["1D", "1W", "1M", "1Y", "ALL"];
+        for (let i = 1; i < fallbackOrder.length; i++) {
+          const tf = fallbackOrder[i];
+          if (combined[tf].length <= 2) {
+            // Find the best shorter timeframe with enough data
+            for (let j = i - 1; j >= 0; j--) {
+              if (combined[fallbackOrder[j]].length > 2) {
+                combined[tf] = combined[fallbackOrder[j]];
+                break;
+              }
+            }
           }
         }
 
@@ -345,121 +376,417 @@ export function InvestmentView() {
     };
   }, [positions]);
 
+  /* ─── Computed portfolio aggregates ─── */
+  const totalPortfolioValue = positionValues.reduce((s, v) => s + v.value, 0);
+  const totalUnrealizedPl = positions.reduce(
+    (s, p) => s + Number(p.unrealized_pl ?? 0),
+    0,
+  );
+  const totalCostBasis = positions.reduce(
+    (s, p) => s + Number(p.cost_basis ?? 0),
+    0,
+  );
+  const totalPlPct =
+    totalCostBasis > 0 ? (totalUnrealizedPl / totalCostBasis) * 100 : 0;
+  const isPortfolioUp = totalUnrealizedPl >= 0;
+
+  /* ─── Logo renderer ─── */
   const Logo = ({ symbol }: { symbol: string }) => {
     const logo = logoCache.current[symbol];
     return (
-      <View className="w-10 h-10 items-center justify-center mr-4 overflow-hidden ">
+      <View
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: 14,
+          overflow: "hidden",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: logo ? "#f4f4f5" : undefined,
+          borderWidth: logo ? 0 : 0,
+        }}
+      >
         {logo ? (
           <Image
             source={{ uri: logo }}
-            className="w-full h-full"
+            style={{ width: 44, height: 44 }}
             resizeMode="contain"
           />
         ) : (
-          <Text className="text-3xl font-bold text-orange-600">
-            {symbol[0]}
-          </Text>
+          <LinearGradient
+            colors={["#1e1e1e", "#2d2d2d"]}
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 14,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: "800",
+                color: "rgba(255,255,255,0.8)",
+                letterSpacing: 0.5,
+              }}
+            >
+              {symbol.slice(0, 2)}
+            </Text>
+          </LinearGradient>
         )}
       </View>
     );
   };
+
+  /* ─── Position row skeleton ─── */
+  const PositionSkeleton = () => (
+    <View
+      style={{
+        backgroundColor: COLORS.cardBg,
+        borderRadius: 18,
+        padding: 16,
+        marginBottom: 10,
+        borderWidth: 1,
+        borderColor: COLORS.cardBorder,
+      }}
+    >
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <Skeleton className="w-11 h-11 rounded-[14px] mr-3" />
+        <View style={{ flex: 1 }}>
+          <Skeleton className="h-4 w-16 mb-2 rounded-md" />
+          <Skeleton className="h-3 w-24 rounded-md" />
+        </View>
+        <View style={{ alignItems: "flex-end" }}>
+          <Skeleton className="h-4 w-20 mb-2 rounded-md" />
+          <Skeleton className="h-3 w-14 rounded-md" />
+        </View>
+      </View>
+    </View>
+  );
+
+  const [chartAreaHeight, setChartAreaHeight] = useState(0);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <View className="pt-4">
-        {chartLoading ? (
-          <View className="px-8">
-            <Skeleton className="h-[220px] w-full rounded-2xl" />
-          </View>
-        ) : portfolioHistory ? (
-          <PhantomChart dataByTimeframe={portfolioHistory as any} />
-        ) : (
-          <View className="px-8">
-            <Skeleton className="h-[220px] w-full rounded-2xl" />
-          </View>
-        )}
-      </View>
-      <View className="px-8">
-        <View>
-          <Text className="text-2xl font-bold mb-2">Investments</Text>
-          {positionsLoading ? (
-            <View className="gap-3">
-              <Skeleton className="h-14 w-full rounded-xl" />
-              <Skeleton className="h-14 w-full rounded-xl" />
-              <Skeleton className="h-14 w-full rounded-xl" />
-            </View>
-          ) : positions.length === 0 ? (
-            <View className="items-center py-6">
-              <Text className="text-gray-400">No investments yet</Text>
+      <ScrollView
+        style={{ flex: 1 }}
+        stickyHeaderIndices={[0, 2]}
+        showsVerticalScrollIndicator={false}
+        bounces={false}
+        contentContainerStyle={{
+          paddingBottom: Math.max(chartAreaHeight, 120),
+        }}
+      >
+        {/* ─── Sticky value header (index 0) ─── */}
+        <View
+          style={{
+            backgroundColor: "#fff",
+            paddingHorizontal: 28,
+            paddingTop: 16,
+            paddingBottom: 8,
+          }}
+        >
+          {positionsLoading || chartLoading ? (
+            <View>
+              <Skeleton className="h-9 w-40 rounded-lg mb-2" />
+              <Skeleton className="h-4 w-28 rounded-md" />
             </View>
           ) : (
-            <ScrollView className=" h-60" showsVerticalScrollIndicator={false}>
-              {positions.map((item) => (
-                <Pressable key={item.ticker} onPress={() => openModal(item)}>
-                  <View className="flex-row justify-between items-center py-3">
-                    <View className="flex-row items-center">
+            <>
+              <Text
+                style={{
+                  fontSize: 34,
+                  fontWeight: "800",
+                  color: "#111827",
+                  letterSpacing: -1.2,
+                }}
+              >
+                ${totalPortfolioValue.toFixed(2)}
+              </Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginTop: 4,
+                  gap: 8,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 13,
+                    fontWeight: "700",
+                    color: isPortfolioUp ? "#34d399" : "#fb7185",
+                    letterSpacing: -0.2,
+                  }}
+                >
+                  {isPortfolioUp ? "▲" : "▼"} {isPortfolioUp ? "+" : ""}
+                  {totalUnrealizedPl.toFixed(2)} ({isPortfolioUp ? "+" : ""}
+                  {totalPlPct.toFixed(2)}%)
+                </Text>
+                <Text
+                  style={{ fontSize: 13, fontWeight: "500", color: "#9ca3af" }}
+                >
+                  Total return
+                </Text>
+              </View>
+            </>
+          )}
+        </View>
+
+        {/* ─── Chart area ─── */}
+        <View onLayout={(e) => setChartAreaHeight(e.nativeEvent.layout.height)}>
+          {chartLoading ? (
+            <View style={{ paddingHorizontal: 24, paddingTop: 8 }}>
+              <Skeleton className="h-[220px] w-full rounded-2xl" />
+            </View>
+          ) : portfolioHistory ? (
+            <PhantomChart
+              dataByTimeframe={portfolioHistory as any}
+              hideHeader
+            />
+          ) : (
+            <View style={{ paddingHorizontal: 24, paddingTop: 8 }}>
+              <Skeleton className="h-[220px] w-full rounded-2xl" />
+            </View>
+          )}
+        </View>
+
+        {/* ─── Sticky holdings header (index 2) ─── */}
+        <View
+          style={{
+            backgroundColor: "#fff",
+            paddingHorizontal: 24,
+            paddingTop: 12,
+            paddingBottom: 10,
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 22,
+              fontWeight: "800",
+              color: COLORS.textPrimary,
+              letterSpacing: -0.3,
+            }}
+          >
+            Holdings
+          </Text>
+        </View>
+
+        {/* ─── Holdings list (index 3) ─── */}
+        <View style={{ paddingHorizontal: 24 }}>
+          {/* Positions list (flat — no nested ScrollView) */}
+          {positionsLoading ? (
+            <View>
+              <PositionSkeleton />
+              <PositionSkeleton />
+              <PositionSkeleton />
+            </View>
+          ) : positions.length === 0 ? (
+            <View
+              style={{
+                alignItems: "center",
+                justifyContent: "center",
+                paddingVertical: 48,
+              }}
+            >
+              <View
+                style={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: 32,
+                  backgroundColor: COLORS.surface,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Text style={{ fontSize: 28 }}>📈</Text>
+              </View>
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: "600",
+                  color: COLORS.textSecondary,
+                  marginBottom: 4,
+                }}
+              >
+                No investments yet
+              </Text>
+              <Text
+                style={{
+                  fontSize: 13,
+                  color: COLORS.textTertiary,
+                }}
+              >
+                Tap "Add +" to start tracking your portfolio
+              </Text>
+            </View>
+          ) : (
+            positions.map((item, index) => {
+              const pl = Number(item.unrealized_pl ?? 0);
+              const plPct = Number(item.unrealized_pl_pct ?? 0);
+              const isUp = pl >= 0;
+              const marketVal =
+                positionValues.find((v) => v.ticker === item.ticker)?.value ??
+                0;
+
+              return (
+                <Pressable
+                  key={item.ticker}
+                  onPress={() => openModal(item)}
+                  style={({ pressed }) => ({
+                    transform: [{ scale: pressed ? 0.98 : 1 }],
+                    opacity: pressed ? 0.85 : 1,
+                  })}
+                >
+                  <View
+                    style={{
+                      backgroundColor: COLORS.cardBg,
+                      borderRadius: 18,
+                      padding: 14,
+                      marginBottom: 10,
+                      borderWidth: 1,
+                      borderColor: COLORS.cardBorder,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      ...Platform.select({
+                        ios: {
+                          shadowColor: "#000",
+                          shadowOffset: { width: 0, height: 2 },
+                          shadowOpacity: 0.04,
+                          shadowRadius: 8,
+                        },
+                        android: { elevation: 2 },
+                      }),
+                    }}
+                  >
+                    {/* Logo */}
+                    <View style={{ marginRight: 12 }}>
                       <Logo symbol={item.ticker} />
-                      <View>
-                        <Text className="text-lg font-bold">{item.ticker}</Text>
-                        <Text className="font-semibold text-gray-500">
-                          $
-                          {(() => {
-                            const found = positionValues.find(
-                              (v) => v.ticker === item.ticker,
-                            );
-                            const val = found?.value ?? 0;
-                            return Number(val).toFixed(2);
-                          })()}
+                    </View>
+
+                    {/* Ticker + Value */}
+                    <View style={{ flex: 1 }}>
+                      <Text
+                        style={{
+                          fontSize: 16,
+                          fontWeight: "700",
+                          color: COLORS.textPrimary,
+                          letterSpacing: -0.2,
+                        }}
+                      >
+                        {item.ticker}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 13,
+                          fontWeight: "500",
+                          color: COLORS.textTertiary,
+                          marginTop: 2,
+                        }}
+                        numberOfLines={1}
+                      >
+                        {item.longname || `$${Number(marketVal).toFixed(2)}`}
+                      </Text>
+                    </View>
+
+                    {/* P/L column */}
+                    <View style={{ alignItems: "flex-end" }}>
+                      <Text
+                        style={{
+                          fontSize: 16,
+                          fontWeight: "700",
+                          color: isUp ? COLORS.positive : COLORS.negative,
+                          letterSpacing: -0.2,
+                        }}
+                      >
+                        {isUp ? "+" : "−"}${Math.abs(pl).toFixed(2)}
+                      </Text>
+                      <View
+                        style={{
+                          paddingHorizontal: 6,
+                          paddingVertical: 2,
+                          borderRadius: 6,
+                          marginTop: 3,
+                        }}
+                      >
+                        <Text
+                          style={{
+                            fontSize: 11,
+                            fontWeight: "700",
+                            color: isUp ? COLORS.positive : COLORS.negative,
+                          }}
+                        >
+                          {isUp ? "+" : ""}
+                          {plPct.toFixed(2)}%
                         </Text>
                       </View>
                     </View>
-                    {/* Unrealized P/L */}
-                    <View className="items-end">
-                      <Text
-                        className={`text-lg font-bold ${
-                          (item.unrealized_pl ?? 0) >= 0
-                            ? "text-green-500"
-                            : "text-red-500"
-                        }`}
-                      >
-                        {(item.unrealized_pl ?? 0) >= 0 ? "+" : "-"}$
-                        {Math.abs(Number(item.unrealized_pl ?? 0)).toFixed(2)}
-                      </Text>
-                      <Text
-                        className={`font-semibold ${
-                          (item.unrealized_pl_pct ?? 0) >= 0
-                            ? "text-green-500"
-                            : "text-red-500"
-                        }`}
-                      >
-                        {(item.unrealized_pl_pct ?? 0) >= 0 ? "+" : ""}
-                        {Number(item.unrealized_pl_pct ?? 0).toFixed(2)}%
-                      </Text>
-                    </View>
                   </View>
                 </Pressable>
-              ))}
-            </ScrollView>
+              );
+            })
           )}
         </View>
-      </View>
+      </ScrollView>
+
+      {/* ─── Modals ─── */}
       <StockModal
         isVisible={modalVisible}
         onClose={closeModal}
         selectedStock={selectedStock}
+        onInvestmentAdded={async () => {
+          setModalVisible(false);
+          setSelectedStock(null);
+          setShowAddInvestmentModal(false);
+          await reloadPositions();
+        }}
       />
       <SearchInvestmentsModal
         isVisible={showAddInvestmentModal}
         onClose={() => setShowAddInvestmentModal(false)}
+        onInvestmentAdded={async () => {
+          setShowAddInvestmentModal(false);
+          setModalVisible(false);
+          setSelectedStock(null);
+          await reloadPositions();
+        }}
       />
-      <View className="absolute bottom-12 right-5">
+
+      {/* ─── Floating Add button ─── */}
+      <View style={{ position: "absolute", bottom: 48, right: 20 }}>
         <TouchableOpacity
           onPress={() => setShowAddInvestmentModal(true)}
           activeOpacity={0.9}
-          className={`${"bg-black w-40 py-4 rounded-full"}`}
+          style={{
+            backgroundColor: "#000",
+            paddingVertical: 16,
+            paddingHorizontal: 32,
+            borderRadius: 9999,
+            ...Platform.select({
+              ios: {
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.25,
+                shadowRadius: 12,
+              },
+              android: { elevation: 8 },
+            }),
+          }}
         >
-          <View className="items-center justify-center">
-            <Text className="text-white text-3xl font-semibold">Add +</Text>
-          </View>
+          <Text
+            style={{
+              color: "#fff",
+              fontSize: 18,
+              fontWeight: "700",
+              letterSpacing: -0.3,
+            }}
+          >
+            Add +
+          </Text>
         </TouchableOpacity>
       </View>
     </GestureHandlerRootView>
