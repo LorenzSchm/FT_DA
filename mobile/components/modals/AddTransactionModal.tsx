@@ -45,6 +45,12 @@ export default function AddTransactionModal({
   const [merchant, setMerchant] = useState("");
   const [description, setDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<{
+    account?: string;
+    amount?: string;
+    merchant?: string;
+    description?: string;
+  }>({});
   const SCREEN_HEIGHT = Dimensions.get("window").height;
   const sheetPosition = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const { session } = useAuthStore();
@@ -117,25 +123,46 @@ export default function AddTransactionModal({
       setMerchant("");
       setDescription("");
       setState("expense");
+      setErrors({});
       onTransactionAdded().then(() => {
         onClose();
       });
     });
   };
 
-  const handleAddTransaction = async () => {
-    if (!amount || !merchant || !description) {
-      Alert.alert("Error", "Please fill in all fields!");
-      return;
+  const validate = () => {
+    const newErrors: typeof errors = {};
+
+    if (!selectedAccount) {
+      newErrors.account = "Please select an account";
     }
+
+    const parsed = parseFloat(String(amount).replace(/,/g, "."));
+    if (!amount.trim()) {
+      newErrors.amount = "Amount is required";
+    } else if (Number.isNaN(parsed) || parsed <= 0) {
+      newErrors.amount = "Enter a valid positive amount";
+    }
+
+    if (!merchant.trim()) {
+      newErrors.merchant = state === "income"
+        ? "Please enter a sender"
+        : "Please enter a recipient";
+    }
+
+    if (!description.trim()) {
+      newErrors.description = "Please enter a usage description";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleAddTransaction = async () => {
+    if (!validate()) return;
 
     if (!session?.access_token) {
       Alert.alert("Error", "Not authenticated");
-      return;
-    }
-
-    if (!selectedAccount) {
-      Alert.alert("Error", "Please select an account");
       return;
     }
 
@@ -209,9 +236,8 @@ export default function AddTransactionModal({
             <View className="flex-row justify-around items-center mb-6 bg-[#F1F1F2] w-full h-[40px] rounded-full">
               <TouchableOpacity
                 onPress={() => setState("expense")}
-                className={`w-1/2 h-full flex justify-center items-center ${
-                  state === "expense" ? "bg-black rounded-full" : ""
-                }`}
+                className={`w-1/2 h-full flex justify-center items-center ${state === "expense" ? "bg-black rounded-full" : ""
+                  }`}
               >
                 <Text
                   className={`text-xl ${state === "expense" ? "text-white" : "text-neutral-500"}`}
@@ -221,9 +247,8 @@ export default function AddTransactionModal({
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => setState("income")}
-                className={`w-1/2 h-full flex justify-center items-center ${
-                  state === "income" ? "bg-black rounded-full" : ""
-                }`}
+                className={`w-1/2 h-full flex justify-center items-center ${state === "income" ? "bg-black rounded-full" : ""
+                  }`}
               >
                 <Text
                   className={`text-xl ${state === "income" ? "text-white" : "text-neutral-500"}`}
@@ -239,54 +264,83 @@ export default function AddTransactionModal({
             <CustomPicker
               placeholder="Select Account"
               value={selectedAccount}
-              onValueChange={setSelectedAccount}
+              onValueChange={(val) => {
+                setSelectedAccount(val);
+                if (errors.account) setErrors((p) => ({ ...p, account: undefined }));
+              }}
               options={accounts.map((acc) => ({
                 label: `${acc.name} (${acc.currency})`,
                 value: acc.id,
               }))}
-              className="mb-4"
+              className="mb-1"
               variant="input"
             />
+            {errors.account && (
+              <Text className="text-red-500 text-sm mb-3">{errors.account}</Text>
+            )}
+            {!errors.account && <View className="mb-3" />}
 
             {/* Amount */}
             <Text className="font-semibold text-black mb-2 text-[20px]">
               Amount
             </Text>
-            <View className="bg-neutral-100 rounded-full px-5 py-4 mb-4 h-fit">
+            <View className="bg-neutral-100 rounded-full px-5 py-4 h-fit">
               <TextInput
                 className="text-black text-[20px]"
                 placeholder="e.g. € 0.00"
                 keyboardType="numbers-and-punctuation"
                 value={amount}
-                onChangeText={setAmount}
+                onChangeText={(text) => {
+                  setAmount(text);
+                  if (errors.amount) setErrors((p) => ({ ...p, amount: undefined }));
+                }}
               />
             </View>
+            {errors.amount && (
+              <Text className="text-red-500 text-sm mb-3 mt-1">{errors.amount}</Text>
+            )}
+            {!errors.amount && <View className="mb-3" />}
 
             <Text className="font-semibold text-black mb-2 text-[20px]">
               {state === "income" ? "Sender" : "Recipient"}
             </Text>
-            <View className="bg-neutral-100 rounded-full px-5 py-4 mb-4 h-fit">
+            <View className="bg-neutral-100 rounded-full px-5 py-4 h-fit">
               <TextInput
                 className="text-black text-[20px]"
                 placeholder={
                   state === "income" ? "e.g. Employer" : "e.g. Grocery Store"
                 }
                 value={merchant}
-                onChangeText={setMerchant}
+                onChangeText={(text) => {
+                  setMerchant(text);
+                  if (errors.merchant) setErrors((p) => ({ ...p, merchant: undefined }));
+                }}
               />
             </View>
+            {errors.merchant && (
+              <Text className="text-red-500 text-sm mb-3 mt-1">{errors.merchant}</Text>
+            )}
+            {!errors.merchant && <View className="mb-3" />}
 
             <Text className="font-semibold text-black mb-2 text-[20px]">
               Usage
             </Text>
-            <View className="bg-neutral-100 rounded-full px-5 py-4 mb-8 h-fit">
+            <View className="bg-neutral-100 rounded-full px-5 py-4 h-fit">
               <TextInput
                 className="text-black text-[20px]"
                 placeholder="e.g. Groceries, Rent, Salary..."
                 value={description}
-                onChangeText={setDescription}
+                onChangeText={(text) => {
+                  setDescription(text);
+                  if (errors.description) setErrors((p) => ({ ...p, description: undefined }));
+                }}
+                maxLength={30}
               />
             </View>
+            {errors.description && (
+              <Text className="text-red-500 text-sm mb-6 mt-1">{errors.description}</Text>
+            )}
+            {!errors.description && <View className="mb-6" />}
             <TouchableOpacity
               className="bg-black rounded-full py-4"
               onPress={handleAddTransaction}

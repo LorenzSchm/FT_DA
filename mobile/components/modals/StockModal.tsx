@@ -19,6 +19,7 @@ import { PhantomChart } from "@/components/PhantomChart";
 import { useAuthStore } from "@/utils/authStore";
 import { getInvestments } from "@/utils/db/invest/invest";
 import AddInvestmentModal from "@/components/modals/AddInvestmentModal";
+import SellInvestmentModal from "@/components/modals/SellInvestmentModal";
 import StockDescriptionModal from "./StockDescriptionModal";
 
 type Props = {
@@ -39,6 +40,7 @@ export default function StockModal({
   const [chartLoading, setChartLoading] = useState(false);
   const [myPosition, setMyPosition] = useState<any | null>(null);
   const [showAddInvestment, setShowAddInvestment] = useState(false);
+  const [showSellInvestment, setShowSellInvestment] = useState(false);
   const [informationData, setInformationData] = useState<any>(null);
   const [logo, setLogo] = useState<string | null>(null);
   const API_BASE = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
@@ -224,6 +226,7 @@ export default function StockModal({
     }).start(() => {
       setIsModalVisible(false);
       setShowAddInvestment(false);
+      setShowSellInvestment(false);
       onClose();
     });
   };
@@ -437,9 +440,27 @@ export default function StockModal({
               </ScrollView>
             </SafeAreaView>
             <View
-              style={{ position: "absolute", bottom: 50, right: 20 }}
+              style={{ position: "absolute", bottom: 50, right: 20, flexDirection: "row", gap: 10 }}
               pointerEvents="box-none"
             >
+              {myPosition && myPosition.shares > 0 && (
+                <TouchableOpacity
+                  onPress={() => setShowSellInvestment(true)}
+                  activeOpacity={0.9}
+                  style={{
+                    backgroundColor: "#dc2626",
+                    paddingVertical: 16,
+                    paddingHorizontal: 24,
+                    borderRadius: 9999,
+                  }}
+                >
+                  <Text
+                    style={{ color: "white", fontSize: 20, fontWeight: "600", textAlign: "center" }}
+                  >
+                    Sell
+                  </Text>
+                </TouchableOpacity>
+              )}
               <TouchableOpacity
                 onPress={() => {
                   setShowAddInvestment(true);
@@ -447,20 +468,16 @@ export default function StockModal({
                 activeOpacity={0.9}
                 style={{
                   backgroundColor: "black",
-                  width: 160,
                   paddingVertical: 16,
+                  paddingHorizontal: 24,
                   borderRadius: 9999,
                 }}
               >
-                <View
-                  style={{ alignItems: "center", justifyContent: "center" }}
+                <Text
+                  style={{ color: "white", fontSize: 20, fontWeight: "600", textAlign: "center" }}
                 >
-                  <Text
-                    style={{ color: "white", fontSize: 24, fontWeight: "600" }}
-                  >
-                    Add +
-                  </Text>
-                </View>
+                  Add +
+                </Text>
               </TouchableOpacity>
             </View>
           </Animated.View>
@@ -469,6 +486,13 @@ export default function StockModal({
             onClose={() => setShowAddInvestment(false)}
             selectedStock={selectedStock}
             onAdded={onInvestmentAdded}
+          />
+          <SellInvestmentModal
+            isVisible={showSellInvestment}
+            onClose={() => setShowSellInvestment(false)}
+            selectedStock={selectedStock}
+            myPosition={myPosition}
+            onSold={onInvestmentAdded}
           />
           <StockDescriptionModal
             isVisible={showDescriptionModal}

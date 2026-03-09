@@ -29,3 +29,37 @@ export const getInvestments = async (accessToken, refreshToken) => {
     { accessToken },
   );
 };
+
+export const sellInvestment = async (
+  accessToken: string,
+  refreshToken: string,
+  ticker: string,
+  quantity: number,
+  accountId?: string,
+) => {
+  if (!accessToken) {
+    throw new Error("Missing access token");
+  }
+
+  const payload: any = { ticker, quantity };
+  if (accountId) {
+    payload.account_id = accountId;
+  }
+
+  const res = await fetch(`${BASE_URL}/investments/sell`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+      "x-refresh-token": refreshToken,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.detail || "Failed to sell investment");
+  }
+
+  return res.json();
+};
