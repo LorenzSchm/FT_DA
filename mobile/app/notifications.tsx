@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import { Bell, BellOff } from "lucide-react-native";
+import { ArrowLeft, BellOff } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { Stack } from "expo-router";
 
@@ -15,7 +15,7 @@ function NotificationsNavBar() {
             "bg-[#F1F1F2] rounded-full p-2 w-[40px] h-[40px] flex justify-center items-center"
           }
         >
-          <Bell />
+          <ArrowLeft />
         </View>
       </TouchableOpacity>
 

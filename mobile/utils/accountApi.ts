@@ -51,3 +51,28 @@ export async function updateAccount({
 
   return response;
 }
+
+type ChangePasswordParams = {
+  password: string;
+  access_token: string;
+  refresh_token: string;
+};
+
+export async function changePassword({
+  password,
+  access_token,
+  refresh_token,
+}: ChangePasswordParams) {
+  const response = await axios.post(
+    `${API_BASE_URL}/auth/reset-password`,
+    { password },
+    {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+        "x-refresh-token": refresh_token,
+      },
+    },
+  );
+
+  return response;
+}

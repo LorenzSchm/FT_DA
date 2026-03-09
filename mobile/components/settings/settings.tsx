@@ -9,15 +9,18 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useAuthStore } from "@/utils/authStore";
-import { getAccount, updateAccount, UserResponse } from "@/utils/accountApi";
+import {
+  getAccount,
+  updateAccount,
+  changePassword,
+  UserResponse,
+} from "@/utils/accountApi";
 import SettingsNavBar from "./SettingsNavBar";
 import Toast from "react-native-toast-message";
 import { LogOut, Eye, EyeOff } from "lucide-react-native";
 import CustomPicker from "@/components/ui/CustomPicker";
 import { useRouter } from "expo-router";
 
-const getPassword = () => "****************";
-const getPhone = () => "+43 660 6951513";
 const getDefaultCurrency = () => "EUR(€)";
 const getLanguage = () => "EN-UK";
 
@@ -49,8 +52,8 @@ export default function SettingsScreen() {
   const [editableFields, setEditableFields] = useState<EditableFields>({
     display_name: "",
     email: "",
-    password: getPassword(),
-    phone: getPhone(),
+    password: "",
+    phone: "",
     defaultCurrency: getDefaultCurrency(),
     language: getLanguage(),
   });
@@ -100,13 +103,14 @@ export default function SettingsScreen() {
         ...prev,
         display_name: data.display_name || "",
         email: data.email || "",
+        password: "",
       }));
     }
     setIsEditing(false);
   };
 
   const handleSave = async () => {
-    if (!session?.refresh_token) {
+    if (!session?.refresh_token || !session?.access_token) {
       Alert.alert("Error", "No valid session found. Please log in again.");
       return;
     }
@@ -117,10 +121,34 @@ export default function SettingsScreen() {
         email: editableFields.email,
         display_name: editableFields.display_name,
         refresh_token: session.refresh_token,
-        access_token: session?.access_token,
+        access_token: session.access_token,
       });
 
       setData(response.data);
+
+      if (editableFields.password.trim().length > 0) {
+        try {
+          await changePassword({
+            password: editableFields.password,
+            access_token: session.access_token,
+            refresh_token: session.refresh_token,
+          });
+          Toast.show({
+            type: "success",
+            text1: "Password changed successfully",
+          });
+        } catch (pwErr: any) {
+          console.error("Failed to change password:", pwErr);
+          Toast.show({
+            type: "error",
+            text1: "Failed to change password",
+            text2:
+              pwErr?.response?.data?.detail || pwErr.message || "Unknown error",
+          });
+        }
+      }
+
+      setEditableFields((prev) => ({ ...prev, password: "" }));
       setIsEditing(false);
       Toast.show({
         type: "success",
@@ -236,6 +264,8 @@ export default function SettingsScreen() {
                   value={editableFields.password}
                   onChangeText={(value) => handleFieldChange("password", value)}
                   secureTextEntry={!showPassword}
+                  placeholder="Enter new password"
+                  placeholderTextColor="#9FA1A4"
                 />
                 <TouchableOpacity
                   onPress={() => setShowPassword(!showPassword)}
@@ -249,20 +279,6 @@ export default function SettingsScreen() {
               </View>
             ) : (
               <Text className="text-gray-500 mt-1">****************</Text>
-            )}
-          </View>
-
-          <View className="mb-6">
-            <Text className="text-lg font-bold">Phone</Text>
-            {isEditing ? (
-              <TextInput
-                className="text-gray-500 mt-1"
-                value={editableFields.phone}
-                onChangeText={(value) => handleFieldChange("phone", value)}
-                keyboardType="phone-pad"
-              />
-            ) : (
-              <Text className="text-gray-500 mt-1">{editableFields.phone}</Text>
             )}
           </View>
 
