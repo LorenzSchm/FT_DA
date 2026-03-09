@@ -440,7 +440,13 @@ export default function StockModal({
               </ScrollView>
             </SafeAreaView>
             <View
-              style={{ position: "absolute", bottom: 50, right: 20, flexDirection: "row", gap: 10 }}
+              style={{
+                position: "absolute",
+                bottom: 50,
+                right: 20,
+                flexDirection: "row",
+                gap: 10,
+              }}
               pointerEvents="box-none"
             >
               {myPosition && myPosition.shares > 0 && (
@@ -455,7 +461,12 @@ export default function StockModal({
                   }}
                 >
                   <Text
-                    style={{ color: "white", fontSize: 20, fontWeight: "600", textAlign: "center" }}
+                    style={{
+                      color: "white",
+                      fontSize: 20,
+                      fontWeight: "600",
+                      textAlign: "center",
+                    }}
                   >
                     Sell
                   </Text>
@@ -474,7 +485,12 @@ export default function StockModal({
                 }}
               >
                 <Text
-                  style={{ color: "white", fontSize: 20, fontWeight: "600", textAlign: "center" }}
+                  style={{
+                    color: "white",
+                    fontSize: 20,
+                    fontWeight: "600",
+                    textAlign: "center",
+                  }}
                 >
                   Add +
                 </Text>

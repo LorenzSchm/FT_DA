@@ -145,9 +145,10 @@ export default function AddTransactionModal({
     }
 
     if (!merchant.trim()) {
-      newErrors.merchant = state === "income"
-        ? "Please enter a sender"
-        : "Please enter a recipient";
+      newErrors.merchant =
+        state === "income"
+          ? "Please enter a sender"
+          : "Please enter a recipient";
     }
 
     if (!description.trim()) {
@@ -236,8 +237,9 @@ export default function AddTransactionModal({
             <View className="flex-row justify-around items-center mb-6 bg-[#F1F1F2] w-full h-[40px] rounded-full">
               <TouchableOpacity
                 onPress={() => setState("expense")}
-                className={`w-1/2 h-full flex justify-center items-center ${state === "expense" ? "bg-black rounded-full" : ""
-                  }`}
+                className={`w-1/2 h-full flex justify-center items-center ${
+                  state === "expense" ? "bg-black rounded-full" : ""
+                }`}
               >
                 <Text
                   className={`text-xl ${state === "expense" ? "text-white" : "text-neutral-500"}`}
@@ -247,8 +249,9 @@ export default function AddTransactionModal({
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => setState("income")}
-                className={`w-1/2 h-full flex justify-center items-center ${state === "income" ? "bg-black rounded-full" : ""
-                  }`}
+                className={`w-1/2 h-full flex justify-center items-center ${
+                  state === "income" ? "bg-black rounded-full" : ""
+                }`}
               >
                 <Text
                   className={`text-xl ${state === "income" ? "text-white" : "text-neutral-500"}`}
@@ -266,7 +269,8 @@ export default function AddTransactionModal({
               value={selectedAccount}
               onValueChange={(val) => {
                 setSelectedAccount(val);
-                if (errors.account) setErrors((p) => ({ ...p, account: undefined }));
+                if (errors.account)
+                  setErrors((p) => ({ ...p, account: undefined }));
               }}
               options={accounts.map((acc) => ({
                 label: `${acc.name} (${acc.currency})`,
@@ -276,7 +280,9 @@ export default function AddTransactionModal({
               variant="input"
             />
             {errors.account && (
-              <Text className="text-red-500 text-sm mb-3">{errors.account}</Text>
+              <Text className="text-red-500 text-sm mb-3">
+                {errors.account}
+              </Text>
             )}
             {!errors.account && <View className="mb-3" />}
 
@@ -292,12 +298,15 @@ export default function AddTransactionModal({
                 value={amount}
                 onChangeText={(text) => {
                   setAmount(text);
-                  if (errors.amount) setErrors((p) => ({ ...p, amount: undefined }));
+                  if (errors.amount)
+                    setErrors((p) => ({ ...p, amount: undefined }));
                 }}
               />
             </View>
             {errors.amount && (
-              <Text className="text-red-500 text-sm mb-3 mt-1">{errors.amount}</Text>
+              <Text className="text-red-500 text-sm mb-3 mt-1">
+                {errors.amount}
+              </Text>
             )}
             {!errors.amount && <View className="mb-3" />}
 
@@ -313,12 +322,15 @@ export default function AddTransactionModal({
                 value={merchant}
                 onChangeText={(text) => {
                   setMerchant(text);
-                  if (errors.merchant) setErrors((p) => ({ ...p, merchant: undefined }));
+                  if (errors.merchant)
+                    setErrors((p) => ({ ...p, merchant: undefined }));
                 }}
               />
             </View>
             {errors.merchant && (
-              <Text className="text-red-500 text-sm mb-3 mt-1">{errors.merchant}</Text>
+              <Text className="text-red-500 text-sm mb-3 mt-1">
+                {errors.merchant}
+              </Text>
             )}
             {!errors.merchant && <View className="mb-3" />}
 
@@ -332,13 +344,16 @@ export default function AddTransactionModal({
                 value={description}
                 onChangeText={(text) => {
                   setDescription(text);
-                  if (errors.description) setErrors((p) => ({ ...p, description: undefined }));
+                  if (errors.description)
+                    setErrors((p) => ({ ...p, description: undefined }));
                 }}
                 maxLength={30}
               />
             </View>
             {errors.description && (
-              <Text className="text-red-500 text-sm mb-6 mt-1">{errors.description}</Text>
+              <Text className="text-red-500 text-sm mb-6 mt-1">
+                {errors.description}
+              </Text>
             )}
             {!errors.description && <View className="mb-6" />}
             <TouchableOpacity
