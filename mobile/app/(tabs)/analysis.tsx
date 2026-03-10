@@ -1,6 +1,11 @@
-import DashBoard from "@/components/DashBoard";
 import { useAuthStore } from "@/utils/authStore";
-import { Text, View, ScrollView, TouchableOpacity } from "react-native";
+import {
+  Text,
+  View,
+  ScrollView,
+  TouchableOpacity,
+  Platform,
+} from "react-native";
 import { useEffect, useState } from "react";
 import { getAccounts } from "@/utils/db/finance/finance";
 import { getData } from "@/utils/db/connect_accounts/connectAccounts";
@@ -9,18 +14,35 @@ import Overview from "@/components/analysis/Overview";
 import Incomes from "@/components/analysis/Incomes";
 import Expenses from "@/components/analysis/Expenses";
 import Subscriptions from "@/components/analysis/Subscriptions";
+import { Skeleton } from "@/components/ui/skeleton";
+
+/* ─── Color tokens (matches InvestmentView) ─── */
+const COLORS = {
+  textPrimary: "#111827",
+  textSecondary: "#6b7280",
+  textTertiary: "#9ca3af",
+  cardBg: "#ffffff",
+  cardBorder: "rgba(0,0,0,0.04)",
+  surface: "#f9fafb",
+  pillActive: "#111827",
+  pillActiveText: "#ffffff",
+  pillInactive: "#f4f4f5",
+  pillInactiveText: "#6b7280",
+};
 
 const STATE = {
   OVERVIEW: "Overview",
   EXPENSES: "Expenses",
   INCOME: "Income",
   SUBSCRIPTIONS: "Subscriptions",
-};
+} as const;
+
+type StateKey = (typeof STATE)[keyof typeof STATE];
 
 export default function Analysis() {
   const { session } = useAuthStore();
-  const [selectedState, setSelectedState] = useState<string>(STATE.OVERVIEW);
-  const [isfetchingAccounts, setIsFetchingAccounts] = useState<Boolean>(false);
+  const [selectedState, setSelectedState] = useState<StateKey>(STATE.OVERVIEW);
+  const [isFetchingAccounts, setIsFetchingAccounts] = useState(false);
   const [accounts, setAccounts] = useState<any[]>([]);
   const [selectedAccountId, setSelectedAccountId] = useState<any>(null);
 
@@ -47,14 +69,10 @@ export default function Analysis() {
       const hasConnected = result.some((acc: any) => acc.kind === "connect");
       if (hasConnected) {
         const availableCents = await fetchConnectBalanceMinor();
-
         result = result.map((acc: any) =>
           acc.kind !== "connect"
             ? acc
-            : {
-                ...acc,
-                balance_minor: availableCents,
-              },
+            : { ...acc, balance_minor: availableCents },
         );
       }
 
@@ -75,47 +93,122 @@ export default function Analysis() {
   const states = Object.values(STATE);
 
   return (
-    <View className="flex-1 bg-white">
-      <View className="pt-4 pb-2">
+    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+      {/* ─── Sticky header: title + pills ─── */}
+      <View
+        style={{
+          backgroundColor: "#fff",
+          paddingHorizontal: 24,
+          paddingTop: 16,
+          paddingBottom: 8,
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 28,
+            fontWeight: "800",
+            color: COLORS.textPrimary,
+            letterSpacing: -0.8,
+            marginBottom: 16,
+          }}
+        >
+          Analysis
+        </Text>
+
+        {/* ─── Tab pills ─── */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
+          contentContainerStyle={{ gap: 8 }}
+          bounces={false}
         >
-          {states.map((state) => (
-            <TouchableOpacity
-              key={state}
-              onPress={() => setSelectedState(state)}
-              className={`px-6 py-3 rounded-full ${
-                selectedState === state ? "bg-black" : "bg-gray-100"
-              }`}
-            >
-              <Text
-                className={`text-base font-semibold ${
-                  selectedState === state ? "text-white" : "text-gray-600"
-                }`}
+          {states.map((state) => {
+            const isActive = selectedState === state;
+            return (
+              <TouchableOpacity
+                key={state}
+                onPress={() => setSelectedState(state)}
+                activeOpacity={0.8}
               >
-                {state}
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <View
+                  style={{
+                    paddingHorizontal: 22,
+                    paddingVertical: 11,
+                    borderRadius: 9999,
+                    backgroundColor: isActive ? "#000000" : "#f4f4f5",
+                    ...(isActive
+                      ? Platform.select({
+                          ios: {
+                            shadowColor: "#000",
+                            shadowOffset: { width: 0, height: 3 },
+                            shadowOpacity: 0.2,
+                            shadowRadius: 6,
+                          },
+                          android: { elevation: 4 },
+                        })
+                      : {}),
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 15,
+                      fontWeight: isActive ? "800" : "600",
+                      color: isActive ? "#ffffff" : "#6b7280",
+                      letterSpacing: -0.2,
+                    }}
+                  >
+                    {state}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
       </View>
-      <View className="px-4 py-1">
-        <CustomPicker
-          placeholder="Select an account"
-          variant="input"
-          value={selectedAccountId}
-          onValueChange={setSelectedAccountId}
-          options={
-            accounts.map((acc: any) => ({
-              label: `${acc?.name} (${acc.currency})`,
-              value: acc.id,
-            })) as any
-          }
-        />
+
+      {/* ─── Account picker ─── */}
+      <View
+        style={{
+          paddingHorizontal: 24,
+          paddingVertical: 8,
+        }}
+      >
+        {isFetchingAccounts ? (
+          <Skeleton className="h-[52px] w-full rounded-full" />
+        ) : (
+          <View
+            style={{
+              backgroundColor: COLORS.surface,
+              borderRadius: 9999,
+              borderWidth: 1,
+              borderColor: COLORS.cardBorder,
+              ...Platform.select({
+                ios: {
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.03,
+                  shadowRadius: 4,
+                },
+                android: { elevation: 1 },
+              }),
+            }}
+          >
+            <CustomPicker
+              placeholder="Select an account"
+              variant="input"
+              value={selectedAccountId}
+              onValueChange={setSelectedAccountId}
+              options={accounts.map((acc: any) => ({
+                label: `${acc?.name} (${acc.currency})`,
+                value: acc.id,
+              }))}
+            />
+          </View>
+        )}
       </View>
-      <View className="flex-1">
+
+      {/* ─── Tab content ─── */}
+      <View style={{ flex: 1 }}>
         {selectedState === STATE.OVERVIEW && (
           <Overview accounts={accounts} account={selectedAccountId} />
         )}

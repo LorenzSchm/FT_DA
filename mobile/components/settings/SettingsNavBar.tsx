@@ -1,6 +1,6 @@
 import React from "react";
 import { View, TouchableOpacity, Text } from "react-native";
-import { User, Edit2, X, Check } from "lucide-react-native";
+import { ArrowLeft, Edit2, X, Check } from "lucide-react-native";
 import { useRouter } from "expo-router";
 
 type SettingsNavBarProps = {
@@ -26,7 +26,7 @@ export default function SettingsNavBar({
             "bg-[#F1F1F2] rounded-full p-2 w-[40px] h-[40px] flex justify-center items-center"
           }
         >
-          <User />
+          <ArrowLeft />
         </View>
       </TouchableOpacity>
 

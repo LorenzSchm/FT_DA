@@ -19,24 +19,28 @@ import { PhantomChart } from "@/components/PhantomChart";
 import { useAuthStore } from "@/utils/authStore";
 import { getInvestments } from "@/utils/db/invest/invest";
 import AddInvestmentModal from "@/components/modals/AddInvestmentModal";
+import SellInvestmentModal from "@/components/modals/SellInvestmentModal";
 import StockDescriptionModal from "./StockDescriptionModal";
 
 type Props = {
   isVisible: boolean;
   onClose: () => void;
   selectedStock: any;
+  onInvestmentAdded?: () => void | Promise<void>;
 };
 
 export default function StockModal({
   isVisible,
   onClose,
   selectedStock,
+  onInvestmentAdded,
 }: Props) {
   const [isModalVisible, setIsModalVisible] = useState(isVisible);
   const [history, setHistory] = useState<any | null>(null);
   const [chartLoading, setChartLoading] = useState(false);
   const [myPosition, setMyPosition] = useState<any | null>(null);
   const [showAddInvestment, setShowAddInvestment] = useState(false);
+  const [showSellInvestment, setShowSellInvestment] = useState(false);
   const [informationData, setInformationData] = useState<any>(null);
   const [logo, setLogo] = useState<string | null>(null);
   const API_BASE = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
@@ -88,6 +92,11 @@ export default function StockModal({
   useEffect(() => {
     if (isVisible) {
       setIsModalVisible(true);
+
+      // Use the logo from selectedStock immediately if available
+      if (selectedStock?.logo) {
+        setLogo(selectedStock.logo);
+      }
 
       Animated.spring(sheetPosition, {
         toValue: 0,
@@ -145,21 +154,15 @@ export default function StockModal({
                 logoCache.current[sym] = logo;
               }
             } catch {
-              // Brandfetch failed, use FMP image as fallback
-              if (data.image) {
-                logo = data.image;
-                logoCache.current[sym] = logo;
-              }
+              // Brandfetch failed, keep existing logo
             }
-          } else if (data.image) {
-            // No domain, use FMP image directly
-            logo = data.image;
-            logoCache.current[sym] = logo;
           }
         }
 
-        setInformationData({ ...data, logo });
-        setLogo(logo || null);
+        setInformationData(data);
+        if (logo) {
+          setLogo(logo);
+        }
       }
     } catch (err) {
       console.error("fetchInformation error:", err);
@@ -223,6 +226,7 @@ export default function StockModal({
     }).start(() => {
       setIsModalVisible(false);
       setShowAddInvestment(false);
+      setShowSellInvestment(false);
       onClose();
     });
   };
@@ -280,15 +284,9 @@ export default function StockModal({
                   {selectedStock && (
                     <View className="p-4 flex-row items-center">
                       <View className="w-12 h-12 rounded-2xl items-center justify-center mr-4 overflow-hidden">
-                        {logo ? (
+                        {logo || selectedStock?.logo ? (
                           <Image
-                            source={{ uri: logo }}
-                            className="w-full h-full"
-                            resizeMode="contain"
-                          />
-                        ) : informationData?.image ? (
-                          <Image
-                            source={{ uri: informationData.image }}
+                            source={{ uri: logo || selectedStock?.logo }}
                             className="w-full h-full"
                             resizeMode="contain"
                           />
@@ -321,7 +319,7 @@ export default function StockModal({
                       <Skeleton className="h-[260px] w-full rounded-2xl" />
                     </View>
                   ) : history ? (
-                    <View className="h-[260px]">
+                    <View className="h-[260px] mb-10">
                       <PhantomChart dataByTimeframe={history} />
                     </View>
                   ) : (
@@ -442,9 +440,38 @@ export default function StockModal({
               </ScrollView>
             </SafeAreaView>
             <View
-              style={{ position: "absolute", bottom: 50, right: 20 }}
+              style={{
+                position: "absolute",
+                bottom: 50,
+                right: 20,
+                flexDirection: "row",
+                gap: 10,
+              }}
               pointerEvents="box-none"
             >
+              {myPosition && myPosition.shares > 0 && (
+                <TouchableOpacity
+                  onPress={() => setShowSellInvestment(true)}
+                  activeOpacity={0.9}
+                  style={{
+                    backgroundColor: "#dc2626",
+                    paddingVertical: 16,
+                    paddingHorizontal: 24,
+                    borderRadius: 9999,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: "white",
+                      fontSize: 20,
+                      fontWeight: "600",
+                      textAlign: "center",
+                    }}
+                  >
+                    Sell
+                  </Text>
+                </TouchableOpacity>
+              )}
               <TouchableOpacity
                 onPress={() => {
                   setShowAddInvestment(true);
@@ -452,20 +479,21 @@ export default function StockModal({
                 activeOpacity={0.9}
                 style={{
                   backgroundColor: "black",
-                  width: 160,
                   paddingVertical: 16,
+                  paddingHorizontal: 24,
                   borderRadius: 9999,
                 }}
               >
-                <View
-                  style={{ alignItems: "center", justifyContent: "center" }}
+                <Text
+                  style={{
+                    color: "white",
+                    fontSize: 20,
+                    fontWeight: "600",
+                    textAlign: "center",
+                  }}
                 >
-                  <Text
-                    style={{ color: "white", fontSize: 24, fontWeight: "600" }}
-                  >
-                    Add +
-                  </Text>
-                </View>
+                  Add +
+                </Text>
               </TouchableOpacity>
             </View>
           </Animated.View>
@@ -473,6 +501,14 @@ export default function StockModal({
             isVisible={showAddInvestment}
             onClose={() => setShowAddInvestment(false)}
             selectedStock={selectedStock}
+            onAdded={onInvestmentAdded}
+          />
+          <SellInvestmentModal
+            isVisible={showSellInvestment}
+            onClose={() => setShowSellInvestment(false)}
+            selectedStock={selectedStock}
+            myPosition={myPosition}
+            onSold={onInvestmentAdded}
           />
           <StockDescriptionModal
             isVisible={showDescriptionModal}

@@ -16,13 +16,14 @@ export default function RootLayout() {
 
   const shouldCreateAccount = false;
 
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar />
       <Stack>
         <Stack.Protected guard={isLoggedIn}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        </Stack.Protected>
+        </Stack.Protected>r
         <Stack.Protected guard={!isLoggedIn}>
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="sign-in" options={{ headerShown: false }} />

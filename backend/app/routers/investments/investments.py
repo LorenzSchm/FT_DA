@@ -313,6 +313,141 @@ async def create_trade(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Trade creation failed: {str(e)}")
 
+@router.post("/sell")
+async def sell_investment(
+    request: Any = Body(...),
+    supabase=Depends(get_supabase),
+    tokens=Depends(get_user_token),
+):
+    """
+    Sell shares of an investment.
+    Expects: { ticker, quantity, account_id? }
+    - Records a 'sell' trade at the current market price.
+    - If account_id is provided, deposits the proceeds into that finance account.
+    """
+    try:
+        access = tokens.get("access_token")
+        refresh = tokens.get("refresh_token")
+        supabase.auth.set_session(access, refresh)
+        user_resp = supabase.auth.get_user()
+        user = user_resp.user
+        if not user:
+            raise HTTPException(status_code=401, detail="Unauthorized")
+
+        payload = request.model_dump(exclude_none=True) if hasattr(request, "model_dump") else request
+
+        ticker = payload["ticker"].strip().upper()
+        if not ticker:
+            raise HTTPException(400, "ticker is required")
+
+        sell_qty = float(payload["quantity"])
+        if sell_qty <= 0:
+            raise HTTPException(400, "quantity must be > 0")
+
+        account_id = payload.get("account_id")  # optional finance account
+
+        # ── Verify the user actually owns enough shares ──
+        trades_resp = (
+            supabase.schema("invest")
+            .table("trades")
+            .select("*")
+            .eq("user_id", user.id)
+            .execute()
+        )
+        user_trades = trades_resp.data or []
+
+        held_qty = 0.0
+        for t in user_trades:
+            if t["ticker"].upper() != ticker:
+                continue
+            q = float(t["quantity"])
+            if t["type"].lower() == "buy":
+                held_qty += q
+            elif t["type"].lower() == "sell":
+                held_qty -= q
+
+        if held_qty < sell_qty - 1e-9:
+            raise HTTPException(
+                400,
+                f"Insufficient shares. You own {round(held_qty, 8)} of {ticker}, "
+                f"but tried to sell {sell_qty}.",
+            )
+
+        # ── Get current market price ──
+        t_obj = yf.Ticker(ticker)
+        price = float(
+            t_obj.fast_info.get("lastPrice")
+            or t_obj.fast_info.get("previousClose")
+            or 0.0
+        )
+        if price <= 0:
+            raise HTTPException(400, "Could not determine current price for ticker")
+
+        gross = sell_qty * price
+        gross_minor = int(round(gross * DIVISOR))
+
+        # ── Record the sell trade ──
+        trade_data = {
+            "user_id": user.id,
+            "ticker": ticker,
+            "type": "sell",
+            "quantity": sell_qty,
+            "gross_minor": gross_minor,
+            "fee_minor": 0,
+            "trade_date": date.today().isoformat(),
+        }
+        supabase.schema("invest").table("trades").insert(trade_data).execute()
+
+        # ── Optionally deposit proceeds into a finance account ──
+        deposit_result = None
+        deposit_error = None
+        if account_id:
+            try:
+                from datetime import datetime as dt
+
+                # Determine currency from yfinance info
+                info = t_obj.info or {}
+                currency = info.get("currency") or info.get("financialCurrency") or "USD"
+
+                txn_payload = {
+                    "user_id": user.id,
+                    "account_id": account_id,
+                    "type": "income",
+                    "amount_minor": int(round(gross * 100)),  # finance uses cents (×100), not invest's ×10000
+                    "currency": currency,
+                    "description": f"Sale of {sell_qty} shares of {ticker}",
+                    "merchant": "Investment Sale",
+                    "txn_date": str(date.today()),
+                    "source": "manual",
+                    "created_at": str(dt.now()),
+                }
+                deposit_resp = (
+                    supabase.schema("finance")
+                    .table("transactions")
+                    .insert(txn_payload)
+                    .execute()
+                )
+                deposit_result = deposit_resp.data
+            except Exception as dep_err:
+                deposit_error = str(dep_err)
+
+        return {
+            "status": "success",
+            "ticker": ticker,
+            "quantity_sold": sell_qty,
+            "price_per_share": round(price, 4),
+            "total_proceeds": round(gross, 2),
+            "deposited_to_account": account_id,
+            "deposit_result": deposit_result,
+            "deposit_error": deposit_error,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Sell failed: {str(e)}")
+
+
 @router.delete("/{id}")
 async def delete_trade(
     id: str,

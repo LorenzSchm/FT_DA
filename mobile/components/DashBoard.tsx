@@ -23,6 +23,7 @@ import { getSubscriptions } from "@/utils/db/finance/subscriptions/subscriptions
 import { Skeleton } from "@/components/ui/skeleton";
 import { getData } from "@/utils/db/connect_accounts/connectAccounts";
 import { invalidateCache } from "@/utils/db/cache";
+import { CarouselPaginationDots } from "@/components/ui/PaginationDots";
 
 enum STATE {
   DEFAULT = "DEFAULT",
@@ -437,49 +438,17 @@ export default function DashBoard() {
                             (account.balance_minor / 100).toFixed(2),
                           )}
                           currency={account.currency}
+                          isLoading={
+                            !!loadingTxByAccount[account.id] ||
+                            !!loadingSubsByAccount[account.id]
+                          }
                         />
                       </CarouselItem>
                     ))}
                   </CarouselContent>
 
-                  {/* Pagination dots */}
-                  <View className="flex-row mt-4 gap-1 justify-center">
-                    {(() => {
-                      const total = accounts.length;
-                      const maxDots = 5;
-
-                      let start = 0;
-                      let end = total;
-
-                      if (total > maxDots) {
-                        if (accountIndex <= 2) {
-                          start = 0;
-                          end = maxDots;
-                        } else if (accountIndex >= total - 3) {
-                          start = total - maxDots;
-                          end = total;
-                        } else {
-                          start = accountIndex - 2;
-                          end = accountIndex + 3;
-                        }
-                      }
-
-                      return accounts.slice(start, end).map((_, i) => {
-                        const realIndex = i + start;
-
-                        return (
-                          <View
-                            key={realIndex}
-                            className={`w-2 h-2 rounded-full ${
-                              realIndex === accountIndex
-                                ? "bg-black"
-                                : "bg-gray-300"
-                            }`}
-                          />
-                        );
-                      });
-                    })()}
-                  </View>
+                  {/* Animated pagination dots */}
+                  <CarouselPaginationDots />
                 </Carousel>
               )}
             </View>
@@ -532,9 +501,13 @@ export default function DashBoard() {
                           currency: sub.currency,
                         })),
                       )
-                      .sort((a: any, b: any) =>
-                        `${b.id}`.localeCompare(`${a.id}`),
-                      );
+                      .sort((a: any, b: any) => {
+                        if (a.date && b.date)
+                          return Date.parse(b.date) - Date.parse(a.date);
+                        if (a.date) return -1;
+                        if (b.date) return 1;
+                        return `${b.id}`.localeCompare(`${a.id}`);
+                      });
 
                     if (combined.length === 0) {
                       return (
@@ -550,16 +523,25 @@ export default function DashBoard() {
                         className="flex flex-row justify-between"
                         style={{ width: contentWidth }}
                       >
-                        <View>
-                          <Text className="text-xl font-bold">
+                        <View style={{ flex: 1, marginRight: 12 }}>
+                          <Text
+                            className="text-xl font-bold"
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                          >
                             {item.description}
                           </Text>
-                          <Text className="text-gray-400 text-lg">
+                          <Text
+                            className="text-gray-400 text-lg"
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                          >
                             {item.category_id}
                           </Text>
                         </View>
 
                         <Text
+                          style={{ flexShrink: 0 }}
                           className={`self-center font-bold ${
                             item.amount_minor < 0
                               ? "text-red-500"

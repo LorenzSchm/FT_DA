@@ -9,16 +9,18 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useAuthStore } from "@/utils/authStore";
-import { getAccount, updateAccount, UserResponse } from "@/utils/accountApi";
+import {
+  getAccount,
+  updateAccount,
+  changePassword,
+  UserResponse,
+} from "@/utils/accountApi";
 import SettingsNavBar from "./SettingsNavBar";
 import Toast from "react-native-toast-message";
-import { LogOut } from "lucide-react-native";
+import { LogOut, Eye, EyeOff } from "lucide-react-native";
 import CustomPicker from "@/components/ui/CustomPicker";
 import { useRouter } from "expo-router";
-import ResetPasswordModal from "@/components/modals/ResetPasswordModal";
 
-const getPassword = () => "****************";
-const getPhone = () => "+43 660 6951513";
 const getDefaultCurrency = () => "EUR(€)";
 const getLanguage = () => "EN-UK";
 
@@ -46,15 +48,15 @@ export default function SettingsScreen() {
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
   const [editableFields, setEditableFields] = useState<EditableFields>({
     display_name: "",
     email: "",
-    password: getPassword(),
-    phone: getPhone(),
+    password: "",
+    phone: "",
     defaultCurrency: getDefaultCurrency(),
     language: getLanguage(),
   });
-  const [showPasswordModal, setShowPasswordModal] = useState<boolean>(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -101,13 +103,14 @@ export default function SettingsScreen() {
         ...prev,
         display_name: data.display_name || "",
         email: data.email || "",
+        password: "",
       }));
     }
     setIsEditing(false);
   };
 
   const handleSave = async () => {
-    if (!session?.refresh_token) {
+    if (!session?.refresh_token || !session?.access_token) {
       Alert.alert("Error", "No valid session found. Please log in again.");
       return;
     }
@@ -118,10 +121,34 @@ export default function SettingsScreen() {
         email: editableFields.email,
         display_name: editableFields.display_name,
         refresh_token: session.refresh_token,
-        access_token: session?.access_token,
+        access_token: session.access_token,
       });
 
       setData(response.data);
+
+      if (editableFields.password.trim().length > 0) {
+        try {
+          await changePassword({
+            password: editableFields.password,
+            access_token: session.access_token,
+            refresh_token: session.refresh_token,
+          });
+          Toast.show({
+            type: "success",
+            text1: "Password changed successfully",
+          });
+        } catch (pwErr: any) {
+          console.error("Failed to change password:", pwErr);
+          Toast.show({
+            type: "error",
+            text1: "Failed to change password",
+            text2:
+              pwErr?.response?.data?.detail || pwErr.message || "Unknown error",
+          });
+        }
+      }
+
+      setEditableFields((prev) => ({ ...prev, password: "" }));
       setIsEditing(false);
       Toast.show({
         type: "success",
@@ -180,11 +207,6 @@ export default function SettingsScreen() {
 
   return (
     <View className="flex-1 bg-white">
-      <ResetPasswordModal
-        isVisible={showPasswordModal}
-        mode="change"
-        onClose={() => setShowPasswordModal(false)}
-      />
       <SettingsNavBar
         isEditing={isEditing}
         onEditToggle={handleEditToggle}
@@ -234,25 +256,29 @@ export default function SettingsScreen() {
           </View>
 
           <View className="mb-6">
-            <TouchableOpacity onPress={() => setShowPasswordModal(true)}>
-              <Text className="text-lg font-bold">Password</Text>
-              <Text className="text-gray-500 mt-1">
-                {editableFields.password}
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          <View className="mb-6">
-            <Text className="text-lg font-bold">Phone</Text>
+            <Text className="text-lg font-bold">Password</Text>
             {isEditing ? (
-              <TextInput
-                className="text-gray-500 mt-1"
-                value={editableFields.phone}
-                onChangeText={(value) => handleFieldChange("phone", value)}
-                keyboardType="phone-pad"
-              />
+              <View className="flex-row items-center mt-1">
+                <TextInput
+                  className="text-gray-500 flex-1"
+                  value={editableFields.password}
+                  onChangeText={(value) => handleFieldChange("password", value)}
+                  secureTextEntry={!showPassword}
+                  placeholder="Enter new password"
+                  placeholderTextColor="#9FA1A4"
+                />
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff size={20} color="#9FA1A4" />
+                  ) : (
+                    <Eye size={20} color="#9FA1A4" />
+                  )}
+                </TouchableOpacity>
+              </View>
             ) : (
-              <Text className="text-gray-500 mt-1">{editableFields.phone}</Text>
+              <Text className="text-gray-500 mt-1">****************</Text>
             )}
           </View>
 
