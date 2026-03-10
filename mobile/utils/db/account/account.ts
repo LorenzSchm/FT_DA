@@ -16,7 +16,6 @@ export const addAccount = async (
 
   let initial_balance: string | null = null;
 
-
   const res = await fetch(`${BASE_URL}/finance/`, {
     method: "POST",
     headers: {
@@ -39,7 +38,7 @@ export const addAccount = async (
     let detail = "Failed to create account";
     try {
       detail = JSON.parse(errorText).detail || detail;
-    } catch { }
+    } catch {}
     throw new Error(detail);
   }
 
