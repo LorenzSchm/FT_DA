@@ -15,6 +15,7 @@ class SavingGoalRequest(BaseModel):
     name: str
     target_minor: int
     currency: str
+    contributed_minor: int | None = None
 
 @router.get("/")
 async def get_saving_goals(
@@ -74,6 +75,8 @@ async def add_saving_goal(
             raise HTTPException(status_code=401, detail="Unauthorized: No valid session")
 
         payload = request.model_dump(exclude_none=True)
+        contributed_minor = payload.pop("contributed_minor", 0)
+
         response = (
             supabase.schema("finance")
             .table("saving_goals")
@@ -85,6 +88,22 @@ async def add_saving_goal(
             )
             .execute()
         )
+
+        if response.data and contributed_minor > 0:
+            goal_id = response.data[0]["id"]
+            (
+                supabase.schema("finance")
+                .table("saving_contributions")
+                .insert(
+                    {
+                        "goal_id": goal_id,
+                        "contributed_minor": contributed_minor,
+                        "description": "Initial balance",
+                        "contributed_at": str(datetime.now()),
+                    }
+                )
+                .execute()
+            )
 
         return {"user": user.model_dump(), "rows": response.data}
 

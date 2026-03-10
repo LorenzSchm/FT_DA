@@ -51,7 +51,7 @@ export default function TeamPage() {
     <div
       ref={containerRef}
       id="team"
-      className="min-h-screen flex flex-col items-center p-8 bg-white"
+      className="min-h-screen flex flex-col items-center p-4 sm:p-8 bg-white"
     >
       <motion.img
         src="/tealPhoto.png"
@@ -61,21 +61,21 @@ export default function TeamPage() {
         animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: -50 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
       />
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full max-w-6xl">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-6xl">
         {members.map((member, index) => (
           <motion.div
             key={index}
-            className="flex flex-col gap-2 justify-center items-center p-6 bg-white rounded-lg shadow-md hover:cursor-pointer transition-transform duration-300"
+            className="flex flex-col gap-2 justify-center items-center p-6 bg-white rounded-lg shadow-md hover:cursor-pointer transition-transform duration-300 text-center"
             variants={cardVariants}
             initial="hidden"
             animate={isInView ? "visible" : "hidden"}
             whileHover="hover"
             custom={index}
           >
-            <span className="font-swiss font-bold text-lg text-black whitespace-nowrap">
+            <span className="font-swiss font-bold text-lg text-black">
               {member.name}
             </span>
-            <span className="text-gray-600 whitespace-nowrap">
+            <span className="text-gray-600 text-sm">
               {member.role}
             </span>
           </motion.div>

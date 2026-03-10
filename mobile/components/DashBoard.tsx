@@ -18,7 +18,10 @@ import AddAccountModal from "@/components/modals/AddAccountModal";
 import AddTransactionModal from "@/components/modals/AddTransactionModal";
 import AddSubscriptionModal from "@/components/modals/AddSubscriptionModal";
 import { useAuthStore } from "@/utils/authStore";
-import { getAccounts, getTransactions } from "@/utils/db/finance/finance";
+import { getAccounts, getTransactions, exportTransactionsToCSV } from "@/utils/db/finance/finance";
+import * as FileSystem from "expo-file-system";
+import * as Sharing from "expo-sharing";
+import { Download } from "lucide-react-native";
 import { getSubscriptions } from "@/utils/db/finance/subscriptions/subscriptions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getData } from "@/utils/db/connect_accounts/connectAccounts";
@@ -37,6 +40,7 @@ export default function DashBoard() {
   const [accountIndex, setAccountIndex] = useState(0);
   const [state, setState] = useState<STATE>(STATE.DEFAULT);
   const [expanded, setExpanded] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const [accounts, setAccounts] = useState<any[]>([]);
 
@@ -311,6 +315,26 @@ export default function DashBoard() {
 
   const [refreshing, setRefreshing] = useState(false);
 
+  const exportToCSV = async () => {
+    if (!session?.access_token) return;
+    try {
+      setIsExporting(true);
+      const csvData = await exportTransactionsToCSV(session.access_token, session.refresh_token);
+      
+      const fileUri = FileSystem.documentDirectory + "transactions_export.csv";
+      await FileSystem.writeAsStringAsync(fileUri, csvData, { encoding: FileSystem.EncodingType.UTF8 });
+      
+      const canShare = await Sharing.isAvailableAsync();
+      if (canShare) {
+        await Sharing.shareAsync(fileUri, { mimeType: "text/csv", dialogTitle: "Export Transactions" });
+      }
+    } catch (e: any) {
+      console.error("Export failed:", e);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     invalidateCache();
@@ -389,11 +413,16 @@ export default function DashBoard() {
           />
         }
       >
-        <View className="items-center justify-center">
-          <View className="gap-3 items-center">
-            <Text className="text-center text-2xl font-bold">
-              {`Good morning ${user?.user_metadata?.display_name || "there"}!`}
-            </Text>
+        <View className="items-center justify-center w-full">
+          <View className="gap-3 items-center w-full">
+            <View className="w-full relative justify-center items-center px-5 mt-2">
+              <Text className="text-center text-2xl font-bold">
+                {`Good morning ${user?.user_metadata?.display_name || "there"}!`}
+              </Text>
+              <TouchableOpacity onPress={exportToCSV} disabled={isExporting} className="absolute right-5 p-2">
+                <Download size={24} color={isExporting ? "gray" : "black"} />
+              </TouchableOpacity>
+            </View>
 
             {/* Accounts Carousel */}
             <View className="w-full">
