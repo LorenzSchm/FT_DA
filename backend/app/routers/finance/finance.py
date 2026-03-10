@@ -7,6 +7,8 @@ from fastapi.security import HTTPBearer
 from pydantic import BaseModel
 from starlette import status
 from datetime import date, datetime
+import logging
+
 
 router = APIRouter(prefix="/finance", tags=["finance"])
 auth_scheme = HTTPBearer(auto_error=True)
@@ -29,6 +31,7 @@ class CreateFinanceAccountRequest(BaseModel):
     kind: str
     ext_conn_id: Optional[str] = None
     archived_at: Optional[str] = None
+    initial_balance: Optional[int] = None
 
 
 @router.get("/", status_code=status.HTTP_200_OK)
@@ -67,13 +70,19 @@ async def post_finance(
     supabase=Depends(get_supabase),
     tokens=Depends(get_user_token),
 ):
+
     try:
         access = tokens.get("access_token")
         refresh = tokens.get("refresh_token")
 
+        if not access or not refresh:
+            logging.warning("[post_finance] Missing access or refresh token")
+            raise HTTPException(status_code=401, detail="Missing authentication tokens")
+
         supabase.auth.set_session(access, refresh)
 
-        payload = request.model_dump(exclude_none=True)
+        payload = request.model_dump(exclude_none=True, exclude={"initial_balance"})
+
         res = (
             supabase.schema("finance")
             .table("accounts")
@@ -81,8 +90,55 @@ async def post_finance(
             .execute()
         )
 
+        account_data = res.data[0] if res.data else None
+
+        if not account_data:
+            raise HTTPException(status_code=500, detail="Account creation returned no data")
+
+
+        if request.initial_balance and request.initial_balance > 0:
+
+            user_resp = supabase.auth.get_user()
+            user = user_resp.user
+
+            if not user:
+                logging.warning("[post_finance] Could not resolve user from session for initial balance transaction")
+
+            user_id = payload.get("user_id") or (user.id if user else None)
+            logging.debug(f"[post_finance] Resolved user_id for transaction: {user_id}")
+
+            txn_payload = {
+                "user_id": user_id,
+                "account_id": account_data["id"],
+                "txn_date": str(datetime.now().date()),
+                "source": "manual",
+                "type": "income",
+                "amount_minor": int(request.initial_balance),
+                "currency": request.currency,
+                "description": "Initial Deposit",
+                "merchant": "Account Creation",
+                "created_at": str(datetime.now()),
+            }
+            logging.info(f"[post_finance] Inserting initial balance transaction: {txn_payload}")
+
+            txn_res = (
+                supabase.schema("finance")
+                .table("transactions")
+                .insert(txn_payload)
+                .execute()
+            )
+            logging.info(f"[post_finance] Transaction insert response: {txn_res.data}")
+
+            if not txn_res.data:
+                logging.warning("[post_finance] Initial balance transaction insert returned no data")
+
+        logging.info(f"[post_finance] Request completed successfully for account id={account_data.get('id')}")
         return res.data
+
+    except HTTPException:
+        raise
     except Exception as e:
+        logging.exception(f"[post_finance] Unexpected error: {e}")
         raise HTTPException(status_code=400, detail=f"Post finance failed: {e}")
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)

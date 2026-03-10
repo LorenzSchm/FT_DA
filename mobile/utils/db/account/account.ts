@@ -1,5 +1,3 @@
-import { json } from "node:stream/consumers";
-
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
 
 export const addAccount = async (
@@ -10,11 +8,14 @@ export const addAccount = async (
   institution: string,
   currency: string,
   kind: string,
-  initial_amount: string,
+  initial_amount: any,
 ) => {
   if (!accessToken) {
     throw new Error("Missing access token");
   }
+
+  let initial_balance: string | null = null;
+
 
   const res = await fetch(`${BASE_URL}/finance/`, {
     method: "POST",
@@ -29,43 +30,25 @@ export const addAccount = async (
       institution: institution,
       currency: currency,
       kind: kind,
+      initial_balance: Number(initial_amount),
     }),
   });
 
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.detail || "Failed to fetch accounts");
+    const errorText = await res.text().catch(() => "");
+    let detail = "Failed to create account";
+    try {
+      detail = JSON.parse(errorText).detail || detail;
+    } catch { }
+    throw new Error(detail);
   }
 
-  const text = await res.text();
-
-  if (!text) {
-    return null;
-  }
-
-  if (initial_amount) {
-    console.log(res.text());
-    await fetch(`${BASE_URL}/finance/transactions/${JSON.parse(text).id}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-        "x-refresh-token": refreshToken,
-      },
-      body: JSON.stringify({
-        type: "income",
-        amount_minor: initial_amount,
-        currency: "EUR",
-        description: "Initial Deposit",
-        merchant: "Account Creation",
-      }),
-    });
-  }
-
+  let data: any;
   try {
-    return JSON.parse(text);
-  } catch (error) {
-    console.warn("Failed to parse addAccount response", error);
+    data = await res.json();
+  } catch {
     return null;
   }
+
+  return data;
 };

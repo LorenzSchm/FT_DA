@@ -24,6 +24,7 @@ import {
 } from "rn-truelayer-payments-sdk";
 import { generateToken } from "@/utils/db/connect_accounts/connectAccounts";
 import * as WebBrowser from "expo-web-browser";
+import { parse } from "date-fns";
 
 type Props = {
   isVisible: boolean;
@@ -183,7 +184,7 @@ export default function AddAccountModal({
         provider,
         "EUR",
         state,
-        initialAmount,
+        Math.round(parseFloat(initialAmount) * 100),
       );
       await handleClose();
       Toast.show({
