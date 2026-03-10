@@ -97,12 +97,17 @@ export default function SavingGoals() {
     setExpanded(false);
   };
 
-  const addAccount = async (accountName: string, initialAmount: string) => {
+  const addAccount = async (
+    accountName: string,
+    initialAmount: string,
+    targetAmount: string,
+  ) => {
     setIsLoading(true);
     try {
       const newSavings = await handleAddAccount(
         accountName,
         initialAmount,
+        targetAmount,
         session,
       );
       if (newSavings) {
@@ -252,7 +257,9 @@ export default function SavingGoals() {
       <SavingsAddAccountModal
         isVisible={showAddAccountModal}
         onClose={() => setShowAddAccountModal(false)}
-        onSave={(name, initialAmount) => addAccount(name, initialAmount)}
+        onSave={(name, initialAmount, targetAmount) =>
+          addAccount(name, initialAmount, targetAmount)
+        }
       />
 
       <SavingsAddTransactionModal

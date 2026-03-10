@@ -248,12 +248,20 @@ export default function SavingsDetailModal({
                 <View>
                   <Text className="text-3xl font-bold">
                     {currency}
-                    {(currentAmount / 100).toFixed(2)}
+                    {(currentAmount / 100).toLocaleString("de-DE", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                    {goalAmount > 0
+                      ? ` of ${currency}${(goalAmount / 100).toLocaleString("de-DE", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}`
+                      : ""}
                   </Text>
                   {goalAmount > 0 && (
-                    <Text className="text-neutral-500 mt-1">
-                      of {currency}
-                      {(goalAmount / 100).toFixed(2)} ({progress.toFixed(0)}%)
+                    <Text className="text-neutral-500 mt-1 text-lg">
+                      ({progress.toFixed(0)}%)
                     </Text>
                   )}
                 </View>

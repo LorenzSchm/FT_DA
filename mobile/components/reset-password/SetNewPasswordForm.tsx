@@ -156,7 +156,7 @@ export default function SetNewPasswordForm({
         activeOpacity={0.85}
         onPress={handleSubmit}
       >
-        <Text className="text-white font-bold text-[15px]">Reset Password</Text>
+        <Text className="text-white font-bold text-[15px]">Set Password</Text>
       </TouchableOpacity>
     </View>
   );

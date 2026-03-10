@@ -81,6 +81,7 @@ export const fetchSavingsAccounts = async (session: any) => {
 export const handleAddAccount = async (
   name: string,
   initialAmount: string,
+  targetAmount: string,
   session: any,
 ) => {
   if (!session?.access_token) {
@@ -99,9 +100,12 @@ export const handleAddAccount = async (
     const cleanAmount = (initialAmount || "").replace(/[€,\s]/g, "");
     const amountInCents = Math.round(parseFloat(cleanAmount) * 100) || 0;
 
+    const cleanTarget = (targetAmount || "").replace(/[€,\s]/g, "");
+    const targetInCents = Math.round(parseFloat(cleanTarget) * 100) || 0;
+
     const newAccount = {
       name: name.trim(),
-      goalAmount: 0,
+      goalAmount: targetInCents,
       currentAmount: amountInCents,
       currency: "EUR",
       provider: "FT",
@@ -110,7 +114,7 @@ export const handleAddAccount = async (
     // Try to include the contributed amount in the create request so the server records it
     const createBody: any = {
       name: newAccount.name,
-      target_minor: 0,
+      target_minor: targetInCents,
       currency: newAccount.currency,
     };
 

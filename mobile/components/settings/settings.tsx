@@ -15,6 +15,7 @@ import Toast from "react-native-toast-message";
 import { LogOut } from "lucide-react-native";
 import CustomPicker from "@/components/ui/CustomPicker";
 import { useRouter } from "expo-router";
+import ResetPasswordModal from "@/components/modals/ResetPasswordModal";
 
 const getPassword = () => "****************";
 const getPhone = () => "+43 660 6951513";
@@ -53,6 +54,7 @@ export default function SettingsScreen() {
     defaultCurrency: getDefaultCurrency(),
     language: getLanguage(),
   });
+  const [showPasswordModal, setShowPasswordModal] = useState<boolean>(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -178,6 +180,11 @@ export default function SettingsScreen() {
 
   return (
     <View className="flex-1 bg-white">
+      <ResetPasswordModal
+        isVisible={showPasswordModal}
+        mode="change"
+        onClose={() => setShowPasswordModal(false)}
+      />
       <SettingsNavBar
         isEditing={isEditing}
         onEditToggle={handleEditToggle}
@@ -227,19 +234,12 @@ export default function SettingsScreen() {
           </View>
 
           <View className="mb-6">
-            <Text className="text-lg font-bold">Password</Text>
-            {isEditing ? (
-              <TextInput
-                className="text-gray-500 mt-1"
-                value={editableFields.password}
-                onChangeText={(value) => handleFieldChange("password", value)}
-                secureTextEntry
-              />
-            ) : (
+            <TouchableOpacity onPress={() => setShowPasswordModal(true)}>
+              <Text className="text-lg font-bold">Password</Text>
               <Text className="text-gray-500 mt-1">
                 {editableFields.password}
               </Text>
-            )}
+            </TouchableOpacity>
           </View>
 
           <View className="mb-6">
