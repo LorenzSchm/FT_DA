@@ -501,9 +501,13 @@ export default function DashBoard() {
                           currency: sub.currency,
                         })),
                       )
-                      .sort((a: any, b: any) =>
-                        `${b.id}`.localeCompare(`${a.id}`),
-                      );
+                      .sort((a: any, b: any) => {
+                        if (a.date && b.date)
+                          return Date.parse(b.date) - Date.parse(a.date);
+                        if (a.date) return -1;
+                        if (b.date) return 1;
+                        return `${b.id}`.localeCompare(`${a.id}`);
+                      });
 
                     if (combined.length === 0) {
                       return (
@@ -519,16 +523,25 @@ export default function DashBoard() {
                         className="flex flex-row justify-between"
                         style={{ width: contentWidth }}
                       >
-                        <View>
-                          <Text className="text-xl font-bold">
+                        <View style={{ flex: 1, marginRight: 12 }}>
+                          <Text
+                            className="text-xl font-bold"
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                          >
                             {item.description}
                           </Text>
-                          <Text className="text-gray-400 text-lg">
+                          <Text
+                            className="text-gray-400 text-lg"
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                          >
                             {item.category_id}
                           </Text>
                         </View>
 
                         <Text
+                          style={{ flexShrink: 0 }}
                           className={`self-center font-bold ${
                             item.amount_minor < 0
                               ? "text-red-500"
