@@ -104,3 +104,27 @@ export const addTransaction = async (
 
   return result;
 };
+
+export const exportTransactionsToCSV = async (
+  accessToken,
+  refreshToken,
+) => {
+  if (!accessToken) {
+    throw new Error("Missing access token");
+  }
+
+  const res = await fetch(`${BASE_URL}/finance/transactions/export/csv`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "x-refresh-token": refreshToken,
+    },
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.detail || "Failed to export transactions");
+  }
+
+  return res.text();
+};

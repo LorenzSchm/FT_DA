@@ -17,7 +17,7 @@ import CustomPicker from "@/components/ui/CustomPicker";
 type Props = {
   isVisible: boolean;
   onClose: () => void;
-  onSave?: (name: string, initialAmount: string) => void;
+  onSave?: (name: string, initialAmount: string, targetAmount: string) => void;
 };
 
 export default function SavingsAddAccountModal({
@@ -28,6 +28,7 @@ export default function SavingsAddAccountModal({
   const [isModalVisible, setIsModalVisible] = useState(isVisible);
   const [name, setName] = useState("");
   const [initialAmount, setInitialAmount] = useState("");
+  const [targetAmount, setTargetAmount] = useState("");
 
   const SCREEN_HEIGHT = Dimensions.get("window").height;
   const sheetPosition = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
@@ -98,6 +99,7 @@ export default function SavingsAddAccountModal({
       // Reset form
       setName("");
       setInitialAmount("");
+      setTargetAmount("");
       onClose();
     });
   };
@@ -113,9 +115,9 @@ export default function SavingsAddAccountModal({
       return;
     }
     if (onSave) {
-      console.log("Calling onSave with:", { name, initialAmount });
+      console.log("Calling onSave with:", { name, initialAmount, targetAmount });
       try {
-        await onSave(name, initialAmount);
+        await onSave(name, initialAmount, targetAmount);
         console.log("onSave completed successfully");
       } catch (error) {
         console.error("Error in onSave:", error);
@@ -130,6 +132,7 @@ export default function SavingsAddAccountModal({
     }
     setName("");
     setInitialAmount("");
+    setTargetAmount("");
     handleClose();
   };
 
@@ -207,13 +210,26 @@ export default function SavingsAddAccountModal({
             <Text className="font-semibold text-black mb-2 text-[20px]">
               Initial Amount
             </Text>
-            <View className="bg-neutral-100 rounded-full px-5 py-4 mb-8">
+            <View className="bg-neutral-100 rounded-full px-5 py-4 mb-4">
               <TextInput
                 className="text-black text-[20px]"
                 placeholder="e.g. € 0.00"
                 keyboardType="numbers-and-punctuation"
                 value={initialAmount}
                 onChangeText={setInitialAmount}
+              />
+            </View>
+
+            <Text className="font-semibold text-black mb-2 text-[20px]">
+              Target Amount
+            </Text>
+            <View className="bg-neutral-100 rounded-full px-5 py-4 mb-8">
+              <TextInput
+                className="text-black text-[20px]"
+                placeholder="e.g. € 5.000"
+                keyboardType="numbers-and-punctuation"
+                value={targetAmount}
+                onChangeText={setTargetAmount}
               />
             </View>
 

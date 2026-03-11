@@ -1,7 +1,10 @@
 from datetime import datetime
 from typing import Optional
+import csv
+import io
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import Response
 from pydantic import BaseModel
 from starlette import status
 
@@ -56,6 +59,116 @@ async def add_transactions(
         raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Add transaction failed: {e}")
+
+
+@router.get("/export/csv", status_code=status.HTTP_200_OK)
+async def export_transactions_csv(
+    supabase=Depends(get_supabase),
+    tokens=Depends(get_user_token),
+):
+    try:
+        access = tokens.get("access_token")
+        refresh = tokens.get("refresh_token")
+
+        supabase.auth.set_session(access, refresh)
+
+        user_resp = supabase.auth.get_user()
+        user = user_resp.user
+
+        if not user:
+            raise HTTPException(status_code=401, detail="Unauthorized: No valid session")
+
+        # 1. Fetch all accounts for user
+        accounts_response = (
+            supabase.schema("finance")
+            .table("accounts")
+            .select("id, name, currency")
+            .eq("user_id", user.id)
+            .execute()
+        )
+        accounts = accounts_response.data or []
+        account_map = {acc["id"]: acc for acc in accounts}
+        account_ids = list(account_map.keys())
+
+        # 2. Fetch all transactions for those accounts
+        transactions = []
+        subscriptions = []
+        if account_ids:
+            transactions_response = (
+                supabase.schema("finance")
+                .table("transactions")
+                .select("*")
+                .in_("account_id", account_ids)
+                .order("txn_date", desc=True)
+                .execute()
+            )
+            transactions = transactions_response.data or []
+
+            # Fetch subscriptions
+            subscriptions_response = (
+                supabase.schema("finance")
+                .table("subscriptions")
+                .select("*")
+                .in_("account_id", account_ids)
+                .execute()
+            )
+            subscriptions = subscriptions_response.data or []
+
+        # 3. Create CSV string
+        output = io.StringIO()
+        writer = csv.writer(output)
+        
+        writer.writerow([
+            "Account Name",
+            "Account Currency",
+            "Date",
+            "Description",
+            "Merchant",
+            "Category",
+            "Amount (Minor)",
+            "Currency",
+            "Type"
+        ])
+
+        for txn in transactions:
+            acc = account_map.get(txn.get("account_id"), {})
+            writer.writerow([
+                acc.get("name", "Unknown Account"),
+                acc.get("currency", ""),
+                txn.get("txn_date", ""),
+                txn.get("description", ""),
+                txn.get("merchant", ""),
+                txn.get("category_id", ""),
+                txn.get("amount_minor", 0),
+                txn.get("currency", ""),
+                txn.get("type", "")
+            ])
+
+        for sub in subscriptions:
+            acc = account_map.get(sub.get("account_id"), {})
+            writer.writerow([
+                acc.get("name", "Unknown Account"),
+                acc.get("currency", ""),
+                sub.get("start_date", ""),
+                f"Subscription ({sub.get('every_n', 1)} {sub.get('unit', 'month')})",
+                sub.get("merchant", ""),
+                sub.get("category_id", ""),
+                -abs(int(sub.get("amount_minor", 0))), # Subscriptions are typically expenses
+                sub.get("currency", ""),
+                "subscription"
+            ])
+
+        return Response(
+            content=output.getvalue(),
+            media_type="text/csv",
+            headers={"Content-Disposition": 'attachment; filename="transactions_export.csv"'}
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Export CSV failed: {e}")
+
 
 
 @router.get("/{account_id}", status_code=status.HTTP_200_OK)

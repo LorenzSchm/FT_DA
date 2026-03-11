@@ -18,12 +18,19 @@ const isValidEmail = (email: string): boolean => {
   return emailRegex.test(email);
 };
 
+type Mode = "reset" | "change";
+
 type Props = {
   isVisible: boolean;
   onClose: () => void;
+  mode?: Mode;
 };
 
-export default function ResetPasswordModal({ isVisible, onClose }: Props) {
+export default function ResetPasswordModal({
+  isVisible,
+  onClose,
+  mode = "reset",
+}: Props) {
   const [isModalVisible, setIsModalVisible] = useState<boolean>(isVisible);
   const [email, setEmail] = useState<string>("");
   const [emailError, setEmailError] = useState<string>("");
@@ -154,7 +161,9 @@ export default function ResetPasswordModal({ isVisible, onClose }: Props) {
       <View className="flex-1 justify-end">
         <View className="h-2/5" onTouchEnd={handleClose} />
         <View className="h-3/5 bg-white rounded-t-3xl p-6">
-          <Text className="text-2xl text-gray-400">Reset your password</Text>
+          <Text className="text-2xl text-gray-400">
+            {mode === "change" ? "Change your password" : "Reset your password"}
+          </Text>
           <View>
             <Animated.View
               style={{
