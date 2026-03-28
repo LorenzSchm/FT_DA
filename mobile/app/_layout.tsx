@@ -3,10 +3,12 @@ import "react-native-reanimated";
 import { useFonts } from "expo-font";
 import "../global.css";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { StatusBar } from "react-native";
+import { LogBox, StatusBar } from "react-native";
+
+LogBox.ignoreAllLogs();
 import React, { useEffect } from "react";
 import { Stack } from "expo-router";
-import { useAuthStore } from "@/utils/authStore";
+import { useAuthStore, } from "@/utils/authStore";
 import Toast from "react-native-toast-message";
 import { toastConfig } from "@/components/ui/CustomToast";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -15,7 +17,6 @@ export default function RootLayout() {
   const { isLoggedIn, _hasHydrated } = useAuthStore();
 
   const shouldCreateAccount = false;
-
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

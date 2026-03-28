@@ -118,7 +118,7 @@ export default function SpendingChart({
         <Text className="text-base font-semibold text-gray-600 mb-1">
           {label}
         </Text>
-        <Text className={`text-3xl font-bold ${netColor}`}>
+        <Text className={`text-2xl font-bold ${netColor}`}>
           {formattedNet} {currency}
         </Text>
         {dateRange && (

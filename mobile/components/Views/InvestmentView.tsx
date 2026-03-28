@@ -22,6 +22,14 @@ import axios from "axios";
 // Base URL for backend API
 const API_BASE = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
 
+/** Format a number with comma-separated thousands, e.g. 12345.67 → "12,345.67" */
+const formatNumber = (n: number, decimals = 2): string => {
+  const fixed = Math.abs(n).toFixed(decimals);
+  const [whole, frac] = fixed.split(".");
+  const withCommas = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return frac !== undefined ? `${withCommas}.${frac}` : withCommas;
+};
+
 /* ─── Color tokens ─── */
 const COLORS = {
   positive: "#34d399",
@@ -37,7 +45,10 @@ const COLORS = {
 };
 
 export function InvestmentView() {
-  const { session } = useAuthStore();
+  const { session, user } = useAuthStore();
+  const userCurrency = (user?.user_metadata?.currency as string) || "EUR";
+  const currencySymbolMap: Record<string, string> = { USD: "$", EUR: "€", GBP: "£", CHF: "CHF" };
+  const currencySymbol = currencySymbolMap[userCurrency] || "€";
   const [positions, setPositions] = useState<any[]>([]);
   const [selectedStock, setSelectedStock] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -54,6 +65,9 @@ export function InvestmentView() {
   const [positionValues, setPositionValues] = useState<
     { ticker: string; value: number }[]
   >([]);
+  const [activeTimeframe, setActiveTimeframe] = useState<TimeframeKey>("1D");
+  const [cursorValue, setCursorValue] = useState<number | null>(null);
+  const [isCursorActive, setIsCursorActive] = useState(false);
 
   const openModal = (item: any) => {
     setSelectedStock(item);
@@ -84,7 +98,7 @@ export function InvestmentView() {
             logo = best.icon;
             logoCache.current[symbol] = logo;
           }
-        } catch {}
+        } catch { }
       }
       return { price, weekly_change, logo, longname };
     } catch {
@@ -178,7 +192,6 @@ export function InvestmentView() {
           };
         }
 
-        // Helper: get running quantity at a given timestamp for a ticker
         const getQtyAt = (ticker: string, tsMs: number): number => {
           const info = tradeInfoByTicker[ticker];
           if (!info || info.events.length === 0) return 0;
@@ -194,7 +207,6 @@ export function InvestmentView() {
           return qty;
         };
 
-        // Helper: get total cost basis across all tickers at their first trade
         const getTotalCostBasis = (): number => {
           let total = 0;
           for (const ticker of uniqueTickers) {
@@ -231,7 +243,6 @@ export function InvestmentView() {
           ALL: [],
         };
 
-        // Get earliest trade timestamp and total cost basis for the anchor point
         const earliestTradeMs = Math.min(
           ...uniqueTickers.map(
             (t) => tradeInfoByTicker[t]?.firstTradeMs ?? Infinity,
@@ -240,7 +251,6 @@ export function InvestmentView() {
         const totalCostBasis = getTotalCostBasis();
 
         for (const tf of tfs) {
-          // Collect all unique timestamps across all tickers for this timeframe
           const allTimestamps = new Set<number>();
           for (const ticker of uniqueTickers) {
             const hist = historyByTicker[ticker];
@@ -388,7 +398,32 @@ export function InvestmentView() {
   );
   const totalPlPct =
     totalCostBasis > 0 ? (totalUnrealizedPl / totalCostBasis) * 100 : 0;
-  const isPortfolioUp = totalUnrealizedPl >= 0;
+
+  /* ─── Period-specific return based on selected timeframe ─── */
+  const activeData = portfolioHistory?.[activeTimeframe] ?? [];
+  const periodStartValue = activeData[0]?.value ?? 0;
+  const periodEndValue = activeData[activeData.length - 1]?.value ?? periodStartValue;
+
+  // Display value: cursor value when scrubbing, otherwise latest
+  const displayValue = isCursorActive && cursorValue != null
+    ? cursorValue
+    : totalPortfolioValue;
+
+  // Period return: compare display value to start of period
+  const periodReturn = periodStartValue > 0
+    ? displayValue - periodStartValue
+    : totalUnrealizedPl;
+  const periodReturnPct = periodStartValue > 0
+    ? (periodReturn / periodStartValue) * 100
+    : totalPlPct;
+  const isPeriodUp = periodReturn >= 0;
+
+  const timeframeLabel = activeTimeframe === "ALL" ? "All time" : activeTimeframe;
+
+  const handleCursorChange = useCallback((value: number | null, active: boolean) => {
+    setCursorValue(value);
+    setIsCursorActive(active);
+  }, []);
 
   /* ─── Logo renderer ─── */
   const Logo = ({ symbol }: { symbol: string }) => {
@@ -502,7 +537,7 @@ export function InvestmentView() {
                   letterSpacing: -1.2,
                 }}
               >
-                ${totalPortfolioValue.toFixed(2)}
+                {currencySymbol}{formatNumber(displayValue)}
               </Text>
               <View
                 style={{
@@ -516,18 +551,18 @@ export function InvestmentView() {
                   style={{
                     fontSize: 13,
                     fontWeight: "700",
-                    color: isPortfolioUp ? "#34d399" : "#fb7185",
+                    color: isPeriodUp ? "#34d399" : "#fb7185",
                     letterSpacing: -0.2,
                   }}
                 >
-                  {isPortfolioUp ? "▲" : "▼"} {isPortfolioUp ? "+" : ""}
-                  {totalUnrealizedPl.toFixed(2)} ({isPortfolioUp ? "+" : ""}
-                  {totalPlPct.toFixed(2)}%)
+                  {isPeriodUp ? "▲" : "▼"} {isPeriodUp ? "+" : "-"}
+                  {formatNumber(periodReturn)} ({isPeriodUp ? "+" : "-"}
+                  {formatNumber(Math.abs(periodReturnPct))}%)
                 </Text>
                 <Text
                   style={{ fontSize: 13, fontWeight: "500", color: "#9ca3af" }}
                 >
-                  Total return
+                  {timeframeLabel}
                 </Text>
               </View>
             </>
@@ -544,6 +579,8 @@ export function InvestmentView() {
             <PhantomChart
               dataByTimeframe={portfolioHistory as any}
               hideHeader
+              onTimeframeChange={setActiveTimeframe}
+              onCursorChange={handleCursorChange}
             />
           ) : (
             <View style={{ paddingHorizontal: 24, paddingTop: 8 }}>
@@ -689,7 +726,7 @@ export function InvestmentView() {
                         }}
                         numberOfLines={1}
                       >
-                        {item.longname || `$${Number(marketVal).toFixed(2)}`}
+                        {item.longname || `${currencySymbol}${formatNumber(Number(marketVal))}`}
                       </Text>
                     </View>
 
@@ -703,7 +740,7 @@ export function InvestmentView() {
                           letterSpacing: -0.2,
                         }}
                       >
-                        {isUp ? "+" : "−"}${Math.abs(pl).toFixed(2)}
+                        {isUp ? "+" : "−"}{currencySymbol}{formatNumber(Math.abs(pl))}
                       </Text>
                       <View
                         style={{

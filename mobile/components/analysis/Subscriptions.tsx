@@ -122,12 +122,22 @@ export default function Subscriptions({ account }: Props) {
           >
             <Feather name={"more-vertical"} size={20} color="#000" />
           </TouchableOpacity>
-          <CategoryBreakdownChart
-            data={categoryData}
-            currency={currencySymbol}
-            title="Subscriptions"
-            emptyLabel="No subscriptions"
-          />
+          {isLoading ? (
+            <View className="items-center justify-center py-4">
+              <Skeleton
+                mode="light"
+                className="w-[200px] h-[200px] rounded-full"
+                animated
+              />
+            </View>
+          ) : (
+            <CategoryBreakdownChart
+              data={categoryData}
+              currency={currencySymbol}
+              title="Subscriptions"
+              emptyLabel="No subscriptions"
+            />
+          )}
         </View>
 
         <View>

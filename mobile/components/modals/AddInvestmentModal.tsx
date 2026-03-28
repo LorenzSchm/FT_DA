@@ -10,6 +10,7 @@ import {
   Dimensions,
   PanResponder,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -47,6 +48,7 @@ export default function AddInvestmentModal({
   );
   const [price, setPrice] = useState<number | null>(null);
   const [entryPrice, setEntryPrice] = useState<string>("");
+  const [priceLabel, setPriceLabel] = useState("Current");
   const [loadingPrice, setLoadingPrice] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -117,6 +119,7 @@ export default function AddInvestmentModal({
     setQuantity("");
     setEntryPrice("");
     setTradeDate(new Date().toISOString().slice(0, 10));
+    setPriceLabel("Current");
     setErrors({});
   };
 
@@ -135,14 +138,42 @@ export default function AddInvestmentModal({
     });
   };
 
-  const fetchPrice = async (sym: string) => {
+  const fetchPrice = async (sym: string, date?: string) => {
+    const today = new Date().toISOString().slice(0, 10);
+    const isHistorical = date && date !== today;
+
     try {
       setLoadingPrice(true);
-      const res = await axios.get(`${API_BASE}/stock/${sym}/price`);
-      const p = Number(res.data?.price);
-      setPrice(Number.isFinite(p) ? p : 0);
+
+      if (isHistorical) {
+        try {
+          const res = await axios.get(
+            `${API_BASE}/stock/${sym}/price-at-date?date=${date}`,
+          );
+          const p = Number(res.data?.price);
+          const actualDate = res.data?.date ?? date;
+          if (Number.isFinite(p) && p > 0) {
+            setPrice(p);
+            setPriceLabel(`Price on ${actualDate}`);
+            return;
+          }
+        } catch {
+          // fall through to current price
+        }
+        // Historical fetch failed — fall back to current price
+        const res = await axios.get(`${API_BASE}/stock/${sym}/price`);
+        const p = Number(res.data?.price);
+        setPrice(Number.isFinite(p) ? p : 0);
+        setPriceLabel("Current (historical N/A)");
+      } else {
+        const res = await axios.get(`${API_BASE}/stock/${sym}/price`);
+        const p = Number(res.data?.price);
+        setPrice(Number.isFinite(p) ? p : 0);
+        setPriceLabel("Current");
+      }
     } catch {
       setPrice(0);
+      setPriceLabel("Current");
     } finally {
       setLoadingPrice(false);
     }
@@ -329,8 +360,8 @@ export default function AddInvestmentModal({
                       keyboardType="decimal-pad"
                       placeholder={
                         loadingPrice
-                          ? "Loading..."
-                          : `Current: ${price?.toFixed(2) ?? "0.00"}`
+                          ? "Loading price..."
+                          : `${priceLabel}: ${price?.toFixed(2) ?? "0.00"}`
                       }
                     />
                   </View>
@@ -340,7 +371,9 @@ export default function AddInvestmentModal({
                     </Text>
                   )}
                   <Text className="text-gray-500 text-sm mt-1">
-                    Leave empty to use current price
+                    {tradeDate !== new Date().toISOString().slice(0, 10)
+                      ? "Leave empty to use historical price"
+                      : "Leave empty to use current price"}
                   </Text>
                 </View>
 
@@ -390,9 +423,18 @@ export default function AddInvestmentModal({
                   onPress={handleAdd}
                   disabled={isButtonDisabled}
                 >
-                  <Text className="text-center text-white font-bold text-lg">
-                    {submitting ? "Adding..." : "Add Investment"}
-                  </Text>
+                  <View className="flex-row items-center justify-center">
+                    {submitting && (
+                      <ActivityIndicator
+                        size="small"
+                        color="#fff"
+                        style={{ marginRight: 8 }}
+                      />
+                    )}
+                    <Text className="text-white font-bold text-lg">
+                      {submitting ? "Adding..." : "Add Investment"}
+                    </Text>
+                  </View>
                 </TouchableOpacity>
               </View>
             </View>
@@ -418,6 +460,9 @@ export default function AddInvestmentModal({
                     setErrors((prev) => ({ ...prev, tradeDate: undefined }));
                   }
                   setShowDatePicker(false);
+                  if (symbol) {
+                    fetchPrice(symbol, dateStr);
+                  }
                 }}
               >
                 <Text className="text-blue-600 font-bold text-lg">Done</Text>

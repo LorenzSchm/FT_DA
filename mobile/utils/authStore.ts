@@ -18,6 +18,7 @@ type User = {
   email: string;
   user_metadata?: {
     display_name?: string;
+    currency: string;
   };
 };
 
@@ -34,6 +35,7 @@ type AuthState = {
     email: string,
     password: string,
     displayName?: string,
+    currency?: string,
   ) => Promise<void>;
   signOut: () => Promise<void>;
   refreshToken: () => Promise<void>;
@@ -81,31 +83,26 @@ export const useAuthStore = create(
         }
       },
 
-      signUp: async (email: string, password: string, displayName?: string) => {
+      signUp: async (email: string, password: string, displayName?: string, currency?: string) => {
         try {
-          const response = await axios.post(`${API_URL}/auth/sign-up`, {
+          await axios.post(`${API_URL}/auth/sign-up`, {
             email,
             password,
             display_name: displayName,
+            currency,
           });
 
-          const { user, session } = response.data;
+          // Keep the user signed out until they confirm their email address.
+          if (refreshTokenTimeout) {
+            clearTimeout(refreshTokenTimeout);
+            refreshTokenTimeout = null;
+          }
 
           set({
-            isLoggedIn: true,
-            user,
-            session,
+            isLoggedIn: false,
+            user: null,
+            session: null,
           });
-
-          // Schedule token refresh
-          if (session) {
-            const expiresIn = session.expires_at * 1000 - Date.now() - 60000;
-            if (expiresIn > 0) {
-              refreshTokenTimeout = setTimeout(() => {
-                get().refreshToken();
-              }, expiresIn);
-            }
-          }
         } catch (error: any) {
           throw new Error(error.response?.data?.detail || "Sign-up failed");
         }
@@ -187,11 +184,11 @@ export const useAuthStore = create(
       storage: isWeb
         ? createJSONStorage(() => localStorage)
         : createJSONStorage(() => ({
-            setItem: (key: string, value: string) =>
-              SecureStore.setItemAsync(key, value),
-            getItem: (key: string) => SecureStore.getItemAsync(key),
-            removeItem: (key: string) => SecureStore.deleteItemAsync(key),
-          })),
+          setItem: (key: string, value: string) =>
+            SecureStore.setItemAsync(key, value),
+          getItem: (key: string) => SecureStore.getItemAsync(key),
+          removeItem: (key: string) => SecureStore.deleteItemAsync(key),
+        })),
       onRehydrateStorage: () => {
         return (state) => {
           state?.setHasHydrated(true);

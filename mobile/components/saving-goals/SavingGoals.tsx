@@ -19,7 +19,7 @@ import {
   handleAddTransaction,
 } from "@/utils/db/finance/saving-goals/saving-goals";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronRight } from "lucide-react-native";
+import { Check, ChevronRight } from "lucide-react-native";
 
 const INITIAL_SAVINGS: any[] = [];
 
@@ -149,11 +149,19 @@ export default function SavingGoals() {
     <View className="flex-1 bg-white">
       <ScrollView className="flex-1 px-7 pt-4">
         <View className="mb-8 items-center justify-center py-8">
-          <CircularProgress
-            savings={savings}
-            totalAmount={totalAmount}
-            currency="€"
-          />
+          {isFetchingAccounts ? (
+            <Skeleton
+              mode="light"
+              className="w-[200px] h-[200px] rounded-full"
+              animated
+            />
+          ) : (
+            <CircularProgress
+              savings={savings}
+              totalAmount={totalAmount}
+              currency="€"
+            />
+          )}
         </View>
 
         {/* Savings Accounts List */}
@@ -195,7 +203,7 @@ export default function SavingGoals() {
                       <ChevronRight size={20} />
                       <Text className="text-lg font-bold text-green-500">
                         {saving.currency || "€"}
-                        {((saving.contributed_minor || 0) / 100).toFixed(2)}
+                        {((saving.contributed_minor || 0) / 100).toFixed(2)}<Text> of </Text>{((saving.target_minor || 0) / 100).toFixed(2)}
                       </Text>
                     </View>
                   </View>
@@ -217,11 +225,10 @@ export default function SavingGoals() {
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={toggleExpanded}
-          className={`${
-            expanded
-              ? "bg-black w-64 py-6 rounded-[25px]"
-              : "bg-black w-40 py-4 rounded-full"
-          }`}
+          className={`${expanded
+            ? "bg-black w-64 py-6 rounded-[25px]"
+            : "bg-black w-40 py-4 rounded-full"
+            }`}
         >
           {!expanded ? (
             <View className="items-center justify-center">

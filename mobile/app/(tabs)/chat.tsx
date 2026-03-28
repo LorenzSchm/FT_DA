@@ -9,13 +9,14 @@ import {
   Platform,
   SafeAreaView,
   ActivityIndicator,
+  ScrollView,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useAuthStore } from "@/utils/authStore";
 import { getAccounts } from "@/utils/db/finance/finance";
 import { chat, ConversationMessage } from "@/utils/chatbotAI";
+import { getAiFlag, updateAiFlag } from "@/utils/accountApi";
 
-// ─── Types ───────────────────────────────────────────────────────────
 
 interface ChatMessage {
   id: string;
@@ -24,7 +25,6 @@ interface ChatMessage {
   user: { _id: 1 | 2 }; // 1 = user, 2 = bot
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────
 
 let messageIdCounter = 0;
 function makeId(): string {
@@ -39,17 +39,15 @@ function userMsg(text: string): ChatMessage {
   return { id: makeId(), text, createdAt: new Date(), user: { _id: 1 } };
 }
 
-// ─── Component ───────────────────────────────────────────────────────
 
-const OPENAI_KEY_FROM_ENV = process.env.EXPO_PUBLIC_OPENAI_API_KEY || "";
+const OPENAI_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY || "";
 
 export default function Chat() {
   const { session } = useAuthStore();
 
-  // API key state — pre-filled from .env if available
-  const [apiKey, setApiKey] = useState(OPENAI_KEY_FROM_ENV);
-  const [apiKeyConfirmed, setApiKeyConfirmed] = useState(!!OPENAI_KEY_FROM_ENV);
-  const [apiKeyInput, setApiKeyInput] = useState("");
+  const [aiEnabled, setAiEnabled] = useState<boolean | null>(null);
+  const [loadingFlag, setLoadingFlag] = useState(true);
+  const [enablingAi, setEnablingAi] = useState(false);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [conversationHistory, setConversationHistory] = useState<
@@ -66,7 +64,25 @@ export default function Chat() {
 
   const flatListRef = useRef<FlatList>(null);
 
-  // Load first account on mount
+  // Fetch the ai_flag on mount
+  useEffect(() => {
+    async function checkAiFlag() {
+      if (!session?.access_token) {
+        setLoadingFlag(false);
+        return;
+      }
+      try {
+        const flag = await getAiFlag(session.access_token);
+        setAiEnabled(flag);
+      } catch {
+        setAiEnabled(false);
+      } finally {
+        setLoadingFlag(false);
+      }
+    }
+    checkAiFlag();
+  }, [session?.access_token]);
+
   useEffect(() => {
     async function loadDefaultAccount() {
       if (!session?.access_token) return;
@@ -81,28 +97,26 @@ export default function Chat() {
           setDefaultAccountCurrency(accounts[0].currency);
         }
       } catch {
-        // Silently fail
       }
     }
     loadDefaultAccount();
   }, [session?.access_token]);
 
-  // Show welcome message once API key is confirmed
   useEffect(() => {
-    if (apiKeyConfirmed && messages.length === 0) {
+    if (aiEnabled && messages.length === 0) {
       setMessages([
         botMsg(
           "Hi! I'm your AI finance assistant. I can help you:\n\n" +
-            '• Add transactions — "add expense 45 for groceries"\n' +
-            '• View balance — "what is my balance?"\n' +
-            '• List transactions — "show my recent transactions"\n' +
-            '• Manage subscriptions — "show my subscriptions"\n' +
-            '• Update/Delete — "delete transaction 67"\n\n' +
-            "How can I help?",
+          '- Add transactions — "add expense 45 for groceries"\n' +
+          '- View balance — "what is my balance?"\n' +
+          '- List transactions — "show my recent transactions"\n' +
+          '- Manage subscriptions — "show my subscriptions"\n' +
+          '- Update/Delete — "delete transaction 67"\n\n' +
+          "How can I help?",
         ),
       ]);
     }
-  }, [apiKeyConfirmed]);
+  }, [aiEnabled]);
 
   const scrollToEnd = useCallback(() => {
     setTimeout(() => {
@@ -110,16 +124,22 @@ export default function Chat() {
     }, 100);
   }, []);
 
-  const handleConfirmApiKey = useCallback(() => {
-    const key = apiKeyInput.trim();
-    if (!key || !key.startsWith("sk-")) return;
-    setApiKey(key);
-    setApiKeyConfirmed(true);
-  }, [apiKeyInput]);
+  const handleEnableAi = useCallback(async () => {
+    if (!session?.access_token) return;
+    setEnablingAi(true);
+    try {
+      await updateAiFlag(true, session.access_token, session.refresh_token);
+      setAiEnabled(true);
+    } catch (err: any) {
+      console.error("Failed to enable AI:", err?.message);
+    } finally {
+      setEnablingAi(false);
+    }
+  }, [session?.access_token, session?.refresh_token]);
 
   const handleSend = useCallback(async () => {
     const text = inputText.trim();
-    if (!text || !apiKey) return;
+    if (!text || !OPENAI_KEY) return;
 
     const uMsg = userMsg(text);
     setMessages((prev) => [...prev, uMsg]);
@@ -129,7 +149,7 @@ export default function Chat() {
 
     try {
       const result = await chat(
-        apiKey,
+        OPENAI_KEY,
         conversationHistory,
         text,
         session as any,
@@ -143,7 +163,7 @@ export default function Chat() {
       setMessages((prev) => [
         ...prev,
         botMsg(
-          `⚠️ Error: ${err?.message || "Something went wrong. Please try again."}`,
+          `Error: ${err?.message || "Something went wrong. Please try again."}`,
         ),
       ]);
     } finally {
@@ -152,14 +172,12 @@ export default function Chat() {
     }
   }, [
     inputText,
-    apiKey,
     session,
     defaultAccountId,
     conversationHistory,
     scrollToEnd,
   ]);
 
-  // ─── Render ──────────────────────────────────────────────────────
 
   const renderMessage = useCallback(({ item }: { item: ChatMessage }) => {
     const isUser = item.user._id === 1;
@@ -227,19 +245,35 @@ export default function Chat() {
     );
   };
 
-  // ─── API Key entry screen ────────────────────────────────────────
-  if (!apiKeyConfirmed) {
+  // ─── Loading state ──────────────────────────────────────────────────
+  if (loadingFlag) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-        <View
-          style={{ flex: 1, justifyContent: "center", paddingHorizontal: 24 }}
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <ActivityIndicator size="large" color="#000" />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // ─── AI consent screen ─────────────────────────────────────────────
+  if (!aiEnabled) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+        <ScrollView
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: "center",
+            paddingHorizontal: 24,
+            paddingVertical: 32,
+          }}
         >
           <Text
             style={{
-              fontSize: 24,
+              fontSize: 28,
               fontWeight: "bold",
               color: "#000",
-              marginBottom: 8,
+              marginBottom: 12,
             }}
           >
             AI Assistant
@@ -248,54 +282,95 @@ export default function Chat() {
             style={{
               fontSize: 15,
               color: "#666",
-              marginBottom: 24,
               lineHeight: 22,
+              marginBottom: 24,
             }}
           >
-            Enter your OpenAI API key to enable the AI-powered chatbot. Your key
-            is stored locally and never sent to our servers.
+            This feature uses an AI model (OpenAI) to help you manage your
+            finances through natural language. Before enabling, please be aware
+            of the following:
           </Text>
-          <TextInput
+
+          <View
             style={{
-              backgroundColor: "#F1F1F2",
-              borderRadius: 12,
-              paddingHorizontal: 16,
-              paddingVertical: 14,
-              fontSize: 15,
-              color: "#000",
-              marginBottom: 16,
+              backgroundColor: "#FEF3C7",
+              borderRadius: 16,
+              padding: 16,
+              marginBottom: 24,
             }}
-            placeholder="sk-..."
-            placeholderTextColor="#999"
-            value={apiKeyInput}
-            onChangeText={setApiKeyInput}
-            autoCapitalize="none"
-            autoCorrect={false}
-            secureTextEntry
-          />
-          <TouchableOpacity
-            onPress={handleConfirmApiKey}
-            activeOpacity={0.8}
-            style={{
-              backgroundColor: apiKeyInput.trim().startsWith("sk-")
-                ? "#000"
-                : "#ccc",
-              borderRadius: 12,
-              paddingVertical: 16,
-              alignItems: "center",
-            }}
-            disabled={!apiKeyInput.trim().startsWith("sk-")}
           >
+            <Text
+              style={{
+                fontSize: 15,
+                fontWeight: "700",
+                color: "#92400E",
+                marginBottom: 10,
+              }}
+            >
+              Important Information
+            </Text>
+
+            <Text style={{ fontSize: 14, color: "#78350F", lineHeight: 21, marginBottom: 8 }}>
+              {"\u2022"} Your messages and financial context (account balances,
+              transactions) are sent to OpenAI's servers for processing.
+            </Text>
+            <Text style={{ fontSize: 14, color: "#78350F", lineHeight: 21, marginBottom: 8 }}>
+              {"\u2022"} AI responses may occasionally be inaccurate or
+              incomplete. Always verify important financial information.
+            </Text>
+            <Text style={{ fontSize: 14, color: "#78350F", lineHeight: 21, marginBottom: 8 }}>
+              {"\u2022"} The assistant can create, modify, and delete
+              transactions on your behalf based on your instructions.
+            </Text>
+            <Text style={{ fontSize: 14, color: "#78350F", lineHeight: 21 }}>
+              {"\u2022"} This feature is not a substitute for professional
+              financial advice.
+            </Text>
+          </View>
+
+          <Text
+            style={{
+              fontSize: 13,
+              color: "#999",
+              lineHeight: 19,
+              marginBottom: 24,
+            }}
+          >
+            By enabling the AI assistant, you acknowledge these risks and
+            consent to your data being processed by a third-party AI service.
+            You can disable this at any time in your settings.
+          </Text>
+
+          <TouchableOpacity
+            onPress={handleEnableAi}
+            activeOpacity={0.8}
+            disabled={enablingAi}
+            style={{
+              backgroundColor: enablingAi ? "#999" : "#000",
+              borderRadius: 9999,
+              paddingVertical: 16,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {enablingAi && (
+              <ActivityIndicator
+                size="small"
+                color="#fff"
+                style={{ marginRight: 8 }}
+              />
+            )}
             <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
-              Connect
+              {enablingAi ? "Enabling..." : "Enable AI Assistant"}
             </Text>
           </TouchableOpacity>
-        </View>
+        </ScrollView>
       </SafeAreaView>
     );
   }
 
-  // ─── Main chat screen ────────────────────────────────────────────
+  // ─── Chat UI ────────────────────────────────────────────────────────
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <KeyboardAvoidingView
@@ -327,7 +402,6 @@ export default function Chat() {
           ListFooterComponent={renderTypingIndicator}
         />
 
-        {/* Input bar */}
         <View
           style={{
             flexDirection: "row",

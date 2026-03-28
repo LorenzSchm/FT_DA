@@ -87,7 +87,13 @@ export default function Analysis() {
   };
 
   useEffect(() => {
-    loadAccounts();
+    const init = async () => {
+      const accs = await loadAccounts();
+      if (accs.length > 0 && !selectedAccountId) {
+        setSelectedAccountId(accs[0].id);
+      }
+    };
+    init();
   }, [session?.access_token]);
 
   const states = Object.values(STATE);

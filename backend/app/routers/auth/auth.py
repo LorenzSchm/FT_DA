@@ -22,6 +22,7 @@ class SignUpRequest(BaseModel):
     email: EmailStr
     password: str
     display_name: Optional[str] = None
+    currency: Optional[str] = None
 
 class SignUpResponse(BaseModel):
     user: Dict[str, Any]
@@ -80,7 +81,8 @@ async def sign_up(request: SignUpRequest, supabase=Depends(get_supabase)):
             "password": request.password,
             "options": {
                     "data": {
-                        "display_name": request.display_name
+                        "display_name": request.display_name,
+                        "currency": request.currency
                     }
             }
         })
@@ -97,6 +99,8 @@ async def sign_up(request: SignUpRequest, supabase=Depends(get_supabase)):
             message="User signed up successfully"
         )
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=400, detail=f"Sign-up failed: {e}")
 
 @router.post("/sign-out", status_code=status.HTTP_200_OK)
@@ -188,7 +192,6 @@ async def verify_otp(
 
 @router.post("/reset-password")
 async def reset_password(
-        request: ResetPasswordRequest,
         supabase=Depends(get_supabase),
         tokens=Depends(get_user_token),
 ):
@@ -196,12 +199,56 @@ async def reset_password(
         access = tokens.get("access_token")
         refresh = tokens.get("refresh_token")
         supabase.auth.set_session(access, refresh)
-        response = supabase.auth.update_user({
-            "password": request.password,
-        })
-        if not response or not response.user:
-            raise HTTPException(status_code=400, detail="Reset password failed")
-        return {"message": "Password reset successfully"}
 
+        user_resp = supabase.auth.get_user()
+        if not user_resp or not user_resp.user or not user_resp.user.email:
+            raise HTTPException(status_code=400, detail="Could not resolve user email")
+
+        supabase.auth.reset_password_email(user_resp.user.email)
+        return {"message": "Password reset email sent successfully"}
+
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Reset password failed: {e}")
+
+
+class ConfirmResetPasswordRequest(BaseModel):
+    email: EmailStr
+    otp: str
+    new_password: str
+
+
+@router.post("/confirm-reset-password")
+async def confirm_reset_password(
+        request: ConfirmResetPasswordRequest,
+        supabase=Depends(get_supabase),
+):
+    try:
+        verify_resp = supabase.auth.verify_otp({
+            "email": request.email,
+            "token": request.otp,
+            "type": "recovery",
+        })
+
+        if not verify_resp or not verify_resp.session:
+            raise HTTPException(status_code=400, detail="Invalid or expired OTP")
+
+        supabase.auth.set_session(
+            verify_resp.session.access_token,
+            verify_resp.session.refresh_token,
+        )
+
+        update_resp = supabase.auth.update_user({
+            "password": request.new_password,
+        })
+
+        if not update_resp or not update_resp.user:
+            raise HTTPException(status_code=400, detail="Failed to update password")
+
+        return {"message": "Password updated successfully"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Confirm reset password failed: {e}")

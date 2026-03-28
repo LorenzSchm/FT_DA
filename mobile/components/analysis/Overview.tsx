@@ -118,10 +118,6 @@ export default function Overview({ account, accounts }: Props) {
         return;
       }
 
-      console.log(session.access_token);
-      console.log(session.refresh_token);
-      console.log(accountId);
-
       const data = await getTransactions(
         session.access_token,
         session.refresh_token,
@@ -207,7 +203,7 @@ export default function Overview({ account, accounts }: Props) {
     dateRange.end,
   )}.`;
 
-  const getCurrencySymbol = (code?: string) => (code === "USD" ? "$" : "€");
+  const getCurrencySymbol = (code?: string) => (code === "USD" ? "$" : code === "GBP" ? "£" : "€");
   const currency = transactions[0]?.currency || "EUR";
   const currencySymbol = getCurrencySymbol(currency);
 
@@ -255,15 +251,28 @@ export default function Overview({ account, accounts }: Props) {
       <View className="px-4 py-6">
         <View className="mb-6 flex items-center">
           <View className="mb-6 flex flex-row items-center justify-center relative w-full">
-            <SpendingChart
-              size={200}
-              strokeWidth={20}
-              income={monthlyIncome}
-              expenses={totalExpenses}
-              currency={currencySymbol}
-              label="Monthly standing"
-              dateRange={rangeLabel}
-            />
+            {isLoading ? (
+              <View
+                className="items-center justify-center"
+                style={{ width: 200, height: 200 }}
+              >
+                <Skeleton
+                  mode="light"
+                  className="w-[200px] h-[200px] rounded-full"
+                  animated
+                />
+              </View>
+            ) : (
+              <SpendingChart
+                size={200}
+                strokeWidth={20}
+                income={monthlyIncome}
+                expenses={totalExpenses}
+                currency={currencySymbol}
+                label="Monthly standing"
+                dateRange={rangeLabel}
+              />
+            )}
             <TouchableOpacity
               onPress={() => setModalOpen(true)}
               className="absolute top-0 right-0 p-2"
@@ -329,9 +338,8 @@ export default function Overview({ account, accounts }: Props) {
                     </Text>
                   </View>
                   <Text
-                    className={`text-lg font-bold ${
-                      item.amount_minor < 0 ? "text-red-500" : "text-green-500"
-                    }`}
+                    className={`text-lg font-bold ${item.amount_minor < 0 ? "text-red-500" : "text-green-500"
+                      }`}
                   >
                     {item.amount_minor < 0 ? "" : "+"}
                     {(item.amount_minor / 100).toFixed(2)}{" "}
@@ -352,15 +360,15 @@ export default function Overview({ account, accounts }: Props) {
         minAmount={
           transactions.length > 0
             ? Math.min(
-                ...transactions.map((t) => Math.abs(t.amount_minor || 0)),
-              ) / 100
+              ...transactions.map((t) => Math.abs(t.amount_minor || 0)),
+            ) / 100
             : 0
         }
         maxAmount={
           transactions.length > 0
             ? Math.max(
-                ...transactions.map((t) => Math.abs(t.amount_minor || 0)),
-              ) / 100
+              ...transactions.map((t) => Math.abs(t.amount_minor || 0)),
+            ) / 100
             : 1000
         }
         selectedMin={amountRange?.min}

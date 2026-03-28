@@ -139,13 +139,13 @@ export default function SavingsDetailModal({
   /* -------------------------- Chart Data -------------------------- */
   const dataByTimeframe = React.useMemo(() => {
     const result: Record<TimeframeKey, { timestamp: number; value: number }[]> =
-      {
-        "1D": [],
-        "1W": [],
-        "1M": [],
-        "1Y": [],
-        ALL: [],
-      };
+    {
+      "1D": [],
+      "1W": [],
+      "1M": [],
+      "1Y": [],
+      ALL: [],
+    };
 
     if (
       !savingObject?.contributions ||
@@ -254,9 +254,9 @@ export default function SavingsDetailModal({
                     })}
                     {goalAmount > 0
                       ? ` of ${currency}${(goalAmount / 100).toLocaleString("de-DE", {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}`
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}`
                       : ""}
                   </Text>
                   {goalAmount > 0 && (
@@ -273,6 +273,7 @@ export default function SavingsDetailModal({
                     height={200}
                     lineColor={"#22c55e"}
                     showAmount={false}
+                    hideHeader
                   />
                 </View>
               </View>
@@ -282,7 +283,7 @@ export default function SavingsDetailModal({
                 <Text className="text-xl font-bold mb-3">Transactions</Text>
 
                 {!savingObject?.contributions ||
-                savingObject.contributions.length === 0 ? (
+                  savingObject.contributions.length === 0 ? (
                   <Text className="text-neutral-500 text-center py-8">
                     No transactions yet
                   </Text>
@@ -318,9 +319,8 @@ export default function SavingsDetailModal({
                             </Text>
                           </View>
                           <Text
-                            className={`text-lg font-bold ${
-                              isPositive ? "text-green-600" : "text-red-600"
-                            }`}
+                            className={`text-lg font-bold ${isPositive ? "text-green-600" : "text-red-600"
+                              }`}
                           >
                             {isPositive ? "+" : "-"}
                             {currency}

@@ -176,15 +176,28 @@ export default function Incomes({ account }: Props) {
       <View className="px-4 py-6">
         <View className="mb-6 flex items-center">
           <View className="mb-6 flex flex-row items-center justify-center relative w-full">
-            <SpendingChart
-              size={200}
-              strokeWidth={20}
-              income={totalIncome}
-              expenses={0}
-              currency={currencySymbol}
-              label="Income"
-              dateRange={rangeLabel}
-            />
+            {isLoading ? (
+              <View
+                className="items-center justify-center"
+                style={{ width: 200, height: 200 }}
+              >
+                <Skeleton
+                  mode="light"
+                  className="w-[200px] h-[200px] rounded-full"
+                  animated
+                />
+              </View>
+            ) : (
+              <SpendingChart
+                size={200}
+                strokeWidth={20}
+                income={totalIncome}
+                expenses={0}
+                currency={currencySymbol}
+                label="Income"
+                dateRange={rangeLabel}
+              />
+            )}
             <TouchableOpacity
               onPress={() => setModalOpen(true)}
               className="absolute top-0 right-0 p-2"

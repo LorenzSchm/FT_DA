@@ -1,15 +1,8 @@
-import {
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  StyleSheet,
-  Pressable,
-} from "react-native";
+import { Text, TextInput, TouchableOpacity, View, Pressable } from "react-native";
 import { useEffect, useState } from "react";
 import CustomPicker from "@/components/ui/CustomPicker";
 import { useAuthStore } from "@/utils/authStore";
-import Toast from "react-native-toast-message";
+import { Eye, EyeOff } from "lucide-react-native";
 
 type Props = {
   isVisible: boolean;
@@ -19,6 +12,7 @@ type Props = {
 enum STATE {
   FIRST = "FIRST",
   SECOND = "SECOND",
+  CONFIRMATION = "CONFIRMATION",
 }
 
 type Errors = {
@@ -27,7 +21,6 @@ type Errors = {
   repeatPassword?: string;
   firstName?: string;
   lastName?: string;
-  phone?: string;
 };
 
 export default function SignUpForm({ isVisible, email }: Props) {
@@ -35,18 +28,20 @@ export default function SignUpForm({ isVisible, email }: Props) {
   const [password, setPassword] = useState<string>("");
   const [repeatPassword, setRepeatPassword] = useState<string>("");
   const [mail, setMail] = useState<string>(email);
-  const [phone, setPhone] = useState<string>("");
   const [firstName, setFirstName] = useState<string>("");
   const [lastName, setLastName] = useState<string>("");
   const [currency, setCurrency] = useState<string>("");
   const [errors, setErrors] = useState<Errors>({});
-  const [open, setOpen] = useState<boolean>(false);
   const [currencies, setCurrencies] = useState<any[]>([
     { label: "USD", value: "USD" },
     { label: "EUR", value: "EUR" },
     { label: "GBP", value: "GBP" },
     { label: "CHF", value: "CHF" },
   ]);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showRepeatPassword, setShowRepeatPassword] = useState<boolean>(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const { signUp } = useAuthStore();
 
@@ -54,6 +49,22 @@ export default function SignUpForm({ isVisible, email }: Props) {
     setMail(email);
     setErrors((prev) => ({ ...prev, email: validateEmail(email) }));
   }, [email]);
+
+  useEffect(() => {
+    if (!isVisible) {
+      setState(STATE.FIRST);
+      setPassword("");
+      setRepeatPassword("");
+      setFirstName("");
+      setLastName("");
+      setCurrency("");
+      setErrors({});
+      setShowPassword(false);
+      setShowRepeatPassword(false);
+      setSubmitError(null);
+      setIsSubmitting(false);
+    }
+  }, [isVisible]);
 
   const validateEmail = (email: string): string | undefined => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -90,13 +101,6 @@ export default function SignUpForm({ isVisible, email }: Props) {
     return undefined;
   };
 
-  const validatePhone = (phone: string): string | undefined => {
-    const phoneRegex = /^\+?[\d\s-]{10,}$/;
-    if (!phone) return "Phone number is required";
-    if (!phoneRegex.test(phone)) return "Invalid phone number format";
-    return undefined;
-  };
-
   const validateFirstStep = (): boolean => {
     const newErrors: Errors = {
       email: validateEmail(mail),
@@ -112,7 +116,6 @@ export default function SignUpForm({ isVisible, email }: Props) {
     const newErrors: Errors = {
       firstName: validateFirstName(firstName),
       lastName: validateLastName(lastName),
-      phone: validatePhone(phone),
     };
 
     setErrors(newErrors);
@@ -121,24 +124,24 @@ export default function SignUpForm({ isVisible, email }: Props) {
 
   const handleContinue = () => {
     if (validateFirstStep()) {
+      setSubmitError(null);
       setState(STATE.SECOND);
     }
   };
 
   const handleSubmit = async () => {
-    if (validateSecondStep()) {
-      await signUp(email, password, firstName + " " + lastName)
-        .then(() => {
-          console.log("User signed up successfully");
-          Toast.show({
-            type: "success",
-            text1: "User signed up successfully",
-            visibilityTime: 3000,
-          });
-        })
-        .catch((error) => {
-          console.error("Error signing up:", error);
-        });
+    if (!validateSecondStep()) return;
+
+    setSubmitError(null);
+    setIsSubmitting(true);
+    try {
+      const fullName = [firstName, lastName].filter(Boolean).join(" ");
+      await signUp(mail, password, fullName, currency);
+      setState(STATE.CONFIRMATION);
+    } catch (error: any) {
+      setSubmitError(error?.message || "Sign-up failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -167,9 +170,9 @@ export default function SignUpForm({ isVisible, email }: Props) {
             )}
           </View>
 
-          <View>
+          <View className="relative">
             <TextInput
-              className={`text-black text-[20px] border rounded-full h-[50px] px-4 ${
+              className={`text-black text-[20px] border rounded-full h-[50px] pl-4 pr-16 ${
                 errors.password ? "border-red-500" : "border-black"
               }`}
               placeholder="Enter your password"
@@ -182,9 +185,21 @@ export default function SignUpForm({ isVisible, email }: Props) {
                   repeatPassword: validateRepeatPassword(text, repeatPassword),
                 }));
               }}
-              secureTextEntry
+              secureTextEntry={!showPassword}
               textContentType="oneTimeCode"
             />
+            <Pressable
+              className="absolute right-4 top-1/2 -translate-y-1/2"
+              onPress={() => setShowPassword((prev) => !prev)}
+              accessibilityRole="button"
+              accessibilityLabel={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? (
+                <EyeOff size={20} color="#4B5563" />
+              ) : (
+                <Eye size={20} color="#4B5563" />
+              )}
+            </Pressable>
             {errors.password && (
               <Text className="text-red-500 text-[14px] mt-1">
                 {errors.password}
@@ -192,9 +207,9 @@ export default function SignUpForm({ isVisible, email }: Props) {
             )}
           </View>
 
-          <View>
+          <View className="relative">
             <TextInput
-              className={`text-black text-[20px] border rounded-full h-[50px] px-4 ${
+              className={`text-black text-[20px] border rounded-full h-[50px] pl-4 pr-16 ${
                 errors.repeatPassword ? "border-red-500" : "border-black"
               }`}
               placeholder="Repeat your password"
@@ -206,9 +221,23 @@ export default function SignUpForm({ isVisible, email }: Props) {
                   repeatPassword: validateRepeatPassword(password, text),
                 }));
               }}
-              secureTextEntry
+              secureTextEntry={!showRepeatPassword}
               textContentType="oneTimeCode"
             />
+            <Pressable
+              className="absolute right-4 top-1/2 -translate-y-1/2"
+              onPress={() => setShowRepeatPassword((prev) => !prev)}
+              accessibilityRole="button"
+              accessibilityLabel={
+                showRepeatPassword ? "Hide repeated password" : "Show repeated password"
+              }
+            >
+              {showRepeatPassword ? (
+                <EyeOff size={20} color="#4B5563" />
+              ) : (
+                <Eye size={20} color="#4B5563" />
+              )}
+            </Pressable>
             {errors.repeatPassword && (
               <Text className="text-red-500 text-[14px] mt-1">
                 {errors.repeatPassword}
@@ -232,7 +261,7 @@ export default function SignUpForm({ isVisible, email }: Props) {
             <Text className="text-white font-bold text-[15px]">Continue</Text>
           </TouchableOpacity>
         </View>
-      ) : (
+      ) : state === STATE.SECOND ? (
         <View className="flex flex-col gap-[20px]">
           <View>
             <TextInput
@@ -278,26 +307,6 @@ export default function SignUpForm({ isVisible, email }: Props) {
             )}
           </View>
 
-          <View>
-            <TextInput
-              className={`text-black text-[20px] border rounded-full h-[50px] px-4 ${
-                errors.phone ? "border-red-500" : "border-black"
-              }`}
-              placeholder="Phone number"
-              value={phone}
-              onChangeText={(text) => {
-                setPhone(text);
-                setErrors((prev) => ({ ...prev, phone: validatePhone(text) }));
-              }}
-              keyboardType="phone-pad"
-            />
-            {errors.phone && (
-              <Text className="text-red-500 text-[14px] mt-1">
-                {errors.phone}
-              </Text>
-            )}
-          </View>
-
           <CustomPicker
             placeholder={"Select your default currency"}
             value={currency}
@@ -309,18 +318,59 @@ export default function SignUpForm({ isVisible, email }: Props) {
 
           <View className="flex flex-row items-center justify-center gap-2">
             <TouchableOpacity
-              onPress={() => setState(STATE.FIRST)}
+              onPress={() => {
+                setSubmitError(null);
+                setState(STATE.FIRST);
+              }}
               className="bg-gray-400 h-[7px] w-[7px] rounded-full"
             />
             <View className="bg-black h-[7px] w-[7px] rounded-full" />
           </View>
 
           <TouchableOpacity
-            className="bg-black shadow-md rounded-full h-[50px] flex items-center justify-center"
+            className={`bg-black shadow-md rounded-full h-[50px] flex items-center justify-center ${
+              isSubmitting ? "opacity-60" : ""
+            }`}
             onPress={handleSubmit}
             activeOpacity={0.85}
+            disabled={isSubmitting}
           >
-            <Text className="text-white font-bold text-[15px]">Sign Up</Text>
+            <Text className="text-white font-bold text-[15px]">
+              {isSubmitting ? "Submitting..." : "Sign Up"}
+            </Text>
+          </TouchableOpacity>
+
+          {submitError && (
+            <Text className="text-red-500 text-center text-[14px]">
+              {submitError}
+            </Text>
+          )}
+        </View>
+      ) : (
+        <View className="flex flex-col items-center gap-5 mt-[60px] px-6">
+          <Text className="text-3xl font-bold text-center">Check your inbox</Text>
+          <Text className="text-center text-lg text-gray-600">
+            {`You have been sent an email at ${mail || "your address"}. Check your inbox to validate your email address.`}
+          </Text>
+          <Text className="text-center text-base text-gray-500">
+            After confirming the link, return here and sign in with your new credentials.
+          </Text>
+          <TouchableOpacity
+            className="bg-black shadow-md rounded-full h-[50px] px-10 flex items-center justify-center"
+            onPress={() => {
+              setState(STATE.FIRST);
+              setSubmitError(null);
+              setPassword("");
+              setRepeatPassword("");
+              setFirstName("");
+              setLastName("");
+              setCurrency("");
+              setShowPassword(false);
+              setShowRepeatPassword(false);
+            }}
+            activeOpacity={0.85}
+          >
+            <Text className="text-white font-bold text-[15px]">Back to start</Text>
           </TouchableOpacity>
         </View>
       )}

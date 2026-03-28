@@ -11,12 +11,14 @@ import {
   Platform,
   PanResponder,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ChevronDown } from "lucide-react-native";
 import { useAuthStore } from "@/utils/authStore";
 import { addSubscription } from "@/utils/db/finance/subscriptions/subscriptions";
 import CustomPicker from "@/components/ui/CustomPicker";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 type Props = {
   isVisible: boolean;
@@ -46,6 +48,8 @@ export default function AddSubscription({
 
   const [showAccountPicker, setShowAccountPicker] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   const SCREEN_HEIGHT = Dimensions.get("window").height;
   const sheetPosition = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
@@ -269,26 +273,77 @@ export default function AddSubscription({
             <Text className="font-semibold text-black mb-2 text-[20px]">
               Start Date
             </Text>
-            <View className="bg-neutral-100 rounded-full px-5 py-4 mb-4">
-              <TextInput
-                placeholder="YYYY-MM-DD"
-                value={startDate}
-                onChangeText={setStartDate}
-                className="text-black text-[20px]"
-              />
-            </View>
+            <TouchableOpacity
+              onPress={() => {
+                if (startDate) {
+                  const [y, m, d] = startDate.split("-").map(Number);
+                  setSelectedDate(new Date(y, m - 1, d));
+                }
+                setShowDatePicker(true);
+              }}
+            >
+              <View className="bg-neutral-100 rounded-full px-5 py-4 mb-4 justify-center">
+                <Text
+                  className={`text-[20px] ${startDate ? "text-black" : "text-gray-400"}`}
+                >
+                  {startDate || "Select date"}
+                </Text>
+              </View>
+            </TouchableOpacity>
 
             <TouchableOpacity
-              className="bg-black rounded-full py-4 mt-4"
+              className={`bg-black rounded-full py-4 mt-4 ${isLoading ? "opacity-60" : ""}`}
               onPress={handleAddSubscription}
               disabled={isLoading}
             >
-              <Text className="text-center text-white font-semibold text-lg">
-                {isLoading ? "Adding..." : "Add"}
-              </Text>
+              <View className="flex-row items-center justify-center">
+                {isLoading && (
+                  <ActivityIndicator
+                    size="small"
+                    color="#fff"
+                    style={{ marginRight: 8 }}
+                  />
+                )}
+                <Text className="text-white font-semibold text-lg">
+                  {isLoading ? "Adding..." : "Add"}
+                </Text>
+              </View>
             </TouchableOpacity>
           </SafeAreaView>
         </Animated.View>
+        {/* Date Picker Overlay */}
+        {showDatePicker && (
+          <View className="absolute bottom-0 left-0 right-0 bg-white shadow-2xl z-50 rounded-t-[20px] pb-10 border-t border-gray-200">
+            <View className="flex-row justify-between items-center p-4 border-b border-gray-100 bg-gray-50 rounded-t-[20px]">
+              <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+                <Text className="text-gray-500 font-medium text-lg">
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+              <Text className="font-bold text-lg">Select Date</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setStartDate(selectedDate.toISOString().slice(0, 10));
+                  setShowDatePicker(false);
+                }}
+              >
+                <Text className="text-blue-600 font-bold text-lg">Done</Text>
+              </TouchableOpacity>
+            </View>
+            <View className="flex items-center">
+              <DateTimePicker
+                value={selectedDate}
+                mode="date"
+                display="spinner"
+                onChange={(_, date) => {
+                  if (date) setSelectedDate(date);
+                }}
+                textColor="black"
+                style={{ backgroundColor: "white" }}
+              />
+            </View>
+          </View>
+        )}
       </View>
     </Modal>
   );

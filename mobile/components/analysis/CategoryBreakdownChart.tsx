@@ -138,7 +138,7 @@ export default function CategoryBreakdownChart({
           <Text className="text-xs uppercase tracking-wide text-gray-400">
             {activeEntry ? activeEntry.label : title}
           </Text>
-          <Text className="text-3xl font-bold text-gray-900">
+          <Text className="text-2xl font-bold text-gray-900">
             {activeEntry
               ? formatAmount(activeEntry.amount)
               : total === 0

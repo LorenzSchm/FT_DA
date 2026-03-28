@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LineChart } from "react-native-wagmi-charts";
+import { useAuthStore } from "@/utils/authStore";
 
 type Point = {
   timestamp: number;
@@ -19,8 +20,9 @@ type Props = {
   backgroundColor?: string;
   loading?: boolean;
   emptyPlaceholder?: React.ReactNode;
-  /** When true, hides the value/change header — useful when rendering a sticky header externally */
   hideHeader?: boolean;
+  onTimeframeChange?: (tf: TimeframeKey) => void;
+  onCursorChange?: (value: number | null, active: boolean) => void;
 };
 
 const TIMEFRAMES: TimeframeKey[] = ["1D", "1W", "1M", "1Y", "ALL"];
@@ -35,12 +37,47 @@ export const PhantomChart: React.FC<Props> = ({
   loading = false,
   emptyPlaceholder,
   hideHeader = false,
+  onTimeframeChange,
+  onCursorChange,
 }) => {
   const [timeframe, setTimeframe] =
     React.useState<TimeframeKey>(initialTimeframe);
   const [isCursorActive, setIsCursorActive] = React.useState(false);
+
+  const handleTimeframeChange = React.useCallback(
+    (tf: TimeframeKey) => {
+      setTimeframe(tf);
+      onTimeframeChange?.(tf);
+    },
+    [onTimeframeChange],
+  );
   const cursorValueRef = React.useRef<number | null>(null);
   const [, forceRender] = React.useState(0);
+  const { user, session } = useAuthStore();
+  console.log(user);
+  const userCurrency = (user?.user_metadata?.currency as string) || "EUR";
+  const currencySymbolMap: Record<string, string> = {
+    USD: "$",
+    EUR: "€",
+    GBP: "£",
+    CHF: "CHF",
+  };
+  const currencySymbol = currencySymbolMap[userCurrency] || "€";
+
+  const formatCurrencyValue = React.useCallback(
+    (value: number, options: { absolute?: boolean } = {}) => {
+      const { absolute = false } = options;
+      const numeric = absolute ? Math.abs(value) : value;
+      const sign = !absolute && numeric < 0 ? "-" : "";
+      const absValue = Math.abs(numeric).toFixed(2);
+      const needsSpace = currencySymbol.length > 1 && /[A-Za-z]/.test(currencySymbol);
+      const symbolWithSpacing = needsSpace
+        ? `${currencySymbol} `
+        : currencySymbol;
+      return `${sign}${symbolWithSpacing}${absValue}`;
+    },
+    [currencySymbol],
+  );
 
   const activeData = React.useMemo(
     () => dataByTimeframe[timeframe] ?? [],
@@ -69,7 +106,7 @@ export const PhantomChart: React.FC<Props> = ({
             <Skeleton className="w-full h-[220px] rounded-2xl" />
           </View>
         </View>
-        <TimeframeRow active={timeframe} onChange={setTimeframe} />
+        <TimeframeRow active={timeframe} onChange={handleTimeframeChange} />
         {emptyPlaceholder}
       </View>
     );
@@ -96,7 +133,7 @@ export const PhantomChart: React.FC<Props> = ({
               letterSpacing: -1.2,
             }}
           >
-            ${displayValue.toFixed(2)}
+            {formatCurrencyValue(displayValue)}
           </Text>
 
           <View style={{ alignItems: "flex-end" }}>
@@ -109,7 +146,7 @@ export const PhantomChart: React.FC<Props> = ({
               }}
             >
               {isUp ? "▲" : "▼"} {isUp ? "+" : ""}
-              {diff.toFixed(2)} ({isUp ? "+" : ""}
+              {formatCurrencyValue(diff, { absolute: true })} ({isUp ? "+" : ""}
               {diffPct.toFixed(2)}%)
             </Text>
             <Text
@@ -127,7 +164,7 @@ export const PhantomChart: React.FC<Props> = ({
       )}
 
       <View className="px-2">
-        <TimeframeRow active={timeframe} onChange={setTimeframe} />
+        <TimeframeRow active={timeframe} onChange={handleTimeframeChange} />
       </View>
 
       <LineChart.Provider
@@ -138,6 +175,7 @@ export const PhantomChart: React.FC<Props> = ({
           const point = activeData[index];
           if (point) {
             cursorValueRef.current = point.value;
+            onCursorChange?.(point.value, true);
             forceRender((n) => n + 1);
           }
         }}
@@ -152,8 +190,15 @@ export const PhantomChart: React.FC<Props> = ({
 
           <LineChart.CursorCrosshair
             color="#000"
-            onActivated={() => setIsCursorActive(true)}
-            onEnded={() => setIsCursorActive(false)}
+            onActivated={() => {
+              setIsCursorActive(true);
+              onCursorChange?.(cursorValueRef.current, true);
+            }}
+            onEnded={() => {
+              setIsCursorActive(false);
+              cursorValueRef.current = null;
+              onCursorChange?.(null, false);
+            }}
           >
             <LineChart.Tooltip
               position="bottom"
@@ -193,9 +238,8 @@ const TimeframeRow = ({ active, onChange }: any) => (
         className={`px-3 py-1 rounded-full ${active === tf ? "" : ""}`}
       >
         <Text
-          className={`text-l font-bold ${
-            active === tf ? " text-black" : "text-gray-400"
-          }`}
+          className={`text-l font-bold ${active === tf ? " text-black" : "text-gray-400"
+            }`}
         >
           {tf}
         </Text>

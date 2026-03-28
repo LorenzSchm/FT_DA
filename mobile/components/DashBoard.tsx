@@ -28,6 +28,7 @@ import { getData } from "@/utils/db/connect_accounts/connectAccounts";
 import { invalidateCache } from "@/utils/db/cache";
 import { CarouselPaginationDots } from "@/components/ui/PaginationDots";
 
+
 enum STATE {
   DEFAULT = "DEFAULT",
   ADD_ACCOUNT = "ADD_ACCOUNT",
@@ -63,7 +64,7 @@ export default function DashBoard() {
   const maxListHeight = height * 0.35;
 
   const { user, session } = useAuthStore();
-  const test = useAuthStore();
+
   const fetchConnectBalanceMinor = async () => {
     if (!session?.access_token) return 0;
     const connectData = await getData(
@@ -84,7 +85,6 @@ export default function DashBoard() {
             ? Math.round(Number(t.amount) * 100)
             : 0;
 
-      // Handle transaction type: EXPENSE should be negative
       if (t.type === "EXPENSE") {
         amountMinor = -Math.abs(amountMinor);
       }
@@ -132,9 +132,9 @@ export default function DashBoard() {
           acc.kind !== "connect"
             ? acc
             : {
-                ...acc,
-                balance_minor: availableCents,
-              },
+              ...acc,
+              balance_minor: availableCents,
+            },
         );
       }
 
@@ -165,9 +165,9 @@ export default function DashBoard() {
             acc.id !== accountId
               ? acc
               : {
-                  ...acc,
-                  balance_minor: availableCents,
-                },
+                ...acc,
+                balance_minor: availableCents,
+              },
           ),
         );
 
@@ -262,7 +262,6 @@ export default function DashBoard() {
       const accs = await loadAccounts();
       if (accs.length > 0) {
         setAccountIndex(0);
-        // pass the freshly fetched account object to avoid race with setAccounts
         const firstId = accs[0].id;
         await loadTransactionsForAccount(firstId, accs[0]);
         await loadSubscriptionsForAccount(firstId);
@@ -313,27 +312,8 @@ export default function DashBoard() {
   const toggleExpanded = () => setExpanded(!expanded);
   const handleOutsidePress = () => setExpanded(false);
 
-  const [refreshing, setRefreshing] = useState(false);
 
-  const exportToCSV = async () => {
-    if (!session?.access_token) return;
-    try {
-      setIsExporting(true);
-      const csvData = await exportTransactionsToCSV(session.access_token, session.refresh_token);
-      
-      const fileUri = FileSystem.documentDirectory + "transactions_export.csv";
-      await FileSystem.writeAsStringAsync(fileUri, csvData, { encoding: FileSystem.EncodingType.UTF8 });
-      
-      const canShare = await Sharing.isAvailableAsync();
-      if (canShare) {
-        await Sharing.shareAsync(fileUri, { mimeType: "text/csv", dialogTitle: "Export Transactions" });
-      }
-    } catch (e: any) {
-      console.error("Export failed:", e);
-    } finally {
-      setIsExporting(false);
-    }
-  };
+  const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -361,7 +341,7 @@ export default function DashBoard() {
     : [];
   const isLoadingSelectedAccount = selectedAccountId
     ? !!loadingTxByAccount[selectedAccountId] ||
-      !!loadingSubsByAccount[selectedAccountId]
+    !!loadingSubsByAccount[selectedAccountId]
     : false;
 
   useEffect(() => {
@@ -389,13 +369,13 @@ export default function DashBoard() {
         acc.id !== selectedAccountId
           ? acc
           : {
-              ...acc,
-              balance_minor: computeAccountBalance(
-                selectedAccountId,
-                transactionsByAccount,
-                subscriptionsByAccount,
-              ),
-            },
+            ...acc,
+            balance_minor: computeAccountBalance(
+              selectedAccountId,
+              transactionsByAccount,
+              subscriptionsByAccount,
+            ),
+          },
       ),
     );
   }, [selectedAccountId, transactionsByAccount, subscriptionsByAccount]);
@@ -419,9 +399,6 @@ export default function DashBoard() {
               <Text className="text-center text-2xl font-bold">
                 {`Good morning ${user?.user_metadata?.display_name || "there"}!`}
               </Text>
-              <TouchableOpacity onPress={exportToCSV} disabled={isExporting} className="absolute right-5 p-2">
-                <Download size={24} color={isExporting ? "gray" : "black"} />
-              </TouchableOpacity>
             </View>
 
             {/* Accounts Carousel */}
@@ -571,15 +548,14 @@ export default function DashBoard() {
 
                         <Text
                           style={{ flexShrink: 0 }}
-                          className={`self-center font-bold ${
-                            item.amount_minor < 0
-                              ? "text-red-500"
-                              : "text-green-500"
-                          }`}
+                          className={`self-center font-bold ${item.amount_minor < 0
+                            ? "text-red-500"
+                            : "text-green-500"
+                            }`}
                         >
                           {item.amount_minor < 0 ? "" : "+"}
                           {(item.amount_minor / 100).toFixed(2)}{" "}
-                          {item.currency === "USD" ? "$" : "€"}
+                          {({ USD: "$", EUR: "€", GBP: "£", CHF: "CHF" } as Record<string, string>)[item.currency] ?? item.currency}
                         </Text>
                       </View>
                     ));
@@ -592,28 +568,42 @@ export default function DashBoard() {
       </ScrollView>
 
       {/* Floating Add Button */}
-      <View className="absolute bottom-12 right-5">
-        {expanded && (
-          <TouchableWithoutFeedback onPress={handleOutsidePress}>
-            <View className="absolute inset-0" />
-          </TouchableWithoutFeedback>
-        )}
+      {expanded && (
+        <TouchableWithoutFeedback onPress={handleOutsidePress}>
+          <View className="absolute inset-0" />
+        </TouchableWithoutFeedback>
+      )}
 
-        <TouchableOpacity
-          activeOpacity={0.9}
-          onPress={toggleExpanded}
-          className={`${
-            expanded
-              ? "bg-black w-64 py-6 rounded-[25px]"
-              : "bg-black w-40 py-4 rounded-full"
-          }`}
-        >
-          {!expanded ? (
-            <View className="items-center justify-center">
-              <Text className="text-white text-3xl font-semibold">Add +</Text>
-            </View>
-          ) : (
-            <View className="flex-col justify-center px-6 space-y-3">
+      <View className="absolute bottom-12 right-5">
+        {!expanded ? (
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={toggleExpanded}
+            style={{
+              width: 160,
+              paddingVertical: 16,
+              borderRadius: 999,
+              backgroundColor: "#000",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text className="text-white text-3xl font-semibold">Add +</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={toggleExpanded}
+            style={{
+              width: 256,
+              paddingVertical: 24,
+              borderRadius: 25,
+              backgroundColor: "#000",
+              alignItems: "stretch",
+              justifyContent: "center",
+            }}
+          >
+            <View className="flex-col justify-center px-6 space-y-3 w-full">
               <TouchableOpacity
                 className="flex-row justify-between items-center pb-3"
                 onPress={openAddAccountModal}
@@ -644,8 +634,8 @@ export default function DashBoard() {
                 <Text className="text-white text-3xl">›</Text>
               </TouchableOpacity>
             </View>
-          )}
-        </TouchableOpacity>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Modals */}
