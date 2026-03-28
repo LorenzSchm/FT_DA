@@ -18,7 +18,11 @@ import AddAccountModal from "@/components/modals/AddAccountModal";
 import AddTransactionModal from "@/components/modals/AddTransactionModal";
 import AddSubscriptionModal from "@/components/modals/AddSubscriptionModal";
 import { useAuthStore } from "@/utils/authStore";
-import { getAccounts, getTransactions, exportTransactionsToCSV } from "@/utils/db/finance/finance";
+import {
+  getAccounts,
+  getTransactions,
+  exportTransactionsToCSV,
+} from "@/utils/db/finance/finance";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import { Download } from "lucide-react-native";
@@ -27,7 +31,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getData } from "@/utils/db/connect_accounts/connectAccounts";
 import { invalidateCache } from "@/utils/db/cache";
 import { CarouselPaginationDots } from "@/components/ui/PaginationDots";
-
 
 enum STATE {
   DEFAULT = "DEFAULT",
@@ -132,9 +135,9 @@ export default function DashBoard() {
           acc.kind !== "connect"
             ? acc
             : {
-              ...acc,
-              balance_minor: availableCents,
-            },
+                ...acc,
+                balance_minor: availableCents,
+              },
         );
       }
 
@@ -165,9 +168,9 @@ export default function DashBoard() {
             acc.id !== accountId
               ? acc
               : {
-                ...acc,
-                balance_minor: availableCents,
-              },
+                  ...acc,
+                  balance_minor: availableCents,
+                },
           ),
         );
 
@@ -312,7 +315,6 @@ export default function DashBoard() {
   const toggleExpanded = () => setExpanded(!expanded);
   const handleOutsidePress = () => setExpanded(false);
 
-
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = useCallback(async () => {
@@ -341,7 +343,7 @@ export default function DashBoard() {
     : [];
   const isLoadingSelectedAccount = selectedAccountId
     ? !!loadingTxByAccount[selectedAccountId] ||
-    !!loadingSubsByAccount[selectedAccountId]
+      !!loadingSubsByAccount[selectedAccountId]
     : false;
 
   useEffect(() => {
@@ -369,13 +371,13 @@ export default function DashBoard() {
         acc.id !== selectedAccountId
           ? acc
           : {
-            ...acc,
-            balance_minor: computeAccountBalance(
-              selectedAccountId,
-              transactionsByAccount,
-              subscriptionsByAccount,
-            ),
-          },
+              ...acc,
+              balance_minor: computeAccountBalance(
+                selectedAccountId,
+                transactionsByAccount,
+                subscriptionsByAccount,
+              ),
+            },
       ),
     );
   }, [selectedAccountId, transactionsByAccount, subscriptionsByAccount]);
@@ -548,14 +550,22 @@ export default function DashBoard() {
 
                         <Text
                           style={{ flexShrink: 0 }}
-                          className={`self-center font-bold ${item.amount_minor < 0
-                            ? "text-red-500"
-                            : "text-green-500"
-                            }`}
+                          className={`self-center font-bold ${
+                            item.amount_minor < 0
+                              ? "text-red-500"
+                              : "text-green-500"
+                          }`}
                         >
                           {item.amount_minor < 0 ? "" : "+"}
                           {(item.amount_minor / 100).toFixed(2)}{" "}
-                          {({ USD: "$", EUR: "€", GBP: "£", CHF: "CHF" } as Record<string, string>)[item.currency] ?? item.currency}
+                          {(
+                            {
+                              USD: "$",
+                              EUR: "€",
+                              GBP: "£",
+                              CHF: "CHF",
+                            } as Record<string, string>
+                          )[item.currency] ?? item.currency}
                         </Text>
                       </View>
                     ));

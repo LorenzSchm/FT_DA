@@ -203,7 +203,9 @@ export default function SavingGoals() {
                       <ChevronRight size={20} />
                       <Text className="text-lg font-bold text-green-500">
                         {saving.currency || "€"}
-                        {((saving.contributed_minor || 0) / 100).toFixed(2)}<Text> of </Text>{((saving.target_minor || 0) / 100).toFixed(2)}
+                        {((saving.contributed_minor || 0) / 100).toFixed(2)}
+                        <Text> of </Text>
+                        {((saving.target_minor || 0) / 100).toFixed(2)}
                       </Text>
                     </View>
                   </View>
@@ -225,10 +227,11 @@ export default function SavingGoals() {
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={toggleExpanded}
-          className={`${expanded
-            ? "bg-black w-64 py-6 rounded-[25px]"
-            : "bg-black w-40 py-4 rounded-full"
-            }`}
+          className={`${
+            expanded
+              ? "bg-black w-64 py-6 rounded-[25px]"
+              : "bg-black w-40 py-4 rounded-full"
+          }`}
         >
           {!expanded ? (
             <View className="items-center justify-center">

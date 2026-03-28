@@ -1,4 +1,10 @@
-import { Text, TextInput, TouchableOpacity, View, Pressable } from "react-native";
+import {
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  Pressable,
+} from "react-native";
 import { useEffect, useState } from "react";
 import CustomPicker from "@/components/ui/CustomPicker";
 import { useAuthStore } from "@/utils/authStore";
@@ -192,7 +198,9 @@ export default function SignUpForm({ isVisible, email }: Props) {
               className="absolute right-4 top-1/2 -translate-y-1/2"
               onPress={() => setShowPassword((prev) => !prev)}
               accessibilityRole="button"
-              accessibilityLabel={showPassword ? "Hide password" : "Show password"}
+              accessibilityLabel={
+                showPassword ? "Hide password" : "Show password"
+              }
             >
               {showPassword ? (
                 <EyeOff size={20} color="#4B5563" />
@@ -229,7 +237,9 @@ export default function SignUpForm({ isVisible, email }: Props) {
               onPress={() => setShowRepeatPassword((prev) => !prev)}
               accessibilityRole="button"
               accessibilityLabel={
-                showRepeatPassword ? "Hide repeated password" : "Show repeated password"
+                showRepeatPassword
+                  ? "Hide repeated password"
+                  : "Show repeated password"
               }
             >
               {showRepeatPassword ? (
@@ -348,12 +358,15 @@ export default function SignUpForm({ isVisible, email }: Props) {
         </View>
       ) : (
         <View className="flex flex-col items-center gap-5 mt-[60px] px-6">
-          <Text className="text-3xl font-bold text-center">Check your inbox</Text>
+          <Text className="text-3xl font-bold text-center">
+            Check your inbox
+          </Text>
           <Text className="text-center text-lg text-gray-600">
             {`You have been sent an email at ${mail || "your address"}. Check your inbox to validate your email address.`}
           </Text>
           <Text className="text-center text-base text-gray-500">
-            After confirming the link, return here and sign in with your new credentials.
+            After confirming the link, return here and sign in with your new
+            credentials.
           </Text>
           <TouchableOpacity
             className="bg-black shadow-md rounded-full h-[50px] px-10 flex items-center justify-center"
@@ -370,7 +383,9 @@ export default function SignUpForm({ isVisible, email }: Props) {
             }}
             activeOpacity={0.85}
           >
-            <Text className="text-white font-bold text-[15px]">Back to start</Text>
+            <Text className="text-white font-bold text-[15px]">
+              Back to start
+            </Text>
           </TouchableOpacity>
         </View>
       )}

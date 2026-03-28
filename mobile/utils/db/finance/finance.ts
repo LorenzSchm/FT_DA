@@ -105,10 +105,7 @@ export const addTransaction = async (
   return result;
 };
 
-export const exportTransactionsToCSV = async (
-  accessToken,
-  refreshToken,
-) => {
+export const exportTransactionsToCSV = async (accessToken, refreshToken) => {
   if (!accessToken) {
     throw new Error("Missing access token");
   }

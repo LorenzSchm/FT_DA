@@ -126,9 +126,7 @@ export default function LegalModal({ isVisible, onClose, type }: Props) {
                 paddingBottom: 12,
               }}
             >
-              <Text
-                style={{ fontSize: 24, fontWeight: "800", color: "#000" }}
-              >
+              <Text style={{ fontSize: 24, fontWeight: "800", color: "#000" }}>
                 {type === "privacy" ? "Privacy Policy" : "Terms of Service"}
               </Text>
               <TouchableOpacity onPress={handleClose}>
@@ -173,7 +171,14 @@ function SectionTitle({ children }: { children: string }) {
 
 function P({ children }: { children: React.ReactNode }) {
   return (
-    <Text style={{ fontSize: 14, color: "#374151", lineHeight: 21, marginBottom: 8 }}>
+    <Text
+      style={{
+        fontSize: 14,
+        color: "#374151",
+        lineHeight: 21,
+        marginBottom: 8,
+      }}
+    >
       {children}
     </Text>
   );
@@ -181,7 +186,15 @@ function P({ children }: { children: React.ReactNode }) {
 
 function Bullet({ children }: { children: React.ReactNode }) {
   return (
-    <Text style={{ fontSize: 14, color: "#374151", lineHeight: 21, marginBottom: 4, paddingLeft: 12 }}>
+    <Text
+      style={{
+        fontSize: 14,
+        color: "#374151",
+        lineHeight: 21,
+        marginBottom: 4,
+        paddingLeft: 12,
+      }}
+    >
       {"\u2022"} {children}
     </Text>
   );
@@ -192,8 +205,9 @@ function PrivacyPolicyContent() {
     <View>
       <P>Last updated: 2. January 2026</P>
       <P>
-        This Privacy Notice explains how personal data is processed in connection
-        with the Finance Tracker application and the associated website.
+        This Privacy Notice explains how personal data is processed in
+        connection with the Finance Tracker application and the associated
+        website.
       </P>
       <P>
         The project is a non-commercial diploma thesis developed at HTL Rennweg
@@ -232,9 +246,9 @@ function PrivacyPolicyContent() {
       <SectionTitle>4. Source of the Data & Third-Party Provider</SectionTitle>
       <P>
         Bank account data is accessed exclusively via the third-party open
-        banking provider TrueLayer. Authentication and data access occur directly
-        between the user and their bank via TrueLayer. The project team does not
-        receive or store banking credentials at any time.
+        banking provider TrueLayer. Authentication and data access occur
+        directly between the user and their bank via TrueLayer. The project team
+        does not receive or store banking credentials at any time.
       </P>
 
       <SectionTitle>5. Purpose of Data Processing</SectionTitle>
@@ -265,8 +279,8 @@ function PrivacyPolicyContent() {
 
       <SectionTitle>8. Data Retention</SectionTitle>
       <P>
-        Data is retained as long as the user actively uses the app or the data is
-        stored locally on the user's device. When the app is uninstalled, all
+        Data is retained as long as the user actively uses the app or the data
+        is stored locally on the user's device. When the app is uninstalled, all
         locally stored data is deleted.
       </P>
 
@@ -295,7 +309,10 @@ function PrivacyPolicyContent() {
       </P>
 
       <SectionTitle>12. Contact</SectionTitle>
-      <P>Lorenz Schmidt{"\n"}Rennweg 89b, 1030 Vienna{"\n"}Email: Lorenz.schmidt@htl.rennweg.at</P>
+      <P>
+        Lorenz Schmidt{"\n"}Rennweg 89b, 1030 Vienna{"\n"}Email:
+        Lorenz.schmidt@htl.rennweg.at
+      </P>
     </View>
   );
 }
@@ -307,9 +324,9 @@ function TermsContent() {
       <P>Last Updated: 2. January 2026</P>
       <P>
         These Terms of Service govern the use of the Finance Tracker Application
-        and the associated website, developed as part of a non-commercial diploma
-        thesis at HTL Rennweg. By using the App or Website, you agree to these
-        Terms.
+        and the associated website, developed as part of a non-commercial
+        diploma thesis at HTL Rennweg. By using the App or Website, you agree to
+        these Terms.
       </P>
 
       <SectionTitle>1. Purpose of the Application</SectionTitle>
@@ -322,8 +339,8 @@ function TermsContent() {
         their personal financial data.
       </Bullet>
       <Bullet>
-        The App does not provide financial advice, investment recommendations, or
-        banking services.
+        The App does not provide financial advice, investment recommendations,
+        or banking services.
       </Bullet>
 
       <SectionTitle>2. Eligibility</SectionTitle>
@@ -332,8 +349,8 @@ function TermsContent() {
         own financial data.
       </Bullet>
       <Bullet>
-        Use of the App by minors may require parental consent, depending on local
-        legal requirements.
+        Use of the App by minors may require parental consent, depending on
+        local legal requirements.
       </Bullet>
 
       <SectionTitle>3. Use of Third-Party Services</SectionTitle>
@@ -370,16 +387,16 @@ function TermsContent() {
         processed on a server defined in the Privacy Policy.
       </Bullet>
       <Bullet>
-        The project team and the school do not have access to user financial data
-        at any time.
+        The project team and the school do not have access to user financial
+        data at any time.
       </Bullet>
 
       <SectionTitle>6. No Warranty / Educational Purpose Only</SectionTitle>
       <P>
         The App is provided "as is" without any warranties of any kind. No
         guarantee is made regarding accuracy, reliability, completeness, or
-        availability. Calculations and statistics may contain errors. The App may
-        be discontinued or modified at any time without notice.
+        availability. Calculations and statistics may contain errors. The App
+        may be discontinued or modified at any time without notice.
       </P>
       <P>
         Users are advised not to rely on the App for financial decision-making.
@@ -387,10 +404,10 @@ function TermsContent() {
 
       <SectionTitle>7. Limitation of Liability</SectionTitle>
       <P>
-        To the maximum extent permitted by law, the project team, the school, and
-        all contributors disclaim liability for loss of data, financial damages,
-        incorrect calculations, unauthorized access caused by the user's own
-        device, or any issues arising from third-party providers.
+        To the maximum extent permitted by law, the project team, the school,
+        and all contributors disclaim liability for loss of data, financial
+        damages, incorrect calculations, unauthorized access caused by the
+        user's own device, or any issues arising from third-party providers.
       </P>
 
       <SectionTitle>8. Intellectual Property</SectionTitle>

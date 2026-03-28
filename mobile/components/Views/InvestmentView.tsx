@@ -47,7 +47,12 @@ const COLORS = {
 export function InvestmentView() {
   const { session, user } = useAuthStore();
   const userCurrency = (user?.user_metadata?.currency as string) || "EUR";
-  const currencySymbolMap: Record<string, string> = { USD: "$", EUR: "€", GBP: "£", CHF: "CHF" };
+  const currencySymbolMap: Record<string, string> = {
+    USD: "$",
+    EUR: "€",
+    GBP: "£",
+    CHF: "CHF",
+  };
   const currencySymbol = currencySymbolMap[userCurrency] || "€";
   const [positions, setPositions] = useState<any[]>([]);
   const [selectedStock, setSelectedStock] = useState<any>(null);
@@ -98,7 +103,7 @@ export function InvestmentView() {
             logo = best.icon;
             logoCache.current[symbol] = logo;
           }
-        } catch { }
+        } catch {}
       }
       return { price, weekly_change, logo, longname };
     } catch {
@@ -402,28 +407,30 @@ export function InvestmentView() {
   /* ─── Period-specific return based on selected timeframe ─── */
   const activeData = portfolioHistory?.[activeTimeframe] ?? [];
   const periodStartValue = activeData[0]?.value ?? 0;
-  const periodEndValue = activeData[activeData.length - 1]?.value ?? periodStartValue;
+  const periodEndValue =
+    activeData[activeData.length - 1]?.value ?? periodStartValue;
 
   // Display value: cursor value when scrubbing, otherwise latest
-  const displayValue = isCursorActive && cursorValue != null
-    ? cursorValue
-    : totalPortfolioValue;
+  const displayValue =
+    isCursorActive && cursorValue != null ? cursorValue : totalPortfolioValue;
 
   // Period return: compare display value to start of period
-  const periodReturn = periodStartValue > 0
-    ? displayValue - periodStartValue
-    : totalUnrealizedPl;
-  const periodReturnPct = periodStartValue > 0
-    ? (periodReturn / periodStartValue) * 100
-    : totalPlPct;
+  const periodReturn =
+    periodStartValue > 0 ? displayValue - periodStartValue : totalUnrealizedPl;
+  const periodReturnPct =
+    periodStartValue > 0 ? (periodReturn / periodStartValue) * 100 : totalPlPct;
   const isPeriodUp = periodReturn >= 0;
 
-  const timeframeLabel = activeTimeframe === "ALL" ? "All time" : activeTimeframe;
+  const timeframeLabel =
+    activeTimeframe === "ALL" ? "All time" : activeTimeframe;
 
-  const handleCursorChange = useCallback((value: number | null, active: boolean) => {
-    setCursorValue(value);
-    setIsCursorActive(active);
-  }, []);
+  const handleCursorChange = useCallback(
+    (value: number | null, active: boolean) => {
+      setCursorValue(value);
+      setIsCursorActive(active);
+    },
+    [],
+  );
 
   /* ─── Logo renderer ─── */
   const Logo = ({ symbol }: { symbol: string }) => {
@@ -537,7 +544,8 @@ export function InvestmentView() {
                   letterSpacing: -1.2,
                 }}
               >
-                {currencySymbol}{formatNumber(displayValue)}
+                {currencySymbol}
+                {formatNumber(displayValue)}
               </Text>
               <View
                 style={{
@@ -726,7 +734,8 @@ export function InvestmentView() {
                         }}
                         numberOfLines={1}
                       >
-                        {item.longname || `${currencySymbol}${formatNumber(Number(marketVal))}`}
+                        {item.longname ||
+                          `${currencySymbol}${formatNumber(Number(marketVal))}`}
                       </Text>
                     </View>
 
@@ -740,7 +749,9 @@ export function InvestmentView() {
                           letterSpacing: -0.2,
                         }}
                       >
-                        {isUp ? "+" : "−"}{currencySymbol}{formatNumber(Math.abs(pl))}
+                        {isUp ? "+" : "−"}
+                        {currencySymbol}
+                        {formatNumber(Math.abs(pl))}
                       </Text>
                       <View
                         style={{

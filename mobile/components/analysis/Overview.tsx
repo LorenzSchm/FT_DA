@@ -203,7 +203,8 @@ export default function Overview({ account, accounts }: Props) {
     dateRange.end,
   )}.`;
 
-  const getCurrencySymbol = (code?: string) => (code === "USD" ? "$" : code === "GBP" ? "£" : "€");
+  const getCurrencySymbol = (code?: string) =>
+    code === "USD" ? "$" : code === "GBP" ? "£" : "€";
   const currency = transactions[0]?.currency || "EUR";
   const currencySymbol = getCurrencySymbol(currency);
 
@@ -338,8 +339,9 @@ export default function Overview({ account, accounts }: Props) {
                     </Text>
                   </View>
                   <Text
-                    className={`text-lg font-bold ${item.amount_minor < 0 ? "text-red-500" : "text-green-500"
-                      }`}
+                    className={`text-lg font-bold ${
+                      item.amount_minor < 0 ? "text-red-500" : "text-green-500"
+                    }`}
                   >
                     {item.amount_minor < 0 ? "" : "+"}
                     {(item.amount_minor / 100).toFixed(2)}{" "}
@@ -360,15 +362,15 @@ export default function Overview({ account, accounts }: Props) {
         minAmount={
           transactions.length > 0
             ? Math.min(
-              ...transactions.map((t) => Math.abs(t.amount_minor || 0)),
-            ) / 100
+                ...transactions.map((t) => Math.abs(t.amount_minor || 0)),
+              ) / 100
             : 0
         }
         maxAmount={
           transactions.length > 0
             ? Math.max(
-              ...transactions.map((t) => Math.abs(t.amount_minor || 0)),
-            ) / 100
+                ...transactions.map((t) => Math.abs(t.amount_minor || 0)),
+              ) / 100
             : 1000
         }
         selectedMin={amountRange?.min}

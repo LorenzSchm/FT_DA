@@ -83,7 +83,12 @@ export const useAuthStore = create(
         }
       },
 
-      signUp: async (email: string, password: string, displayName?: string, currency?: string) => {
+      signUp: async (
+        email: string,
+        password: string,
+        displayName?: string,
+        currency?: string,
+      ) => {
         try {
           await axios.post(`${API_URL}/auth/sign-up`, {
             email,
@@ -184,11 +189,11 @@ export const useAuthStore = create(
       storage: isWeb
         ? createJSONStorage(() => localStorage)
         : createJSONStorage(() => ({
-          setItem: (key: string, value: string) =>
-            SecureStore.setItemAsync(key, value),
-          getItem: (key: string) => SecureStore.getItemAsync(key),
-          removeItem: (key: string) => SecureStore.deleteItemAsync(key),
-        })),
+            setItem: (key: string, value: string) =>
+              SecureStore.setItemAsync(key, value),
+            getItem: (key: string) => SecureStore.getItemAsync(key),
+            removeItem: (key: string) => SecureStore.deleteItemAsync(key),
+          })),
       onRehydrateStorage: () => {
         return (state) => {
           state?.setHasHydrated(true);

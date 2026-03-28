@@ -184,8 +184,15 @@ export default function Expenses({ account }: Props) {
         <View className="mb-6 flex items-center">
           <View className="mb-6 flex flex-row items-center justify-center relative w-full">
             {isLoading ? (
-              <View className="items-center justify-center" style={{ width: 200, height: 200 }}>
-                <Skeleton mode="light" className="w-[200px] h-[200px] rounded-full" animated />
+              <View
+                className="items-center justify-center"
+                style={{ width: 200, height: 200 }}
+              >
+                <Skeleton
+                  mode="light"
+                  className="w-[200px] h-[200px] rounded-full"
+                  animated
+                />
               </View>
             ) : (
               <SpendingChart

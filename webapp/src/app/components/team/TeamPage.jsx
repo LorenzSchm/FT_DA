@@ -75,9 +75,7 @@ export default function TeamPage() {
             <span className="font-swiss font-bold text-lg text-black">
               {member.name}
             </span>
-            <span className="text-gray-600 text-sm">
-              {member.role}
-            </span>
+            <span className="text-gray-600 text-sm">{member.role}</span>
           </motion.div>
         ))}
       </div>

@@ -20,7 +20,12 @@ export default function Card({
 }) {
   const showLoading = isLoading || isNaN(amount);
   const isPositive = amount >= 0;
-  const currencySymbolMap: Record<string, string> = { USD: "$", EUR: "€", GBP: "£", CHF: "CHF" };
+  const currencySymbolMap: Record<string, string> = {
+    USD: "$",
+    EUR: "€",
+    GBP: "£",
+    CHF: "CHF",
+  };
   const currencySymbol = currencySymbolMap[currency] ?? currency;
 
   const formattedAmount = `${currencySymbol}${Math.abs(amount).toLocaleString(

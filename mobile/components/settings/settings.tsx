@@ -53,7 +53,8 @@ export default function SettingsScreen() {
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
-  const [isResettingPassword, setIsResettingPassword] = useState<boolean>(false);
+  const [isResettingPassword, setIsResettingPassword] =
+    useState<boolean>(false);
   const [resetStep, setResetStep] = useState<"idle" | "otp">("idle");
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -68,7 +69,9 @@ export default function SettingsScreen() {
   });
   const [aiEnabled, setAiEnabled] = useState(false);
   const [aiToggling, setAiToggling] = useState(false);
-  const [legalModalType, setLegalModalType] = useState<"privacy" | "terms" | null>(null);
+  const [legalModalType, setLegalModalType] = useState<
+    "privacy" | "terms" | null
+  >(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -98,8 +101,8 @@ export default function SettingsScreen() {
         if (isMounted)
           setError(
             err?.response?.data?.detail ||
-            err.message ||
-            "Failed to load settings",
+              err.message ||
+              "Failed to load settings",
           );
       } finally {
         if (isMounted) setLoading(false);
@@ -241,7 +244,11 @@ export default function SettingsScreen() {
     if (!session?.access_token) return;
     setAiToggling(true);
     try {
-      const result = await updateAiFlag(value, session.access_token, session.refresh_token);
+      const result = await updateAiFlag(
+        value,
+        session.access_token,
+        session.refresh_token,
+      );
       setAiEnabled(result);
       Toast.show({
         type: "success",
@@ -261,14 +268,22 @@ export default function SettingsScreen() {
   if (loading) {
     return (
       <View className="flex-1 bg-white">
-        <SettingsNavBar isEditing={false} onEditToggle={() => { }} />
+        <SettingsNavBar isEditing={false} onEditToggle={() => {}} />
         <ScrollView>
           <View className="p-6 mt-4">
             {["Name", "Email", "Password", "Default Currency", "Language"].map(
               (label) => (
                 <View key={label} className="mb-6">
-                  <Skeleton mode="light" className="h-6 w-28 mb-2 rounded" animated />
-                  <Skeleton mode="light" className="h-4 w-48 rounded" animated />
+                  <Skeleton
+                    mode="light"
+                    className="h-6 w-28 mb-2 rounded"
+                    animated
+                  />
+                  <Skeleton
+                    mode="light"
+                    className="h-4 w-48 rounded"
+                    animated
+                  />
                 </View>
               ),
             )}
@@ -281,7 +296,7 @@ export default function SettingsScreen() {
   if (error) {
     return (
       <View className="flex-1 bg-white">
-        <SettingsNavBar isEditing={false} onEditToggle={() => { }} />
+        <SettingsNavBar isEditing={false} onEditToggle={() => {}} />
         <ScrollView>
           <View className="p-6 mt-4">
             <Text className="text-lg font-bold text-red-600">Error</Text>
@@ -439,7 +454,9 @@ export default function SettingsScreen() {
               />
             ) : (
               <Text className="text-gray-500 mt-1">
-                {CURRENCY_OPTIONS.find((o) => o.value === editableFields.defaultCurrency)?.label ?? editableFields.defaultCurrency}
+                {CURRENCY_OPTIONS.find(
+                  (o) => o.value === editableFields.defaultCurrency,
+                )?.label ?? editableFields.defaultCurrency}
               </Text>
             )}
           </View>

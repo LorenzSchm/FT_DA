@@ -8,7 +8,7 @@ import { LogBox, StatusBar } from "react-native";
 LogBox.ignoreAllLogs();
 import React, { useEffect } from "react";
 import { Stack } from "expo-router";
-import { useAuthStore, } from "@/utils/authStore";
+import { useAuthStore } from "@/utils/authStore";
 import Toast from "react-native-toast-message";
 import { toastConfig } from "@/components/ui/CustomToast";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -24,7 +24,8 @@ export default function RootLayout() {
       <Stack>
         <Stack.Protected guard={isLoggedIn}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        </Stack.Protected>r
+        </Stack.Protected>
+        r
         <Stack.Protected guard={!isLoggedIn}>
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="sign-in" options={{ headerShown: false }} />

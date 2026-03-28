@@ -115,7 +115,11 @@ export default function SavingsAddAccountModal({
       return;
     }
     if (onSave) {
-      console.log("Calling onSave with:", { name, initialAmount, targetAmount });
+      console.log("Calling onSave with:", {
+        name,
+        initialAmount,
+        targetAmount,
+      });
       try {
         await onSave(name, initialAmount, targetAmount);
         console.log("onSave completed successfully");

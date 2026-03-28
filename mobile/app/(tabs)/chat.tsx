@@ -17,14 +17,12 @@ import { getAccounts } from "@/utils/db/finance/finance";
 import { chat, ConversationMessage } from "@/utils/chatbotAI";
 import { getAiFlag, updateAiFlag } from "@/utils/accountApi";
 
-
 interface ChatMessage {
   id: string;
   text: string;
   createdAt: Date;
   user: { _id: 1 | 2 }; // 1 = user, 2 = bot
 }
-
 
 let messageIdCounter = 0;
 function makeId(): string {
@@ -38,7 +36,6 @@ function botMsg(text: string): ChatMessage {
 function userMsg(text: string): ChatMessage {
   return { id: makeId(), text, createdAt: new Date(), user: { _id: 1 } };
 }
-
 
 const OPENAI_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY || "";
 
@@ -96,8 +93,7 @@ export default function Chat() {
           setDefaultAccountId(accounts[0].id);
           setDefaultAccountCurrency(accounts[0].currency);
         }
-      } catch {
-      }
+      } catch {}
     }
     loadDefaultAccount();
   }, [session?.access_token]);
@@ -107,12 +103,12 @@ export default function Chat() {
       setMessages([
         botMsg(
           "Hi! I'm your AI finance assistant. I can help you:\n\n" +
-          '- Add transactions — "add expense 45 for groceries"\n' +
-          '- View balance — "what is my balance?"\n' +
-          '- List transactions — "show my recent transactions"\n' +
-          '- Manage subscriptions — "show my subscriptions"\n' +
-          '- Update/Delete — "delete transaction 67"\n\n' +
-          "How can I help?",
+            '- Add transactions — "add expense 45 for groceries"\n' +
+            '- View balance — "what is my balance?"\n' +
+            '- List transactions — "show my recent transactions"\n' +
+            '- Manage subscriptions — "show my subscriptions"\n' +
+            '- Update/Delete — "delete transaction 67"\n\n' +
+            "How can I help?",
         ),
       ]);
     }
@@ -170,14 +166,7 @@ export default function Chat() {
       setIsTyping(false);
       scrollToEnd();
     }
-  }, [
-    inputText,
-    session,
-    defaultAccountId,
-    conversationHistory,
-    scrollToEnd,
-  ]);
-
+  }, [inputText, session, defaultAccountId, conversationHistory, scrollToEnd]);
 
   const renderMessage = useCallback(({ item }: { item: ChatMessage }) => {
     const isUser = item.user._id === 1;
@@ -249,7 +238,9 @@ export default function Chat() {
   if (loadingFlag) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
           <ActivityIndicator size="large" color="#000" />
         </View>
       </SafeAreaView>
@@ -310,15 +301,36 @@ export default function Chat() {
               Important Information
             </Text>
 
-            <Text style={{ fontSize: 14, color: "#78350F", lineHeight: 21, marginBottom: 8 }}>
+            <Text
+              style={{
+                fontSize: 14,
+                color: "#78350F",
+                lineHeight: 21,
+                marginBottom: 8,
+              }}
+            >
               {"\u2022"} Your messages and financial context (account balances,
               transactions) are sent to OpenAI's servers for processing.
             </Text>
-            <Text style={{ fontSize: 14, color: "#78350F", lineHeight: 21, marginBottom: 8 }}>
+            <Text
+              style={{
+                fontSize: 14,
+                color: "#78350F",
+                lineHeight: 21,
+                marginBottom: 8,
+              }}
+            >
               {"\u2022"} AI responses may occasionally be inaccurate or
               incomplete. Always verify important financial information.
             </Text>
-            <Text style={{ fontSize: 14, color: "#78350F", lineHeight: 21, marginBottom: 8 }}>
+            <Text
+              style={{
+                fontSize: 14,
+                color: "#78350F",
+                lineHeight: 21,
+                marginBottom: 8,
+              }}
+            >
               {"\u2022"} The assistant can create, modify, and delete
               transactions on your behalf based on your instructions.
             </Text>
