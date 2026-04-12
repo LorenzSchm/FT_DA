@@ -174,7 +174,7 @@ const EXPENSE_KEYWORDS: Record<string, string> = {
   amazon: "Miscellaneous Expenses",
   ebay: "Miscellaneous Expenses",
   zalando: "Clothing and Personal Care",
-  h&m: "Apparel",
+  "h&m": "Apparel",
   zara: "Apparel",
   clothing: "Apparel",
   fashion: "Apparel",

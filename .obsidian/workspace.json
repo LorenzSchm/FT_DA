@@ -11,14 +11,14 @@
             "id": "afb4afacd25e4e1c",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "split-diff-view",
               "state": {
-                "file": "README.md",
-                "mode": "source",
-                "source": false
+                "aFile": "mobile/utils/categoryMatcher.ts",
+                "bFile": "mobile/utils/categoryMatcher.ts",
+                "aRef": ""
               },
-              "icon": "lucide-file",
-              "title": "README"
+              "icon": "diff",
+              "title": "Diff: categoryMatcher.ts  (Working Tree)"
             }
           }
         ]
@@ -94,7 +94,6 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "README.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +103,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for README"
+              "title": "Backlinks"
             }
           },
           {
@@ -113,12 +112,11 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "README.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from README"
+              "title": "Outgoing links"
             }
           },
           {
@@ -156,13 +154,12 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "README.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of README"
+              "title": "Outline"
             }
           },
           {
@@ -194,8 +191,9 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "b4f577c71790f332",
+  "active": "afb4afacd25e4e1c",
   "lastOpenFiles": [
+    "README.md",
     "backend/app/routers/finance/categories/__pycache__/categories.cpython-313.pyc",
     "backend/app/routers/finance/categories/__pycache__/__init__.cpython-313.pyc",
     "backend/app/routers/finance/categories/__pycache__",
@@ -205,7 +203,6 @@
     "mobile/node_modules/expo-modules-core/expo-module-gradle-plugin/build/classes/kotlin/main/expo/modules/plugin/ProjectConfigurationKt.class",
     "mobile/node_modules/expo-modules-core/expo-module-gradle-plugin/build/classes/kotlin/main/expo/modules/plugin/AutolinkingIntegration.class",
     "mobile/node_modules/expo-modules-autolinking/android/expo-gradle-plugin/expo-autolinking-plugin/build/kotlin/compileKotlin/cacheable/caches-jvm/lookups/file-to-id.tab.values.at",
-    "mobile/node_modules/expo-modules-autolinking/android/expo-gradle-plugin/expo-autolinking-plugin/build/kotlin/compileKotlin/classpath-snapshot/shrunk-classpath-snapshot.bin",
-    "mobile/node_modules/expo-modules-autolinking/android/expo-gradle-plugin/expo-autolinking-plugin/build/classes/kotlin/main/META-INF/expo-autolinking-plugin.kotlin_module"
+    "mobile/node_modules/expo-modules-autolinking/android/expo-gradle-plugin/expo-autolinking-plugin/build/kotlin/compileKotlin/classpath-snapshot/shrunk-classpath-snapshot.bin"
   ]
 }
