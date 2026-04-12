@@ -28,6 +28,9 @@ const EXPENSE_KEYWORDS: Record<string, string> = {
   edeka: "Groceries",
   netto: "Groceries",
   penny: "Groceries",
+  billa: "Groceries",
+  spar: "Groceries",
+  supermarkt: "Groceries",
   walmart: "Groceries",
   "whole foods": "Groceries",
   "trader joe": "Groceries",
@@ -35,7 +38,6 @@ const EXPENSE_KEYWORDS: Record<string, string> = {
   kroger: "Groceries",
   tesco: "Groceries",
   carrefour: "Groceries",
-  spar: "Groceries",
   lebensmittel: "Groceries",
 
   // Dining Out
