@@ -17,10 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { addTransaction, getCategories } from "@/utils/db/finance/finance";
 import { useAuthStore } from "@/utils/authStore";
 import CustomPicker from "@/components/ui/CustomPicker";
-import {
-  type Category,
-  suggestCategory,
-} from "@/utils/categoryMatcher";
+import { type Category, suggestCategory } from "@/utils/categoryMatcher";
 
 type Props = {
   isVisible: boolean;
@@ -53,8 +50,12 @@ export default function AddTransactionModal({
 
   // Category state
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-  const [suggestedCategory, setSuggestedCategory] = useState<Category | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
+    null,
+  );
+  const [suggestedCategory, setSuggestedCategory] = useState<Category | null>(
+    null,
+  );
 
   const [errors, setErrors] = useState<{
     account?: string;
@@ -131,7 +132,12 @@ export default function AddTransactionModal({
       setSuggestedCategory(null);
       return;
     }
-    const suggestion = suggestCategory(merchant, description, isIncome, categories);
+    const suggestion = suggestCategory(
+      merchant,
+      description,
+      isIncome,
+      categories,
+    );
     setSuggestedCategory(suggestion);
     // Only auto-apply suggestion if user hasn't manually selected a category
     if (!selectedCategory && suggestion) {
@@ -178,10 +184,13 @@ export default function AddTransactionModal({
 
     if (!merchant.trim()) {
       newErrors.merchant =
-        state === "income" ? "Please enter a sender" : "Please enter a recipient";
+        state === "income"
+          ? "Please enter a sender"
+          : "Please enter a recipient";
     }
 
-    if (!description.trim()) newErrors.description = "Please enter a usage description";
+    if (!description.trim())
+      newErrors.description = "Please enter a usage description";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -202,7 +211,8 @@ export default function AddTransactionModal({
       const transactionData: Record<string, any> = {
         type: state,
         amount_minor: state === "expense" ? -amountMinor : amountMinor,
-        currency: accounts.find((acc: any) => acc.id === selectedAccount)?.currency,
+        currency: accounts.find((acc: any) => acc.id === selectedAccount)
+          ?.currency,
         description: description,
         merchant: merchant,
       };
@@ -280,13 +290,17 @@ export default function AddTransactionModal({
               </Text>
 
               {/* Type toggle */}
-              <Text className="text-lg font-semibold text-black mb-3">Type</Text>
+              <Text className="text-lg font-semibold text-black mb-3">
+                Type
+              </Text>
               <View className="flex-row justify-around items-center mb-6 bg-[#F1F1F2] w-full h-[40px] rounded-full">
                 <TouchableOpacity
                   onPress={() => handleTypeChange("expense")}
                   className={`w-1/2 h-full flex justify-center items-center ${state === "expense" ? "bg-black rounded-full" : ""}`}
                 >
-                  <Text className={`text-xl ${state === "expense" ? "text-white" : "text-neutral-500"}`}>
+                  <Text
+                    className={`text-xl ${state === "expense" ? "text-white" : "text-neutral-500"}`}
+                  >
                     Expense
                   </Text>
                 </TouchableOpacity>
@@ -294,20 +308,25 @@ export default function AddTransactionModal({
                   onPress={() => handleTypeChange("income")}
                   className={`w-1/2 h-full flex justify-center items-center ${state === "income" ? "bg-black rounded-full" : ""}`}
                 >
-                  <Text className={`text-xl ${state === "income" ? "text-white" : "text-neutral-500"}`}>
+                  <Text
+                    className={`text-xl ${state === "income" ? "text-white" : "text-neutral-500"}`}
+                  >
                     Income
                   </Text>
                 </TouchableOpacity>
               </View>
 
               {/* Account selection */}
-              <Text className="font-semibold text-black mb-2 text-[20px]">Account</Text>
+              <Text className="font-semibold text-black mb-2 text-[20px]">
+                Account
+              </Text>
               <CustomPicker
                 placeholder="Select Account"
                 value={selectedAccount}
                 onValueChange={(val) => {
                   setSelectedAccount(val);
-                  if (errors.account) setErrors((p) => ({ ...p, account: undefined }));
+                  if (errors.account)
+                    setErrors((p) => ({ ...p, account: undefined }));
                 }}
                 options={accounts.map((acc) => ({
                   label: `${acc.name} (${acc.currency})`,
@@ -317,13 +336,17 @@ export default function AddTransactionModal({
                 variant="input"
               />
               {errors.account ? (
-                <Text className="text-red-500 text-sm mb-3">{errors.account}</Text>
+                <Text className="text-red-500 text-sm mb-3">
+                  {errors.account}
+                </Text>
               ) : (
                 <View className="mb-3" />
               )}
 
               {/* Amount */}
-              <Text className="font-semibold text-black mb-2 text-[20px]">Amount</Text>
+              <Text className="font-semibold text-black mb-2 text-[20px]">
+                Amount
+              </Text>
               <View className="bg-neutral-100 rounded-full px-5 py-4 h-fit">
                 <TextInput
                   className="text-black text-[20px]"
@@ -332,12 +355,15 @@ export default function AddTransactionModal({
                   value={amount}
                   onChangeText={(text) => {
                     setAmount(text);
-                    if (errors.amount) setErrors((p) => ({ ...p, amount: undefined }));
+                    if (errors.amount)
+                      setErrors((p) => ({ ...p, amount: undefined }));
                   }}
                 />
               </View>
               {errors.amount ? (
-                <Text className="text-red-500 text-sm mb-3 mt-1">{errors.amount}</Text>
+                <Text className="text-red-500 text-sm mb-3 mt-1">
+                  {errors.amount}
+                </Text>
               ) : (
                 <View className="mb-3" />
               )}
@@ -349,22 +375,29 @@ export default function AddTransactionModal({
               <View className="bg-neutral-100 rounded-full px-5 py-4 h-fit">
                 <TextInput
                   className="text-black text-[20px]"
-                  placeholder={state === "income" ? "e.g. Employer" : "e.g. Grocery Store"}
+                  placeholder={
+                    state === "income" ? "e.g. Employer" : "e.g. Grocery Store"
+                  }
                   value={merchant}
                   onChangeText={(text) => {
                     setMerchant(text);
-                    if (errors.merchant) setErrors((p) => ({ ...p, merchant: undefined }));
+                    if (errors.merchant)
+                      setErrors((p) => ({ ...p, merchant: undefined }));
                   }}
                 />
               </View>
               {errors.merchant ? (
-                <Text className="text-red-500 text-sm mb-3 mt-1">{errors.merchant}</Text>
+                <Text className="text-red-500 text-sm mb-3 mt-1">
+                  {errors.merchant}
+                </Text>
               ) : (
                 <View className="mb-3" />
               )}
 
               {/* Description */}
-              <Text className="font-semibold text-black mb-2 text-[20px]">Usage</Text>
+              <Text className="font-semibold text-black mb-2 text-[20px]">
+                Usage
+              </Text>
               <View className="bg-neutral-100 rounded-full px-5 py-4 h-fit">
                 <TextInput
                   className="text-black text-[20px]"
@@ -379,13 +412,17 @@ export default function AddTransactionModal({
                 />
               </View>
               {errors.description ? (
-                <Text className="text-red-500 text-sm mb-3 mt-1">{errors.description}</Text>
+                <Text className="text-red-500 text-sm mb-3 mt-1">
+                  {errors.description}
+                </Text>
               ) : (
                 <View className="mb-3" />
               )}
 
               {/* Category */}
-              <Text className="font-semibold text-black mb-2 text-[20px]">Category</Text>
+              <Text className="font-semibold text-black mb-2 text-[20px]">
+                Category
+              </Text>
 
               {/* Smart suggestion chip */}
               {suggestedCategory && !selectedCategory && (
@@ -417,7 +454,9 @@ export default function AddTransactionModal({
               ) : null}
 
               <CustomPicker
-                placeholder={activeCategory ? "Change category" : "Select a category"}
+                placeholder={
+                  activeCategory ? "Change category" : "Select a category"
+                }
                 value={selectedCategory?.id}
                 onValueChange={(val) => {
                   const found = categories.find((c) => c.id === val) ?? null;

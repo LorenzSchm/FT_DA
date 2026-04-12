@@ -109,7 +109,8 @@ export default function DashBoard() {
 
       // category object may be embedded by the API or can be resolved from the map
       const categoryObj: Category | null =
-        t.category ?? (t.category_id ? categoryMap[t.category_id] ?? null : null);
+        t.category ??
+        (t.category_id ? (categoryMap[t.category_id] ?? null) : null);
 
       return {
         id:
@@ -123,7 +124,8 @@ export default function DashBoard() {
           t.merchant_name ||
           "Transaction",
         category_id: t.category_id || null,
-        category_name: categoryObj?.name ?? t.category_name ?? t.categoryLabel ?? null,
+        category_name:
+          categoryObj?.name ?? t.category_name ?? t.categoryLabel ?? null,
         category_icon: categoryObj?.icon ?? null,
         amount_minor: Number(amountMinor || 0),
         currency: t.currency || t.currency_code || "USD",
@@ -173,7 +175,10 @@ export default function DashBoard() {
       );
       setCategories(data.rows || []);
     } catch (e: any) {
-      console.error("Failed to load categories:", e?.message || "Unknown error");
+      console.error(
+        "Failed to load categories:",
+        e?.message || "Unknown error",
+      );
     }
   };
 
@@ -294,9 +299,18 @@ export default function DashBoard() {
     init();
   }, [session?.access_token]);
 
-  const openAddAccountModal = () => { setState(STATE.ADD_ACCOUNT); setExpanded(false); };
-  const openAddTransactionModal = () => { setState(STATE.ADD_TRANSACTION); setExpanded(false); };
-  const openAddSubscriptionModal = () => { setState(STATE.ADD_SUBSCRIPTION); setExpanded(false); };
+  const openAddAccountModal = () => {
+    setState(STATE.ADD_ACCOUNT);
+    setExpanded(false);
+  };
+  const openAddTransactionModal = () => {
+    setState(STATE.ADD_TRANSACTION);
+    setExpanded(false);
+  };
+  const openAddSubscriptionModal = () => {
+    setState(STATE.ADD_SUBSCRIPTION);
+    setExpanded(false);
+  };
   const handleModalClose = () => setState(STATE.DEFAULT);
 
   const handleTransactionAdded = async () => {
@@ -364,7 +378,9 @@ export default function DashBoard() {
 
   useEffect(() => {
     if (!selectedAccountId) return;
-    const selectedAccount = accounts.find((acc) => acc.id === selectedAccountId);
+    const selectedAccount = accounts.find(
+      (acc) => acc.id === selectedAccountId,
+    );
     if (selectedAccount?.kind === "connect") return;
 
     setAccounts((prev) =>
@@ -418,8 +434,11 @@ export default function DashBoard() {
     new Map(
       filteredTransactions
         .filter((t: any) => t.category_id && t.category_name)
-        .map((t: any) => [t.category_id, { id: t.category_id, name: t.category_name, icon: t.category_icon }])
-    ).values()
+        .map((t: any) => [
+          t.category_id,
+          { id: t.category_id, name: t.category_name, icon: t.category_icon },
+        ]),
+    ).values(),
   );
 
   return (
@@ -428,7 +447,11 @@ export default function DashBoard() {
         contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#000" />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#000"
+          />
         }
       >
         <View className="items-center justify-center w-full">
@@ -446,8 +469,16 @@ export default function DashBoard() {
                   <View className="w-full items-center">
                     <View className="items-center justify-center">
                       <View className="bg-white rounded-3xl p-6 w-[85%]">
-                        <Skeleton mode="light" className="h-6 w-40 mb-3" animated />
-                        <Skeleton mode="light" className="h-8 w-56 mb-2" animated />
+                        <Skeleton
+                          mode="light"
+                          className="h-6 w-40 mb-3"
+                          animated
+                        />
+                        <Skeleton
+                          mode="light"
+                          className="h-8 w-56 mb-2"
+                          animated
+                        />
                         <Skeleton mode="light" className="h-4 w-24" animated />
                       </View>
                     </View>
@@ -469,7 +500,9 @@ export default function DashBoard() {
                           provider={account.institution}
                           name={account.name}
                           kind={account.kind}
-                          amount={parseFloat((account.balance_minor / 100).toFixed(2))}
+                          amount={parseFloat(
+                            (account.balance_minor / 100).toFixed(2),
+                          )}
                           currency={account.currency}
                           isLoading={
                             !!loadingTxByAccount[account.id] ||
@@ -517,7 +550,11 @@ export default function DashBoard() {
                       textTransform: "capitalize",
                     }}
                   >
-                    {f === "all" ? "All" : f === "expense" ? "Expenses" : "Income"}
+                    {f === "all"
+                      ? "All"
+                      : f === "expense"
+                        ? "Expenses"
+                        : "Income"}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -579,8 +616,16 @@ export default function DashBoard() {
                         style={{ width: contentWidth }}
                       >
                         <View>
-                          <Skeleton mode="light" className="h-5 w-44 mb-2" animated />
-                          <Skeleton mode="light" className="h-4 w-24" animated />
+                          <Skeleton
+                            mode="light"
+                            className="h-5 w-44 mb-2"
+                            animated
+                          />
+                          <Skeleton
+                            mode="light"
+                            className="h-4 w-24"
+                            animated
+                          />
                         </View>
                         <Skeleton mode="light" className="h-5 w-16" animated />
                       </View>
@@ -619,7 +664,9 @@ export default function DashBoard() {
                       <Text
                         style={{ flexShrink: 0 }}
                         className={`self-center font-bold ${
-                          item.amount_minor < 0 ? "text-red-500" : "text-green-500"
+                          item.amount_minor < 0
+                            ? "text-red-500"
+                            : "text-green-500"
                         }`}
                       >
                         {item.amount_minor < 0 ? "" : "+"}
@@ -683,7 +730,9 @@ export default function DashBoard() {
                 className="flex-row justify-between items-center pb-3"
                 onPress={openAddAccountModal}
               >
-                <Text className="text-white text-3xl font-semibold">Account</Text>
+                <Text className="text-white text-3xl font-semibold">
+                  Account
+                </Text>
                 <Text className="text-white text-3xl">›</Text>
               </TouchableOpacity>
 
@@ -691,7 +740,9 @@ export default function DashBoard() {
                 className="flex-row justify-between items-center pb-3"
                 onPress={openAddTransactionModal}
               >
-                <Text className="text-white text-3xl font-semibold">Transaction</Text>
+                <Text className="text-white text-3xl font-semibold">
+                  Transaction
+                </Text>
                 <Text className="text-white text-3xl">›</Text>
               </TouchableOpacity>
 
@@ -699,7 +750,9 @@ export default function DashBoard() {
                 className="flex-row justify-between items-center"
                 onPress={openAddSubscriptionModal}
               >
-                <Text className="text-white text-3xl font-semibold">Subscription</Text>
+                <Text className="text-white text-3xl font-semibold">
+                  Subscription
+                </Text>
                 <Text className="text-white text-3xl">›</Text>
               </TouchableOpacity>
             </View>

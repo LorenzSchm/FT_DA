@@ -105,7 +105,10 @@ export const addTransaction = async (
   return result;
 };
 
-export const getCategories = async (accessToken: string, refreshToken: string) => {
+export const getCategories = async (
+  accessToken: string,
+  refreshToken: string,
+) => {
   if (!accessToken) {
     throw new Error("Missing access token");
   }
