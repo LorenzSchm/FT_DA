@@ -196,6 +196,16 @@
   },
   "active": "b4f577c71790f332",
   "lastOpenFiles": [
-    "Untitled"
+    "backend/app/routers/finance/categories/__pycache__/categories.cpython-313.pyc",
+    "backend/app/routers/finance/categories/__pycache__/__init__.cpython-313.pyc",
+    "backend/app/routers/finance/categories/__pycache__",
+    "mobile/node_modules/expo-modules-core/expo-module-gradle-plugin/build/kotlin/compileKotlin/classpath-snapshot/shrunk-classpath-snapshot.bin",
+    "mobile/node_modules/expo-modules-core/expo-module-gradle-plugin/build/classes/kotlin/main/META-INF/expo-module-gradle-plugin.kotlin_module",
+    "mobile/node_modules/expo-modules-core/expo-module-gradle-plugin/build/classes/kotlin/main/META-INF",
+    "mobile/node_modules/expo-modules-core/expo-module-gradle-plugin/build/classes/kotlin/main/expo/modules/plugin/ProjectConfigurationKt.class",
+    "mobile/node_modules/expo-modules-core/expo-module-gradle-plugin/build/classes/kotlin/main/expo/modules/plugin/AutolinkingIntegration.class",
+    "mobile/node_modules/expo-modules-autolinking/android/expo-gradle-plugin/expo-autolinking-plugin/build/kotlin/compileKotlin/cacheable/caches-jvm/lookups/file-to-id.tab.values.at",
+    "mobile/node_modules/expo-modules-autolinking/android/expo-gradle-plugin/expo-autolinking-plugin/build/kotlin/compileKotlin/classpath-snapshot/shrunk-classpath-snapshot.bin",
+    "mobile/node_modules/expo-modules-autolinking/android/expo-gradle-plugin/expo-autolinking-plugin/build/classes/kotlin/main/META-INF/expo-autolinking-plugin.kotlin_module"
   ]
 }
