@@ -16,10 +16,12 @@ auth_scheme = HTTPBearer(auto_error=True)
 from .transactions.transactions import router as transactions_router
 from .subscriptions.subcriptions import router as subscriptions_router
 from .saving_goals.saving_goals import router as saving_goals_router
+from .categories.categories import router as categories_router
 
 router.include_router(transactions_router)
 router.include_router(subscriptions_router)
 router.include_router(saving_goals_router)
+router.include_router(categories_router)
 
 
 

@@ -21,6 +21,7 @@ import { useAuthStore } from "@/utils/authStore";
 import {
   getAccounts,
   getTransactions,
+  getCategories,
   exportTransactionsToCSV,
 } from "@/utils/db/finance/finance";
 import * as FileSystem from "expo-file-system";
@@ -31,6 +32,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getData } from "@/utils/db/connect_accounts/connectAccounts";
 import { invalidateCache } from "@/utils/db/cache";
 import { CarouselPaginationDots } from "@/components/ui/PaginationDots";
+import type { Category } from "@/utils/categoryMatcher";
 
 enum STATE {
   DEFAULT = "DEFAULT",
@@ -38,6 +40,8 @@ enum STATE {
   ADD_TRANSACTION = "ADD_TRANSACTION",
   ADD_SUBSCRIPTION = "ADD_SUBSCRIPTION",
 }
+
+type FilterType = "all" | "expense" | "income";
 
 export default function DashBoard() {
   const { width, height } = useWindowDimensions();
@@ -47,6 +51,7 @@ export default function DashBoard() {
   const [isExporting, setIsExporting] = useState(false);
 
   const [accounts, setAccounts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   const [transactionsByAccount, setTransactionsByAccount] = useState<
     Record<number, any[]>
@@ -63,10 +68,20 @@ export default function DashBoard() {
     Record<number, boolean>
   >({});
 
+  // Filter state
+  const [typeFilter, setTypeFilter] = useState<FilterType>("all");
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+
   const contentWidth = (width - 60) * 0.9;
-  const maxListHeight = height * 0.35;
+  const maxListHeight = height * 0.38;
 
   const { user, session } = useAuthStore();
+
+  // Category lookup map
+  const categoryMap = categories.reduce<Record<string, Category>>((acc, c) => {
+    acc[c.id] = c;
+    return acc;
+  }, {});
 
   const fetchConnectBalanceMinor = async () => {
     if (!session?.access_token) return 0;
@@ -92,6 +107,10 @@ export default function DashBoard() {
         amountMinor = -Math.abs(amountMinor);
       }
 
+      // category object may be embedded by the API or can be resolved from the map
+      const categoryObj: Category | null =
+        t.category ?? (t.category_id ? categoryMap[t.category_id] ?? null : null);
+
       return {
         id:
           t.id ??
@@ -103,15 +122,13 @@ export default function DashBoard() {
           t.name ||
           t.merchant_name ||
           "Transaction",
-        category_id:
-          t.category ||
-          t.category_id ||
-          t.category_name ||
-          t.categoryLabel ||
-          "Other",
+        category_id: t.category_id || null,
+        category_name: categoryObj?.name ?? t.category_name ?? t.categoryLabel ?? null,
+        category_icon: categoryObj?.icon ?? null,
         amount_minor: Number(amountMinor || 0),
         currency: t.currency || t.currency_code || "USD",
         date: t.date || t.timestamp || t.created_at || null,
+        type: t.type || (amountMinor < 0 ? "expense" : "income"),
         __raw: t,
       };
     });
@@ -130,14 +147,10 @@ export default function DashBoard() {
       const hasConnected = result.some((acc: any) => acc.kind === "connect");
       if (hasConnected) {
         const availableCents = await fetchConnectBalanceMinor();
-
         result = result.map((acc: any) =>
           acc.kind !== "connect"
             ? acc
-            : {
-                ...acc,
-                balance_minor: availableCents,
-              },
+            : { ...acc, balance_minor: availableCents },
         );
       }
 
@@ -148,6 +161,19 @@ export default function DashBoard() {
       return [];
     } finally {
       setIsFetchingAccounts(false);
+    }
+  };
+
+  const loadCategories = async () => {
+    if (!session?.access_token) return;
+    try {
+      const data = await getCategories(
+        session.access_token,
+        session.refresh_token,
+      );
+      setCategories(data.rows || []);
+    } catch (e: any) {
+      console.error("Failed to load categories:", e?.message || "Unknown error");
     }
   };
 
@@ -167,10 +193,7 @@ export default function DashBoard() {
           prev.map((acc) =>
             acc.id !== accountId
               ? acc
-              : {
-                  ...acc,
-                  balance_minor: availableCents,
-                },
+              : { ...acc, balance_minor: availableCents },
           ),
         );
 
@@ -189,7 +212,6 @@ export default function DashBoard() {
           ...prev,
           [accountId]: sorted,
         }));
-
         return;
       }
 
@@ -251,17 +273,16 @@ export default function DashBoard() {
   ) => {
     const tx = txByAcc[accountId] || [];
     const subs = subsByAcc[accountId] || [];
-
     const txTotal = tx.reduce((sum, t) => sum + (t.amount_minor || 0), 0);
     const subsTotal = subs
       .filter((s) => s.active)
       .reduce((sum, s) => sum + (s.amount_minor || 0), 0);
-
     return txTotal - subsTotal;
   };
 
   useEffect(() => {
     const init = async () => {
+      await loadCategories();
       const accs = await loadAccounts();
       if (accs.length > 0) {
         setAccountIndex(0);
@@ -273,24 +294,10 @@ export default function DashBoard() {
     init();
   }, [session?.access_token]);
 
-  const openAddAccountModal = () => {
-    setState(STATE.ADD_ACCOUNT);
-    setExpanded(false);
-  };
-
-  const openAddTransactionModal = () => {
-    setState(STATE.ADD_TRANSACTION);
-    setExpanded(false);
-  };
-
-  const openAddSubscriptionModal = () => {
-    setState(STATE.ADD_SUBSCRIPTION);
-    setExpanded(false);
-  };
-
-  const handleModalClose = () => {
-    setState(STATE.DEFAULT);
-  };
+  const openAddAccountModal = () => { setState(STATE.ADD_ACCOUNT); setExpanded(false); };
+  const openAddTransactionModal = () => { setState(STATE.ADD_TRANSACTION); setExpanded(false); };
+  const openAddSubscriptionModal = () => { setState(STATE.ADD_SUBSCRIPTION); setExpanded(false); };
+  const handleModalClose = () => setState(STATE.DEFAULT);
 
   const handleTransactionAdded = async () => {
     const accId = accounts[accountIndex]?.id;
@@ -321,6 +328,7 @@ export default function DashBoard() {
     setRefreshing(true);
     invalidateCache();
     try {
+      await loadCategories();
       const accs = await loadAccounts();
       const accId = accs[accountIndex]?.id;
       if (accId) {
@@ -350,20 +358,13 @@ export default function DashBoard() {
     if (!selectedAccountId) return;
     const hasTx = !!transactionsByAccount[selectedAccountId];
     const hasSubs = !!subscriptionsByAccount[selectedAccountId];
-
-    if (!hasTx) {
-      loadTransactionsForAccount(selectedAccountId);
-    }
-    if (!hasSubs) {
-      loadSubscriptionsForAccount(selectedAccountId);
-    }
+    if (!hasTx) loadTransactionsForAccount(selectedAccountId);
+    if (!hasSubs) loadSubscriptionsForAccount(selectedAccountId);
   }, [selectedAccountId]);
 
   useEffect(() => {
     if (!selectedAccountId) return;
-    const selectedAccount = accounts.find(
-      (acc) => acc.id === selectedAccountId,
-    );
+    const selectedAccount = accounts.find((acc) => acc.id === selectedAccountId);
     if (selectedAccount?.kind === "connect") return;
 
     setAccounts((prev) =>
@@ -382,17 +383,52 @@ export default function DashBoard() {
     );
   }, [selectedAccountId, transactionsByAccount, subscriptionsByAccount]);
 
+  // ── Build combined list ──────────────────────────────────────────────
+  const combinedRaw = filteredTransactions
+    .concat(
+      activeSubscriptions.map((sub) => ({
+        id: `sub-${sub.id}`,
+        description: sub.merchant,
+        category_id: null,
+        category_name: "Subscription",
+        category_icon: "📅",
+        amount_minor: -sub.amount_minor,
+        currency: sub.currency,
+        type: "expense",
+        date: null,
+      })),
+    )
+    .sort((a: any, b: any) => {
+      if (a.date && b.date) return Date.parse(b.date) - Date.parse(a.date);
+      if (a.date) return -1;
+      if (b.date) return 1;
+      return `${b.id}`.localeCompare(`${a.id}`);
+    });
+
+  // ── Apply filters ────────────────────────────────────────────────────
+  const combined = combinedRaw.filter((item: any) => {
+    if (typeFilter === "expense" && item.amount_minor >= 0) return false;
+    if (typeFilter === "income" && item.amount_minor < 0) return false;
+    if (categoryFilter && item.category_id !== categoryFilter) return false;
+    return true;
+  });
+
+  // Unique categories used in the current account's transactions for filter chips
+  const usedCategories = Array.from(
+    new Map(
+      filteredTransactions
+        .filter((t: any) => t.category_id && t.category_name)
+        .map((t: any) => [t.category_id, { id: t.category_id, name: t.category_name, icon: t.category_icon }])
+    ).values()
+  );
+
   return (
     <View className="flex-1 w-full bg-white mt-5">
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor="#000"
-          />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#000" />
         }
       >
         <View className="items-center justify-center w-full">
@@ -407,20 +443,11 @@ export default function DashBoard() {
             <View className="w-full">
               {isFetchingAccounts ? (
                 <View className="items-center justify-center">
-                  {/* Accounts skeletons */}
                   <View className="w-full items-center">
                     <View className="items-center justify-center">
                       <View className="bg-white rounded-3xl p-6 w-[85%]">
-                        <Skeleton
-                          mode="light"
-                          className="h-6 w-40 mb-3"
-                          animated
-                        />
-                        <Skeleton
-                          mode="light"
-                          className="h-8 w-56 mb-2"
-                          animated
-                        />
+                        <Skeleton mode="light" className="h-6 w-40 mb-3" animated />
+                        <Skeleton mode="light" className="h-8 w-56 mb-2" animated />
                         <Skeleton mode="light" className="h-4 w-24" animated />
                       </View>
                     </View>
@@ -442,9 +469,7 @@ export default function DashBoard() {
                           provider={account.institution}
                           name={account.name}
                           kind={account.kind}
-                          amount={parseFloat(
-                            (account.balance_minor / 100).toFixed(2),
-                          )}
+                          amount={parseFloat((account.balance_minor / 100).toFixed(2))}
                           currency={account.currency}
                           isLoading={
                             !!loadingTxByAccount[account.id] ||
@@ -454,8 +479,6 @@ export default function DashBoard() {
                       </CarouselItem>
                     ))}
                   </CarouselContent>
-
-                  {/* Animated pagination dots */}
                   <CarouselPaginationDots />
                 </Carousel>
               )}
@@ -463,11 +486,85 @@ export default function DashBoard() {
           </View>
         </View>
 
-        {/* Transactions + Subscriptions */}
+        {/* Transactions + Filters */}
         <View className="flex-1 items-center justify-start w-full pt-2">
-          <View className="gap-5" style={{ width: contentWidth }}>
+          <View className="gap-3" style={{ width: contentWidth }}>
             <Text className="text-xl font-bold">Transactions</Text>
 
+            {/* Type filter pills */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 8 }}
+              bounces={false}
+            >
+              {(["all", "expense", "income"] as FilterType[]).map((f) => (
+                <TouchableOpacity
+                  key={f}
+                  onPress={() => setTypeFilter(f)}
+                  style={{
+                    paddingHorizontal: 16,
+                    paddingVertical: 7,
+                    borderRadius: 9999,
+                    backgroundColor: typeFilter === f ? "#000" : "#f4f4f5",
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      fontWeight: typeFilter === f ? "700" : "500",
+                      color: typeFilter === f ? "#fff" : "#6b7280",
+                      textTransform: "capitalize",
+                    }}
+                  >
+                    {f === "all" ? "All" : f === "expense" ? "Expenses" : "Income"}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+
+              {/* Category filter chips — only show if there are categorised transactions */}
+              {usedCategories.length > 0 && (
+                <View
+                  style={{
+                    width: 1,
+                    backgroundColor: "#e5e7eb",
+                    marginHorizontal: 4,
+                    borderRadius: 1,
+                  }}
+                />
+              )}
+              {usedCategories.map((cat: any) => (
+                <TouchableOpacity
+                  key={cat.id}
+                  onPress={() =>
+                    setCategoryFilter(categoryFilter === cat.id ? null : cat.id)
+                  }
+                  style={{
+                    paddingHorizontal: 12,
+                    paddingVertical: 7,
+                    borderRadius: 9999,
+                    backgroundColor:
+                      categoryFilter === cat.id ? "#000" : "#f4f4f5",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 4,
+                  }}
+                >
+                  <Text style={{ fontSize: 13 }}>{cat.icon}</Text>
+                  <Text
+                    style={{
+                      fontSize: 13,
+                      fontWeight: categoryFilter === cat.id ? "700" : "500",
+                      color: categoryFilter === cat.id ? "#fff" : "#6b7280",
+                    }}
+                  >
+                    {cat.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            {/* Transaction list */}
             <ScrollView
               style={{ maxHeight: maxListHeight }}
               showsVerticalScrollIndicator={false}
@@ -482,94 +579,62 @@ export default function DashBoard() {
                         style={{ width: contentWidth }}
                       >
                         <View>
-                          <Skeleton
-                            mode="light"
-                            className="h-5 w-44 mb-2"
-                            animated
-                          />
-                          <Skeleton
-                            mode="light"
-                            className="h-4 w-24"
-                            animated
-                          />
+                          <Skeleton mode="light" className="h-5 w-44 mb-2" animated />
+                          <Skeleton mode="light" className="h-4 w-24" animated />
                         </View>
                         <Skeleton mode="light" className="h-5 w-16" animated />
                       </View>
                     ))}
                   </View>
+                ) : combined.length === 0 ? (
+                  <Text className="text-center text-neutral-500">
+                    No transactions found
+                  </Text>
                 ) : (
-                  (() => {
-                    const combined = filteredTransactions
-                      .concat(
-                        activeSubscriptions.map((sub) => ({
-                          id: `sub-${sub.id}`,
-                          description: sub.merchant,
-                          category_id: "Subscription",
-                          amount_minor: -sub.amount_minor,
-                          currency: sub.currency,
-                        })),
-                      )
-                      .sort((a: any, b: any) => {
-                        if (a.date && b.date)
-                          return Date.parse(b.date) - Date.parse(a.date);
-                        if (a.date) return -1;
-                        if (b.date) return 1;
-                        return `${b.id}`.localeCompare(`${a.id}`);
-                      });
-
-                    if (combined.length === 0) {
-                      return (
-                        <Text className="text-center text-neutral-500">
-                          No transactions found
-                        </Text>
-                      );
-                    }
-
-                    return combined.map((item: any, index: number) => (
-                      <View
-                        key={`${selectedAccountId || "acc"}-tx-${index}`}
-                        className="flex flex-row justify-between"
-                        style={{ width: contentWidth }}
-                      >
-                        <View style={{ flex: 1, marginRight: 12 }}>
-                          <Text
-                            className="text-xl font-bold"
-                            numberOfLines={1}
-                            ellipsizeMode="tail"
-                          >
-                            {item.description}
-                          </Text>
-                          <Text
-                            className="text-gray-400 text-lg"
-                            numberOfLines={1}
-                            ellipsizeMode="tail"
-                          >
-                            {item.category_id}
-                          </Text>
-                        </View>
-
+                  combined.map((item: any, index: number) => (
+                    <View
+                      key={`${selectedAccountId || "acc"}-tx-${index}`}
+                      className="flex flex-row justify-between"
+                      style={{ width: contentWidth }}
+                    >
+                      <View style={{ flex: 1, marginRight: 12 }}>
                         <Text
-                          style={{ flexShrink: 0 }}
-                          className={`self-center font-bold ${
-                            item.amount_minor < 0
-                              ? "text-red-500"
-                              : "text-green-500"
-                          }`}
+                          className="text-xl font-bold"
+                          numberOfLines={1}
+                          ellipsizeMode="tail"
                         >
-                          {item.amount_minor < 0 ? "" : "+"}
-                          {(item.amount_minor / 100).toFixed(2)}{" "}
-                          {(
-                            {
-                              USD: "$",
-                              EUR: "€",
-                              GBP: "£",
-                              CHF: "CHF",
-                            } as Record<string, string>
-                          )[item.currency] ?? item.currency}
+                          {item.description}
+                        </Text>
+                        <Text
+                          className="text-gray-400 text-base"
+                          numberOfLines={1}
+                          ellipsizeMode="tail"
+                        >
+                          {item.category_icon
+                            ? `${item.category_icon} ${item.category_name}`
+                            : item.category_name || "—"}
                         </Text>
                       </View>
-                    ));
-                  })()
+
+                      <Text
+                        style={{ flexShrink: 0 }}
+                        className={`self-center font-bold ${
+                          item.amount_minor < 0 ? "text-red-500" : "text-green-500"
+                        }`}
+                      >
+                        {item.amount_minor < 0 ? "" : "+"}
+                        {(item.amount_minor / 100).toFixed(2)}{" "}
+                        {(
+                          {
+                            USD: "$",
+                            EUR: "€",
+                            GBP: "£",
+                            CHF: "CHF",
+                          } as Record<string, string>
+                        )[item.currency] ?? item.currency}
+                      </Text>
+                    </View>
+                  ))
                 )}
               </View>
             </ScrollView>
@@ -618,9 +683,7 @@ export default function DashBoard() {
                 className="flex-row justify-between items-center pb-3"
                 onPress={openAddAccountModal}
               >
-                <Text className="text-white text-3xl font-semibold">
-                  Account
-                </Text>
+                <Text className="text-white text-3xl font-semibold">Account</Text>
                 <Text className="text-white text-3xl">›</Text>
               </TouchableOpacity>
 
@@ -628,9 +691,7 @@ export default function DashBoard() {
                 className="flex-row justify-between items-center pb-3"
                 onPress={openAddTransactionModal}
               >
-                <Text className="text-white text-3xl font-semibold">
-                  Transaction
-                </Text>
+                <Text className="text-white text-3xl font-semibold">Transaction</Text>
                 <Text className="text-white text-3xl">›</Text>
               </TouchableOpacity>
 
@@ -638,9 +699,7 @@ export default function DashBoard() {
                 className="flex-row justify-between items-center"
                 onPress={openAddSubscriptionModal}
               >
-                <Text className="text-white text-3xl font-semibold">
-                  Subscription
-                </Text>
+                <Text className="text-white text-3xl font-semibold">Subscription</Text>
                 <Text className="text-white text-3xl">›</Text>
               </TouchableOpacity>
             </View>

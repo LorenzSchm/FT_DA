@@ -105,6 +105,34 @@ export const addTransaction = async (
   return result;
 };
 
+export const getCategories = async (accessToken: string, refreshToken: string) => {
+  if (!accessToken) {
+    throw new Error("Missing access token");
+  }
+
+  return cachedFetch(
+    `${BASE_URL}/finance/categories/`,
+    async () => {
+      const res = await fetch(`${BASE_URL}/finance/categories/`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+          "x-refresh-token": refreshToken,
+        },
+      });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({}));
+        throw new Error(error.detail || "Failed to fetch categories");
+      }
+
+      return res.json();
+    },
+    { accessToken },
+  );
+};
+
 export const exportTransactionsToCSV = async (accessToken, refreshToken) => {
   if (!accessToken) {
     throw new Error("Missing access token");

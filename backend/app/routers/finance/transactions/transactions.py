@@ -19,6 +19,24 @@ class TransactionRequest(BaseModel):
     currency: str
     description: Optional[str] = None
     merchant: Optional[str] = None
+    category_id: Optional[str] = None
+
+
+def _build_category_map(supabase, category_ids: list[str]) -> dict:
+    """Fetch categories by IDs and return a lookup dict {id: {name, icon}}."""
+    if not category_ids:
+        return {}
+    try:
+        resp = (
+            supabase.schema("finance")
+            .table("categories")
+            .select("id, name, icon, is_income")
+            .in_("id", category_ids)
+            .execute()
+        )
+        return {c["id"]: c for c in (resp.data or [])}
+    except Exception:
+        return {}
 
 
 @router.post("/{account_id}", status_code=status.HTTP_201_CREATED)
@@ -78,7 +96,6 @@ async def export_transactions_csv(
         if not user:
             raise HTTPException(status_code=401, detail="Unauthorized: No valid session")
 
-        # 1. Fetch all accounts for user
         accounts_response = (
             supabase.schema("finance")
             .table("accounts")
@@ -90,7 +107,6 @@ async def export_transactions_csv(
         account_map = {acc["id"]: acc for acc in accounts}
         account_ids = list(account_map.keys())
 
-        # 2. Fetch all transactions for those accounts
         transactions = []
         subscriptions = []
         if account_ids:
@@ -104,7 +120,6 @@ async def export_transactions_csv(
             )
             transactions = transactions_response.data or []
 
-            # Fetch subscriptions
             subscriptions_response = (
                 supabase.schema("finance")
                 .table("subscriptions")
@@ -114,10 +129,16 @@ async def export_transactions_csv(
             )
             subscriptions = subscriptions_response.data or []
 
-        # 3. Create CSV string
+        # Build category name lookup
+        all_category_ids = list({
+            t["category_id"] for t in transactions + subscriptions
+            if t.get("category_id")
+        })
+        category_map = _build_category_map(supabase, all_category_ids)
+
         output = io.StringIO()
         writer = csv.writer(output)
-        
+
         writer.writerow([
             "Account Name",
             "Account Currency",
@@ -132,13 +153,15 @@ async def export_transactions_csv(
 
         for txn in transactions:
             acc = account_map.get(txn.get("account_id"), {})
+            cat_id = txn.get("category_id", "")
+            cat_name = category_map.get(cat_id, {}).get("name", cat_id) if cat_id else ""
             writer.writerow([
                 acc.get("name", "Unknown Account"),
                 acc.get("currency", ""),
                 txn.get("txn_date", ""),
                 txn.get("description", ""),
                 txn.get("merchant", ""),
-                txn.get("category_id", ""),
+                cat_name,
                 txn.get("amount_minor", 0),
                 txn.get("currency", ""),
                 txn.get("type", "")
@@ -146,14 +169,16 @@ async def export_transactions_csv(
 
         for sub in subscriptions:
             acc = account_map.get(sub.get("account_id"), {})
+            cat_id = sub.get("category_id", "")
+            cat_name = category_map.get(cat_id, {}).get("name", cat_id) if cat_id else ""
             writer.writerow([
                 acc.get("name", "Unknown Account"),
                 acc.get("currency", ""),
                 sub.get("start_date", ""),
                 f"Subscription ({sub.get('every_n', 1)} {sub.get('unit', 'month')})",
                 sub.get("merchant", ""),
-                sub.get("category_id", ""),
-                -abs(int(sub.get("amount_minor", 0))), # Subscriptions are typically expenses
+                cat_name,
+                -abs(int(sub.get("amount_minor", 0))),
                 sub.get("currency", ""),
                 "subscription"
             ])
@@ -168,7 +193,6 @@ async def export_transactions_csv(
         raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Export CSV failed: {e}")
-
 
 
 @router.get("/{account_id}", status_code=status.HTTP_200_OK)
@@ -199,8 +223,17 @@ async def get_transactions(
             .eq("account_id", account_id)
             .execute()
         )
+        transactions = transactions_response.data or []
 
-        return {"user": user.model_dump(), "rows": transactions_response.data}
+        # Enrich with category name + icon
+        category_ids = list({t["category_id"] for t in transactions if t.get("category_id")})
+        category_map = _build_category_map(supabase, category_ids)
+
+        for txn in transactions:
+            cat_id = txn.get("category_id")
+            txn["category"] = category_map.get(cat_id) if cat_id else None
+
+        return {"user": user.model_dump(), "rows": transactions}
 
     except HTTPException:
         raise

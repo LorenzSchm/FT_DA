@@ -257,7 +257,6 @@ export function parseMessage(text: string): ParsedCommand {
     return { intent: "CONFIRM", confirmed: false, raw: text };
   }
 
-  // Detect intent
   let intent: Intent = "UNKNOWN";
   if (matchesAny(t, CREATE_KEYWORDS)) intent = "CREATE";
   else if (matchesAny(t, READ_KEYWORDS)) intent = "READ";
