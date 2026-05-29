@@ -5,6 +5,10 @@ import { getTransactions } from "@/utils/db/finance/finance";
 import { useAuthStore } from "@/utils/authStore";
 import { getData } from "@/utils/db/connect_accounts/connectAccounts";
 import SpendingChart from "@/components/analysis/SpendingChart";
+import BarChart from "@/components/analysis/BarChart";
+import ChartControls, {
+  type ChartType,
+} from "@/components/analysis/ChartControls";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Feather } from "@expo/vector-icons";
 import FilterModal from "./FilterModal";
@@ -55,6 +59,7 @@ export default function Overview({ account, accounts }: Props) {
 
   const [isLoading, setIsLoading] = useState(false);
   const [connectBalance, setConnectBalance] = useState<number | null>(null);
+  const [chartType, setChartType] = useState<ChartType>("pie");
   const [modalOpen, setModalOpen] = useState(false);
   const [dateRange, setDateRange] = useState(() => {
     const now = new Date();
@@ -250,6 +255,26 @@ export default function Overview({ account, accounts }: Props) {
       showsVerticalScrollIndicator={false}
     >
       <View className="px-4 py-6">
+        <View className="flex-row items-center justify-between mb-4 px-1">
+          <ChartControls
+            chartType={chartType}
+            onChartTypeChange={setChartType}
+          />
+          <TouchableOpacity
+            onPress={() => setModalOpen(true)}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              backgroundColor: "#f3f4f6",
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+              borderRadius: 999,
+            }}
+          >
+            <Feather name="sliders" size={14} color="#000" />
+            <Text style={{ fontSize: 14, fontWeight: "500", color: "#000", marginLeft: 6 }}>Filter</Text>
+          </TouchableOpacity>
+        </View>
         <View className="mb-6 flex items-center">
           <View className="mb-6 flex flex-row items-center justify-center relative w-full">
             {isLoading ? (
@@ -263,7 +288,11 @@ export default function Overview({ account, accounts }: Props) {
                   animated
                 />
               </View>
-            ) : (
+            ) : filteredTransactions.length === 0 ? (
+              <View className="items-center justify-center py-10">
+                <Text className="text-gray-400">No data for this period</Text>
+              </View>
+            ) : chartType === "pie" ? (
               <SpendingChart
                 size={200}
                 strokeWidth={20}
@@ -273,13 +302,14 @@ export default function Overview({ account, accounts }: Props) {
                 label="Monthly standing"
                 dateRange={rangeLabel}
               />
+            ) : (
+              <BarChart
+                transactions={filteredTransactions}
+                timeBucket="weekly"
+                currency={currencySymbol}
+                mode="both"
+              />
             )}
-            <TouchableOpacity
-              onPress={() => setModalOpen(true)}
-              className="absolute top-0 right-0 p-2"
-            >
-              <Feather name={"more-vertical"} size={20} color="#000" />
-            </TouchableOpacity>
           </View>
         </View>
 
@@ -335,13 +365,14 @@ export default function Overview({ account, accounts }: Props) {
                       {item.description}
                     </Text>
                     <Text className="text-gray-400 text-base">
-                      {item.category_id}
+                      {typeof item.category_id === "object" && item.category_id !== null
+                        ? item.category_id.name || "Other"
+                        : item.category_id || "Other"}
                     </Text>
                   </View>
                   <Text
-                    className={`text-lg font-bold ${
-                      item.amount_minor < 0 ? "text-red-500" : "text-green-500"
-                    }`}
+                    className={`text-lg font-bold ${item.amount_minor < 0 ? "text-red-500" : "text-green-500"
+                      }`}
                   >
                     {item.amount_minor < 0 ? "" : "+"}
                     {(item.amount_minor / 100).toFixed(2)}{" "}
@@ -362,15 +393,15 @@ export default function Overview({ account, accounts }: Props) {
         minAmount={
           transactions.length > 0
             ? Math.min(
-                ...transactions.map((t) => Math.abs(t.amount_minor || 0)),
-              ) / 100
+              ...transactions.map((t) => Math.abs(t.amount_minor || 0)),
+            ) / 100
             : 0
         }
         maxAmount={
           transactions.length > 0
             ? Math.max(
-                ...transactions.map((t) => Math.abs(t.amount_minor || 0)),
-              ) / 100
+              ...transactions.map((t) => Math.abs(t.amount_minor || 0)),
+            ) / 100
             : 1000
         }
         selectedMin={amountRange?.min}

@@ -3,6 +3,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuthStore } from "@/utils/authStore";
 import { getSubscriptions } from "@/utils/db/finance/subscriptions/subscriptions";
 import CategoryBreakdownChart from "@/components/analysis/CategoryBreakdownChart";
+import BarChart from "@/components/analysis/BarChart";
+import ChartControls, {
+  type ChartType,
+} from "@/components/analysis/ChartControls";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Feather } from "@expo/vector-icons";
 import FilterModal from "./FilterModal";
@@ -15,6 +19,7 @@ export default function Subscriptions({ account }: Props) {
   const { session } = useAuthStore();
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [chartType, setChartType] = useState<ChartType>("pie");
   const [modalOpen, setModalOpen] = useState(false);
   const [dateRange, setDateRange] = useState(() => {
     const now = new Date();
@@ -115,13 +120,19 @@ export default function Subscriptions({ account }: Props) {
       showsVerticalScrollIndicator={false}
     >
       <View className="px-4 py-6">
-        <View className="mb-8 relative">
+        <View className="flex-row items-center justify-between mb-4 px-1">
+          <ChartControls
+            chartType={chartType}
+            onChartTypeChange={setChartType}
+          />
           <TouchableOpacity
             onPress={() => setModalOpen(true)}
-            className="absolute top-0 right-0 z-10 p-2"
+            className="p-2"
           >
             <Feather name={"more-vertical"} size={20} color="#000" />
           </TouchableOpacity>
+        </View>
+        <View className="mb-8">
           {isLoading ? (
             <View className="items-center justify-center py-4">
               <Skeleton
@@ -130,12 +141,31 @@ export default function Subscriptions({ account }: Props) {
                 animated
               />
             </View>
-          ) : (
+          ) : filteredSubscriptions.length === 0 ? (
+            <View className="items-center justify-center py-10">
+              <Text className="text-gray-400">No data for this period</Text>
+            </View>
+          ) : chartType === "pie" ? (
             <CategoryBreakdownChart
               data={categoryData}
               currency={currencySymbol}
               title="Subscriptions"
               emptyLabel="No subscriptions"
+            />
+          ) : (
+            <BarChart
+              transactions={filteredSubscriptions.map((sub: any) => ({
+                ...sub,
+                amount_minor: -(sub.amount_minor || 0),
+                date:
+                  sub.date ||
+                  sub.start_date ||
+                  sub.created_at ||
+                  new Date().toISOString(),
+              }))}
+              timeBucket="weekly"
+              currency={currencySymbol}
+              mode="expense"
             />
           )}
         </View>

@@ -4,6 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import { getTransactions } from "@/utils/db/finance/finance";
 
 import SpendingChart from "@/components/analysis/SpendingChart";
+import BarChart from "@/components/analysis/BarChart";
+import ChartControls, {
+  type ChartType,
+} from "@/components/analysis/ChartControls";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Feather } from "@expo/vector-icons";
 import FilterModal from "./FilterModal";
@@ -72,6 +76,7 @@ export default function Expenses({ account }: Props) {
   const [expenses, setExpenses] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  const [chartType, setChartType] = useState<ChartType>("pie");
   const [modalOpen, setModalOpen] = useState(false);
   const [dateRange, setDateRange] = useState(() => {
     const now = new Date();
@@ -181,6 +186,18 @@ export default function Expenses({ account }: Props) {
       showsVerticalScrollIndicator={false}
     >
       <View className="px-4 py-6">
+        <View className="flex-row items-center justify-between mb-4 px-1">
+          <ChartControls
+            chartType={chartType}
+            onChartTypeChange={setChartType}
+          />
+          <TouchableOpacity
+            onPress={() => setModalOpen(true)}
+            className="p-2"
+          >
+            <Feather name={"more-vertical"} size={20} color="#000" />
+          </TouchableOpacity>
+        </View>
         <View className="mb-6 flex items-center">
           <View className="mb-6 flex flex-row items-center justify-center relative w-full">
             {isLoading ? (
@@ -194,7 +211,11 @@ export default function Expenses({ account }: Props) {
                   animated
                 />
               </View>
-            ) : (
+            ) : monthlyExpenses.length === 0 ? (
+              <View className="items-center justify-center py-10">
+                <Text className="text-gray-400">No data for this period</Text>
+              </View>
+            ) : chartType === "pie" ? (
               <SpendingChart
                 size={200}
                 strokeWidth={20}
@@ -204,13 +225,14 @@ export default function Expenses({ account }: Props) {
                 label="Expenses"
                 dateRange={rangeLabel}
               />
+            ) : (
+              <BarChart
+                transactions={monthlyExpenses}
+                timeBucket="weekly"
+                currency={currencySymbol}
+                mode="expense"
+              />
             )}
-            <TouchableOpacity
-              onPress={() => setModalOpen(true)}
-              className="absolute top-0 right-0 p-2"
-            >
-              <Feather name={"more-vertical"} size={20} color="#000" />
-            </TouchableOpacity>
           </View>
         </View>
 
@@ -247,7 +269,9 @@ export default function Expenses({ account }: Props) {
                       {item.description}
                     </Text>
                     <Text className="text-gray-400 text-sm">
-                      {item.category_id || "Other"}
+                      {typeof item.category_id === "object" && item.category_id !== null
+                        ? item.category_id.name || "Other"
+                        : item.category_id || "Other"}
                     </Text>
                   </View>
                   <Text className="text-lg font-bold text-red-500">

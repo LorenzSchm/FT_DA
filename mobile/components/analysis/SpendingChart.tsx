@@ -78,7 +78,7 @@ export default function SpendingChart({
         {!hasData ? (
           <Path
             d={describeArc(center, center, radius, 0, 359.999)}
-            stroke="#22c55e"
+            stroke="#E5E7EB"
             strokeWidth={strokeWidth}
             fill="none"
           />
@@ -118,9 +118,13 @@ export default function SpendingChart({
         <Text className="text-base font-semibold text-gray-600 mb-1">
           {label}
         </Text>
-        <Text className={`text-2xl font-bold ${netColor}`}>
-          {formattedNet} {currency}
-        </Text>
+        {hasData ? (
+          <Text className={`text-2xl font-bold ${netColor}`}>
+            {formattedNet} {currency}
+          </Text>
+        ) : (
+          <Text className="text-lg text-gray-400">No data</Text>
+        )}
         {dateRange && (
           <Text className="text-sm text-gray-500 mt-1">{dateRange}</Text>
         )}
