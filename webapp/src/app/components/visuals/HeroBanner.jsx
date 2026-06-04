@@ -3,7 +3,12 @@
 import Image from "next/image";
 import { motion, useInView } from "framer-motion";
 import { useMemo, useRef } from "react";
-import { Accordion, AccordionItem } from "@heroui/accordion";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
 import { CheckCircle } from "react-feather";
 
 export default function HeroBanner({ src, alt, title, subtitle, plans = [] }) {
@@ -38,20 +43,6 @@ export default function HeroBanner({ src, alt, title, subtitle, plans = [] }) {
       y: 0,
       transition: { duration: 0.55, ease: "easeOut", delay: 0.35 },
     },
-  };
-
-  const itemClasses = {
-    base: "group rounded-3xl bg-white p-2 md:p-4 lg:p-4 transition-colors duration-300 hover:cursor-pointer",
-    heading: "flex w-full items-center gap-3 py-2 hover:cursor-pointer",
-    trigger:
-      "flex flex-1 items-center gap-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/50 rounded-xl px-2 py-1 transition-colors data-[hover=true]:bg-white/10 hover:cursor-pointer",
-    title:
-      "font-swiss text-base text-xl md:text-3xl lg:text-3xl font-semibold tracking-tight text-black transition-colors",
-    subtitle: "text-sm lg:text-md font-medium text-black/60 tracking-wide",
-    indicator:
-      "group-data-[open=true]:rotate-90 transition-transform duration-300",
-    content:
-      "md:text-base text-sm leading-relaxed text-black/90 [&_p]:mt-1 overflow-visible",
   };
 
   return (
@@ -103,39 +94,43 @@ export default function HeroBanner({ src, alt, title, subtitle, plans = [] }) {
                     animate="visible"
                   >
                     <Accordion
-                      variant={"light"}
-                      itemClasses={itemClasses}
-                      hideIndicator
-                      showDivider={false}
-                      className={"hover:cursor-pointer space-y-3"}
+                      type="multiple"
+                      className="hover:cursor-pointer space-y-3"
                     >
                       {planItems.map((plan, index) => (
                         <AccordionItem
                           key={index}
-                          subtitle={plan.description}
-                          title={plan.name ?? plan.title}
-                          className={
-                            "shadow-sm shadow-black/30 hover:shadow-md hover:shadow-black/40 transition-shadow"
-                          }
+                          value={`plan-${index}`}
+                          className="rounded-3xl bg-white p-2 md:p-4 lg:p-4 shadow-sm shadow-black/30 hover:shadow-md hover:shadow-black/40 transition-shadow border-none"
                         >
-                          <div className="text-black">
-                            {plan.features
-                              ? plan.features.map((feature, i) => (
-                                  <p
-                                    key={i}
-                                    className={
-                                      "text-sm md:text-xl lg:text-xl flex flex-row items-center gap-2"
-                                    }
-                                  >
-                                    <CheckCircle
-                                      className={"text-green-500 w-4 h-4"}
-                                    />
-                                    {feature}
-                                  </p>
-                                ))
-                              : plan.description}
-                            {plan.button}
-                          </div>
+                          <AccordionTrigger className="flex flex-1 items-center gap-3 text-left outline-none rounded-xl px-2 py-1 hover:no-underline hover:cursor-pointer">
+                            <div>
+                              <span className="font-swiss text-base text-xl md:text-3xl lg:text-3xl font-semibold tracking-tight text-black">
+                                {plan.name ?? plan.title}
+                              </span>
+                              {plan.description && (
+                                <p className="text-sm lg:text-md font-medium text-black/60 tracking-wide">
+                                  {plan.description}
+                                </p>
+                              )}
+                            </div>
+                          </AccordionTrigger>
+                          <AccordionContent>
+                            <div className="text-black">
+                              {plan.features
+                                ? plan.features.map((feature, i) => (
+                                    <p
+                                      key={i}
+                                      className="text-sm md:text-xl lg:text-xl flex flex-row items-center gap-2"
+                                    >
+                                      <CheckCircle className="text-green-500 w-4 h-4" />
+                                      {feature}
+                                    </p>
+                                  ))
+                                : plan.description}
+                              {plan.button}
+                            </div>
+                          </AccordionContent>
                         </AccordionItem>
                       ))}
                     </Accordion>

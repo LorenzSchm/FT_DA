@@ -7,12 +7,14 @@ import { AnimatePresence, motion } from "framer-motion";
 
 export default function AppShell({ children }) {
   const pathname = usePathname();
-  console.log(pathname);
+  const onLaw =
+    pathname === "/imprint" ||
+    pathname === "/privacy-policy" ||
+    pathname === "/terms-and-conditions";
+
   return (
     <div className="flex flex-col bg-white">
-      <NavBar
-        onLaw={pathname === "/imprint" || pathname === "/privacy-policy"}
-      />
+      <NavBar onLaw={onLaw} />
       <AnimatePresence mode="wait" initial={false}>
         <motion.main
           key={pathname}

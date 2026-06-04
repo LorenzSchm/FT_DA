@@ -52,7 +52,7 @@ export default function Home() {
   ];
   return (
     <div className="bg-white overflow-hidden overflow-y-hidden">
-      <section data-nav-theme="dark">
+      <section id="about" data-nav-theme="dark">
         <LandingPage />
       </section>
 

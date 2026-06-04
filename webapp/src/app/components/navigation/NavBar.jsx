@@ -23,6 +23,11 @@ export default function NavBar({ onLaw = false }) {
   const itemRefs = useRef([]);
   itemRefs.current = navLinks.map((_, i) => itemRefs.current[i] ?? null);
 
+  const getIdFromHref = (href) => {
+    const hashIndex = href.lastIndexOf("#");
+    return hashIndex >= 0 ? href.slice(hashIndex + 1) : href;
+  };
+
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -42,6 +47,47 @@ export default function NavBar({ onLaw = false }) {
     }
 
     setActiveTab(navLinks[0]?.href ?? "/#about");
+  }, [onLaw, navLinks]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || onLaw) return;
+
+    const sectionLinks = navLinks
+      .map((link) => ({
+        ...link,
+        element: document.getElementById(getIdFromHref(link.href)),
+      }))
+      .filter((link) => link.element);
+
+    if (sectionLinks.length === 0) return;
+
+    const updateActiveSection = () => {
+      const triggerY = window.innerHeight * 0.38;
+      const current =
+        sectionLinks
+          .map((link) => ({
+            ...link,
+            top: link.element.getBoundingClientRect().top,
+          }))
+          .filter((link) => link.top <= triggerY)
+          .sort((a, b) => b.top - a.top)[0] ?? sectionLinks[0];
+
+      setActiveTab(current.href);
+
+      const currentHash = `#${getIdFromHref(current.href)}`;
+      if (window.location.pathname === "/" && window.location.hash !== currentHash) {
+        history.replaceState(null, "", current.href);
+      }
+    };
+
+    updateActiveSection();
+    window.addEventListener("scroll", updateActiveSection, { passive: true });
+    window.addEventListener("resize", updateActiveSection);
+
+    return () => {
+      window.removeEventListener("scroll", updateActiveSection);
+      window.removeEventListener("resize", updateActiveSection);
+    };
   }, [onLaw, navLinks]);
 
   useLayoutEffect(() => {
@@ -84,11 +130,6 @@ export default function NavBar({ onLaw = false }) {
     };
   }, []);
 
-  const getIdFromHref = (href) => {
-    const hashIndex = href.lastIndexOf("#");
-    return hashIndex >= 0 ? href.slice(hashIndex + 1) : href;
-  };
-
   const handleLinkClick = (e, href) => {
     if (onLaw) {
       e.preventDefault();
@@ -120,15 +161,15 @@ export default function NavBar({ onLaw = false }) {
   return (
     <div
       ref={navRef}
-      className={`fixed top-0 left-0 right-0 z-50 w-full flex flex-row justify-between items-center px-4 py-3 ${navBgClass}`}
+      className={`fixed top-0 left-0 right-0 z-50 w-full flex flex-col gap-3 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4 ${navBgClass}`}
     >
       <a
         href={"/"}
-        className="flex flex-row items-center gap-2 hover:cursor-pointer"
+        className="flex flex-row items-center gap-2 self-start hover:cursor-pointer sm:self-auto"
       >
         <img src="/icon.svg" alt="logo" width={24} />
         <h1
-          className={`${onDark ? "text-white" : "text-black"} lg:text-xl text-sm font-extrabold tracking-tight `}
+          className={`${onDark ? "text-white" : "text-black"} text-sm font-extrabold tracking-tight lg:text-xl`}
         >
           Finance Tracker
         </h1>
@@ -136,7 +177,7 @@ export default function NavBar({ onLaw = false }) {
 
       <div
         ref={containerRef}
-        className="relative flex flex-row items-center gap-2"
+        className="relative flex w-full flex-row items-center gap-2 overflow-x-auto pb-1 sm:w-auto sm:overflow-visible sm:pb-0"
       >
         <motion.div
           className={`absolute bottom-0 border-b-2 ${sliderBorderClass}`}
@@ -155,7 +196,7 @@ export default function NavBar({ onLaw = false }) {
             <a
               href={link.href}
               onClick={(e) => handleLinkClick(e, link.href)}
-              className={`relative z-20 inline-flex h-2 items-center justify-center px-2 text-sm sm:text-sm lg:text-lg font-bold transition-colors duration-300 ${
+              className={`relative z-20 inline-flex h-7 shrink-0 items-center justify-center whitespace-nowrap px-2 text-sm font-bold transition-colors duration-300 lg:text-lg ${
                 activeTab === link.href ? textActiveClass : textIdleClass
               }`}
             >
