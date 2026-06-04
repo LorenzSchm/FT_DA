@@ -191,10 +191,7 @@ export default function Expenses({ account }: Props) {
             chartType={chartType}
             onChartTypeChange={setChartType}
           />
-          <TouchableOpacity
-            onPress={() => setModalOpen(true)}
-            className="p-2"
-          >
+          <TouchableOpacity onPress={() => setModalOpen(true)} className="p-2">
             <Feather name={"more-vertical"} size={20} color="#000" />
           </TouchableOpacity>
         </View>
@@ -269,7 +266,8 @@ export default function Expenses({ account }: Props) {
                       {item.description}
                     </Text>
                     <Text className="text-gray-400 text-sm">
-                      {typeof item.category_id === "object" && item.category_id !== null
+                      {typeof item.category_id === "object" &&
+                      item.category_id !== null
                         ? item.category_id.name || "Other"
                         : item.category_id || "Other"}
                     </Text>

@@ -75,7 +75,10 @@ export default function NavBar({ onLaw = false }) {
       setActiveTab(current.href);
 
       const currentHash = `#${getIdFromHref(current.href)}`;
-      if (window.location.pathname === "/" && window.location.hash !== currentHash) {
+      if (
+        window.location.pathname === "/" &&
+        window.location.hash !== currentHash
+      ) {
         history.replaceState(null, "", current.href);
       }
     };

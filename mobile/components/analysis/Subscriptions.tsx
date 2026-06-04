@@ -125,10 +125,7 @@ export default function Subscriptions({ account }: Props) {
             chartType={chartType}
             onChartTypeChange={setChartType}
           />
-          <TouchableOpacity
-            onPress={() => setModalOpen(true)}
-            className="p-2"
-          >
+          <TouchableOpacity onPress={() => setModalOpen(true)} className="p-2">
             <Feather name={"more-vertical"} size={20} color="#000" />
           </TouchableOpacity>
         </View>

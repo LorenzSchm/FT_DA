@@ -272,7 +272,16 @@ export default function Overview({ account, accounts }: Props) {
             }}
           >
             <Feather name="sliders" size={14} color="#000" />
-            <Text style={{ fontSize: 14, fontWeight: "500", color: "#000", marginLeft: 6 }}>Filter</Text>
+            <Text
+              style={{
+                fontSize: 14,
+                fontWeight: "500",
+                color: "#000",
+                marginLeft: 6,
+              }}
+            >
+              Filter
+            </Text>
           </TouchableOpacity>
         </View>
         <View className="mb-6 flex items-center">
@@ -365,14 +374,16 @@ export default function Overview({ account, accounts }: Props) {
                       {item.description}
                     </Text>
                     <Text className="text-gray-400 text-base">
-                      {typeof item.category_id === "object" && item.category_id !== null
+                      {typeof item.category_id === "object" &&
+                      item.category_id !== null
                         ? item.category_id.name || "Other"
                         : item.category_id || "Other"}
                     </Text>
                   </View>
                   <Text
-                    className={`text-lg font-bold ${item.amount_minor < 0 ? "text-red-500" : "text-green-500"
-                      }`}
+                    className={`text-lg font-bold ${
+                      item.amount_minor < 0 ? "text-red-500" : "text-green-500"
+                    }`}
                   >
                     {item.amount_minor < 0 ? "" : "+"}
                     {(item.amount_minor / 100).toFixed(2)}{" "}
@@ -393,15 +404,15 @@ export default function Overview({ account, accounts }: Props) {
         minAmount={
           transactions.length > 0
             ? Math.min(
-              ...transactions.map((t) => Math.abs(t.amount_minor || 0)),
-            ) / 100
+                ...transactions.map((t) => Math.abs(t.amount_minor || 0)),
+              ) / 100
             : 0
         }
         maxAmount={
           transactions.length > 0
             ? Math.max(
-              ...transactions.map((t) => Math.abs(t.amount_minor || 0)),
-            ) / 100
+                ...transactions.map((t) => Math.abs(t.amount_minor || 0)),
+              ) / 100
             : 1000
         }
         selectedMin={amountRange?.min}

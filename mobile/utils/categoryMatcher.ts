@@ -133,12 +133,12 @@ const EXPENSE_KEYWORDS: Record<string, string> = {
   "train ticket": "Public Transit",
   "bus ticket": "Public Transit",
   "metro ticket": "Public Transit",
-  "bahn": "Public Transit",
-  "mvv": "Public Transit",
-  "hvv": "Public Transit",
-  "bvg": "Public Transit",
-  "rnv": "Public Transit",
-  "öpnv": "Public Transit",
+  bahn: "Public Transit",
+  mvv: "Public Transit",
+  hvv: "Public Transit",
+  bvg: "Public Transit",
+  rnv: "Public Transit",
+  öpnv: "Public Transit",
 
   // Parking
   parking: "Parking and Tolls",
@@ -313,9 +313,7 @@ export function resolveCategory(
   const nameLower = name.toLowerCase();
   return (
     categories.find(
-      (c) =>
-        c.is_income === isIncome &&
-        c.name.toLowerCase() === nameLower,
+      (c) => c.is_income === isIncome && c.name.toLowerCase() === nameLower,
     ) ?? null
   );
 }

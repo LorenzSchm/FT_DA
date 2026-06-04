@@ -216,15 +216,11 @@ export default function BarChart({
                 {showIncome &&
                   !showExpense &&
                   b.income === 0 &&
-                  b.expense === 0 && (
-                    <View style={{ width: 24, height: 4 }} />
-                  )}
+                  b.expense === 0 && <View style={{ width: 24, height: 4 }} />}
                 {showExpense &&
                   !showIncome &&
                   b.expense === 0 &&
-                  b.income === 0 && (
-                    <View style={{ width: 24, height: 4 }} />
-                  )}
+                  b.income === 0 && <View style={{ width: 24, height: 4 }} />}
               </View>
               <Text
                 style={{

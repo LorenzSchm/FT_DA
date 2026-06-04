@@ -5,7 +5,11 @@ import LegalPageLayout from "@/app/components/legal/LegalPageLayout";
 
 export default function ImprintView() {
   return (
-    <LegalPageLayout imageUrl="/hongkong.jpg" title="Imprint" contentClassName="">
+    <LegalPageLayout
+      imageUrl="/hongkong.jpg"
+      title="Imprint"
+      contentClassName=""
+    >
       <ImprintTextView />
     </LegalPageLayout>
   );

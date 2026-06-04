@@ -9,10 +9,7 @@ type Props = {
   onChartTypeChange: (type: ChartType) => void;
 };
 
-export default function ChartControls({
-  chartType,
-  onChartTypeChange,
-}: Props) {
+export default function ChartControls({ chartType, onChartTypeChange }: Props) {
   return (
     <View className="flex-row bg-gray-100 rounded-xl overflow-hidden">
       <TouchableOpacity
