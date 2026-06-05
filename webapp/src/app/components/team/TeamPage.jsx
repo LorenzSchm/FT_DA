@@ -123,12 +123,6 @@ export default function TeamPage() {
                 custom={index}
               >
                 <div className="flex items-start gap-3">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-black font-swiss text-sm font-bold text-white">
-                    {member.name
-                      .split(" ")
-                      .map((part) => part[0])
-                      .join("")}
-                  </span>
                   <span className="min-w-0">
                     <span className="block font-swiss text-lg font-bold text-black">
                       {member.name}

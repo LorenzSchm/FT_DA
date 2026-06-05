@@ -2,7 +2,6 @@
 
 import { motion, useInView } from "framer-motion";
 import { useRef, useState } from "react";
-import Image from "next/image";
 import {
   BarChart2,
   CreditCard,
@@ -11,6 +10,7 @@ import {
   Target,
   TrendingUp,
 } from "react-feather";
+import PhoneMockup from "@/app/components/feature-page/PhoneMockup";
 
 export default function FeaturePage() {
   const features = [
@@ -19,7 +19,7 @@ export default function FeaturePage() {
       label: "Transactions",
       description:
         "Log income and spending fast, keep categories tidy, and understand cash flow without digging through bank statements.",
-      screenshot: "/screenshots/tracking_expenses.png",
+      screen: "transactions",
       icon: CreditCard,
       stat: "2-tap entry",
     },
@@ -28,7 +28,7 @@ export default function FeaturePage() {
       label: "Recurring",
       description:
         "Track recurring charges in one place, spot upcoming renewals, and see which subscriptions are worth keeping.",
-      screenshot: "/screenshots/subs.png",
+      screen: "subscriptions",
       icon: Repeat,
       stat: "Upcoming view",
     },
@@ -37,7 +37,7 @@ export default function FeaturePage() {
       label: "Insights",
       description:
         "Turn transactions into clear trends with category breakdowns, period filters, and readable charts.",
-      screenshot: "/screenshots/analytics.png",
+      screen: "analytics",
       icon: BarChart2,
       stat: "Live charts",
     },
@@ -46,7 +46,7 @@ export default function FeaturePage() {
       label: "Portfolio",
       description:
         "Follow positions, check performance, and keep investments in the same place as day-to-day finances.",
-      screenshot: "/screenshots/investments.png",
+      screen: "investments",
       icon: TrendingUp,
       stat: "P/L tracking",
     },
@@ -55,7 +55,7 @@ export default function FeaturePage() {
       label: "Goals",
       description:
         "Create dedicated goals, track progress visually, and keep every target connected to real account activity.",
-      screenshot: "/screenshots/savings.png",
+      screen: "savings",
       icon: Target,
       stat: "Goal progress",
     },
@@ -64,7 +64,7 @@ export default function FeaturePage() {
       label: "Accounts",
       description:
         "Organize checking, savings, and linked accounts into one clean overview of your financial picture.",
-      screenshot: "/screenshots/accounts.png",
+      screen: "accounts",
       icon: Layers,
       stat: "Unified view",
     },
@@ -231,17 +231,11 @@ export default function FeaturePage() {
                   </span>
                 </div>
 
-                <div className="mx-auto w-full max-w-[230px] sm:max-w-[300px] lg:max-w-[340px]">
-                  <div className="relative aspect-[719/1472] overflow-visible">
-                    <Image
-                      src={selectedFeature.screenshot}
-                      alt={`${selectedFeature.title} screenshot`}
-                      fill
-                      sizes="(max-width: 1024px) 300px, 320px"
-                      className="object-contain drop-shadow-2xl"
-                      priority
-                    />
-                  </div>
+                <div className="mx-auto w-full max-w-[240px] sm:max-w-[300px] lg:max-w-[360px]">
+                  <PhoneMockup
+                    screen={selectedFeature.screen}
+                    title={`${selectedFeature.title} screenshot`}
+                  />
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
