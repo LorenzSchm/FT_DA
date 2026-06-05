@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { motion, useInView } from "framer-motion";
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   Accordion,
   AccordionItem,
@@ -15,6 +15,7 @@ export default function HeroBanner({ src, alt, title, subtitle, plans = [] }) {
   const containerRef = useRef(null);
   const isInView = useInView(containerRef, { amount: 0.4, once: false });
   const planItems = useMemo(() => plans.filter(Boolean), [plans]);
+  const [openPlan, setOpenPlan] = useState("plan-0");
   const imageSrc = src ?? "/london_small.jpg";
   const imageAlt = alt ?? "London skyline";
 
@@ -94,7 +95,10 @@ export default function HeroBanner({ src, alt, title, subtitle, plans = [] }) {
                     animate="visible"
                   >
                     <Accordion
-                      type="multiple"
+                      type="single"
+                      value={openPlan}
+                      onValueChange={setOpenPlan}
+                      collapsible
                       className="hover:cursor-pointer space-y-3"
                     >
                       {planItems.map((plan, index) => (
