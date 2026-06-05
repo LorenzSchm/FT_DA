@@ -11,7 +11,10 @@ const screenshots = {
   accounts: "/screenshots/accounts.png",
 };
 
-export default function PhoneMockup({ screen = "analytics", title = "App preview" }) {
+export default function PhoneMockup({
+  screen = "analytics",
+  title = "App preview",
+}) {
   const src = screenshots[screen] ?? screenshots.analytics;
 
   return (
