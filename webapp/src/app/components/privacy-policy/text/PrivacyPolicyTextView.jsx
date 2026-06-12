@@ -15,13 +15,13 @@ const PrivacyPolicyTextView = () => {
         website.
       </p>
       <p className="text-gray-700 mb-6">
-        The project is a non-commercial diploma thesis developed at HTL Rennweg
-        and is intended solely for educational and demonstration purposes.
+        The project is a non-commercial prototype intended for demonstration
+        purposes.
       </p>
 
       <h2 className="text-2xl font-semibold mt-6 mb-3">1. Data Controller</h2>
       <p className="text-gray-700 mb-2 font-semibold">
-        Project: Finance Tracker (Diploma Thesis)
+        Project: Finance Tracker
       </p>
       <p className="text-gray-700 mb-2">Responsible Entity:</p>
       <ul className="list-none pl-0 mb-4 text-gray-700">
@@ -30,10 +30,10 @@ const PrivacyPolicyTextView = () => {
         <li className="mb-1">
           Email:{" "}
           <a
-            href="mailto:Lorenz.schmidt@htl.rennweg.at"
+            href="mailto:Lorenz.schmidt@financetracker.at"
             className="text-blue-600 hover:underline"
           >
-            Lorenz.schmidt@htl.rennweg.at
+            Lorenz.schmidt@financetracker.at
           </a>
         </li>
       </ul>
@@ -118,8 +118,7 @@ const PrivacyPolicyTextView = () => {
           documentation.
         </li>
         <li className="mb-2">
-          The project team and the school have no access to users’ financial
-          data.
+          The project team has no access to users’ financial data.
         </li>
       </ul>
 
@@ -165,8 +164,8 @@ const PrivacyPolicyTextView = () => {
         protect data against unauthorized access, loss, or misuse.
       </p>
       <p className="text-gray-700 mb-4">
-        However, as this is an educational project, no guarantee of
-        uninterrupted availability or absolute security can be provided.
+        However, no guarantee of uninterrupted availability or absolute
+        security can be provided.
       </p>
 
       <h2 className="text-2xl font-semibold mt-6 mb-3">
@@ -174,7 +173,7 @@ const PrivacyPolicyTextView = () => {
       </h2>
       <p className="text-gray-700 mb-4">
         This Privacy Notice may be updated as part of the ongoing development of
-        the diploma thesis.
+        the app.
       </p>
       <p className="text-gray-700 mb-4">
         The current version will always be available on the website.
@@ -189,7 +188,7 @@ const PrivacyPolicyTextView = () => {
           href="mailto:Lorenz.schmidt@financetracker.at"
           className="text-blue-600 hover:underline"
         >
-          Lorenz.schmidt@htl.rennweg.at
+          Lorenz.schmidt@financetracker.at
         </a>
       </p>
     </div>

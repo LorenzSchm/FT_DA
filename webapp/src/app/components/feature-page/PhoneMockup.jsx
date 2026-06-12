@@ -2,7 +2,6 @@
 
 import {
   BarChart2,
-  BatteryFull,
   Bell,
   ChevronDown,
   ChevronRight,
@@ -12,9 +11,7 @@ import {
   MoreVertical,
   PieChart,
   Search,
-  Signal,
   User,
-  Wifi,
   X,
 } from "lucide-react";
 
@@ -25,16 +22,15 @@ const NEG = "#e5392b";
 /*  Shared chrome                                                             */
 /* -------------------------------------------------------------------------- */
 
-function StatusBar({ time }) {
+function StatusBar() {
   return (
-    <div className="relative flex shrink-0 items-center justify-between px-[6cqw] pt-[3.5cqw] pb-[1.5cqw]">
-      <span className="text-[3.6cqw] font-semibold text-black">{time}</span>
-      <span className="absolute left-1/2 top-[2.6cqw] h-[6.5cqw] w-[26cqw] -translate-x-1/2 rounded-full bg-black" />
-      <span className="flex items-center gap-[1.6cqw] text-black">
-        <Signal className="h-[3.4cqw] w-auto" />
-        <Wifi className="h-[3.4cqw] w-auto" />
-        <BatteryFull className="h-[3.9cqw] w-auto" />
-      </span>
+    <div className="relative z-10 flex h-[13.8cqw] shrink-0 items-start">
+      <img
+        src="/mockups/ios-status-bar.svg"
+        alt=""
+        aria-hidden="true"
+        className="h-full w-full object-contain"
+      />
     </div>
   );
 }
@@ -59,7 +55,7 @@ function TopBar() {
 function NavBar({ active = 0 }) {
   const items = [Home, BarChart2, PieChart, MessageCircle];
   return (
-    <div className="mt-auto flex items-center justify-around border-t border-gray-100 px-[4cqw] pt-[3cqw] pb-[2.5cqw]">
+    <div className="mt-auto flex items-center justify-around px-[4cqw] pb-[20px]">
       {items.map((Icon, i) => (
         <Icon
           key={i}
@@ -242,22 +238,34 @@ function AnalyticsScreen() {
   );
 }
 
-function LogoSquare({ label, bg, color = "#fff" }) {
+function LogoSquare({ label, bg, color = "#fff", logo }) {
   return (
     <span
-      className="flex h-[10cqw] w-[10cqw] shrink-0 items-center justify-center rounded-[2.5cqw] text-[3cqw] font-bold"
+      className="relative flex h-[10cqw] w-[10cqw] shrink-0 items-center justify-center overflow-hidden rounded-[2.5cqw] text-[3cqw] font-bold"
       style={{ backgroundColor: bg, color }}
     >
-      {label}
+      {logo ? (
+        <img
+          src={logo}
+          alt=""
+          aria-hidden="true"
+          className="h-[7cqw] w-[7cqw] object-contain"
+          onError={(event) => {
+            event.currentTarget.style.display = "none";
+            event.currentTarget.nextElementSibling.style.display = "block";
+          }}
+        />
+      ) : null}
+      <span style={{ display: logo ? "none" : "block" }}>{label}</span>
     </span>
   );
 }
 
-function StockRow({ ticker, price, pct, up, bg, fg }) {
+function StockRow({ ticker, price, pct, up, bg, fg, logo }) {
   return (
     <div className="flex items-center justify-between py-[2cqw]">
       <div className="flex items-center gap-[3cqw]">
-        <LogoSquare label={ticker.slice(0, 2)} bg={bg} color={fg} />
+        <LogoSquare label={ticker.slice(0, 2)} bg={bg} color={fg} logo={logo} />
         <div>
           <p className="text-[4cqw] font-bold text-black">{ticker}</p>
           <p className="text-[3.2cqw] text-gray-400">{price}</p>
@@ -276,7 +284,14 @@ function StockRow({ ticker, price, pct, up, bg, fg }) {
 
 function InvestmentsScreen() {
   const trending = [
-    { ticker: "INTC", price: "$42.79", pct: "15.95%", up: true, bg: "#00b2e3" },
+    {
+      ticker: "INTC",
+      price: "$42.79",
+      pct: "15.95%",
+      up: true,
+      bg: "#00b2e3",
+      logo: "/logos/stocks/intc.png",
+    },
     {
       ticker: "LUCY",
       price: "$1.70",
@@ -284,14 +299,67 @@ function InvestmentsScreen() {
       up: true,
       bg: "#ededed",
       fg: "#333",
+      logo: "/logos/stocks/lucy.png",
     },
-    { ticker: "CRWD", price: "$482.13", pct: "2.85%", up: true, bg: "#e1352b" },
-    { ticker: "VTYX", price: "$13.72", pct: "51.94%", up: true, bg: "#2b5cc4" },
-    { ticker: "GME", price: "$21.27", pct: "5.95%", up: true, bg: "#111" },
-    { ticker: "BX", price: "$155.08", pct: "0.61%", up: true, bg: "#111" },
-    { ticker: "PANW", price: "$195.26", pct: "6.00%", up: true, bg: "#f4814f" },
-    { ticker: "MBLY", price: "$12.25", pct: "17.34%", up: true, bg: "#2b4cc4" },
-    { ticker: "SWKS", price: "$58.83", pct: "7.23%", up: false, bg: "#176b7d" },
+    {
+      ticker: "CRWD",
+      price: "$482.13",
+      pct: "2.85%",
+      up: true,
+      bg: "#e1352b",
+      logo: "/logos/stocks/crwd.png",
+    },
+    {
+      ticker: "VTYX",
+      price: "$13.72",
+      pct: "51.94%",
+      up: true,
+      bg: "#f4fbff",
+      fg: "#2b5cc4",
+      logo: "/logos/stocks/vtyx.png",
+    },
+    {
+      ticker: "GME",
+      price: "$21.27",
+      pct: "5.95%",
+      up: true,
+      bg: "#111",
+      logo: "/logos/stocks/gme.png",
+    },
+    {
+      ticker: "BX",
+      price: "$155.08",
+      pct: "0.61%",
+      up: true,
+      bg: "#111",
+      logo: "/logos/stocks/bx.png",
+    },
+    {
+      ticker: "PANW",
+      price: "$195.26",
+      pct: "6.00%",
+      up: true,
+      bg: "#fff4ef",
+      fg: "#f4814f",
+      logo: "/logos/stocks/panw.png",
+    },
+    {
+      ticker: "MBLY",
+      price: "$12.25",
+      pct: "17.34%",
+      up: true,
+      bg: "#2b4cc4",
+      logo: "/logos/stocks/mbly.png",
+    },
+    {
+      ticker: "SWKS",
+      price: "$58.83",
+      pct: "7.23%",
+      up: false,
+      bg: "#f4fbff",
+      fg: "#176b7d",
+      logo: "/logos/stocks/swks.png",
+    },
   ];
 
   return (
@@ -309,7 +377,9 @@ function InvestmentsScreen() {
         price="$435.35"
         pct="3.20%"
         up={false}
-        bg="#e1352b"
+        bg="#fff4f4"
+        fg="#e1352b"
+        logo="/logos/stocks/tsla.png"
       />
 
       <p className="mt-[3cqw] text-[4.6cqw] font-bold text-black">Trending</p>
@@ -395,9 +465,9 @@ function AccountsScreen() {
         <Download className="h-[5cqw] w-auto text-black" />
       </div>
 
-      <div className="relative mt-[3cqw] h-[34cqw] overflow-hidden rounded-[5cqw] bg-[#161616] p-[5cqw]">
+      <div className="relative mt-[3cqw] h-[135px] overflow-hidden rounded-[5cqw] bg-[#161616] p-[5cqw]">
         <div className="absolute -right-[10cqw] -top-[10cqw] h-[30cqw] w-[30cqw] rounded-full bg-white/[0.06] blur-xl" />
-        <span className="absolute right-[5cqw] top-[5cqw] flex h-[9cqw] w-[9cqw] items-center justify-center rounded-full bg-white/10">
+        <span className="absolute right-[5cqw] top-[5cqw] flex h-[9cqw] w-[9cqw] items-center justify-center rounded-sm bg-white/10">
           <span className="text-[4cqw] font-bold text-white">FT</span>
         </span>
         <p className="text-[2.8cqw] font-bold uppercase tracking-wide text-gray-400">
@@ -463,25 +533,29 @@ export default function PhoneMockup({
   screen = "analytics",
   title = "App preview",
 }) {
-  const { time, Screen } = screens[screen] ?? screens.analytics;
+  const { Screen } = screens[screen] ?? screens.analytics;
 
   return (
     <div
-      className="@container relative mx-auto w-full max-w-[360px]"
+      className="@container relative mx-auto aspect-[450/920] w-full max-w-[360px]"
       role="img"
       aria-label={title}
     >
-      <div className="absolute -inset-4 rounded-[72px] bg-black/10 blur-2xl" />
-      <div className="relative aspect-[360/740] w-full rounded-[14cqw] bg-black p-[2.2cqw] shadow-2xl drop-shadow-2xl">
-        <div className="relative h-full w-full overflow-hidden rounded-[12cqw] bg-white">
-          <div className="absolute inset-0 flex flex-col">
-            <StatusBar time={time} />
-            <div className="flex flex-1 flex-col overflow-hidden">
-              <Screen />
-            </div>
+      <div className="absolute -inset-4 rounded-[18cqw] bg-black/10 blur-2xl" />
+      <div className="absolute inset-[1.5%_3%_1%] overflow-hidden rounded-[10.6cqw] bg-white">
+        <div className="absolute inset-0 flex flex-col">
+          <StatusBar />
+          <div className="flex flex-1 flex-col overflow-hidden">
+            <Screen />
           </div>
         </div>
       </div>
+      <img
+        src="/mockups/iphone-17-pro-silver-portrait.svg"
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-20 h-full w-full scale-[1.018] select-none"
+      />
     </div>
   );
 }
