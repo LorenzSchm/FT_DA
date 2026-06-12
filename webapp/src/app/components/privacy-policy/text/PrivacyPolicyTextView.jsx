@@ -164,8 +164,8 @@ const PrivacyPolicyTextView = () => {
         protect data against unauthorized access, loss, or misuse.
       </p>
       <p className="text-gray-700 mb-4">
-        However, no guarantee of uninterrupted availability or absolute
-        security can be provided.
+        However, no guarantee of uninterrupted availability or absolute security
+        can be provided.
       </p>
 
       <h2 className="text-2xl font-semibold mt-6 mb-3">

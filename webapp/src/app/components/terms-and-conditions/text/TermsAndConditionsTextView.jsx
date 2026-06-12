@@ -11,9 +11,9 @@ const TermsAndConditionsTextView = () => {
 
       <p className="text-gray-700 mb-4">
         These Terms of Service ("Terms") govern the use of the Finance Tracker
-        Application ("App") and the associated website ("Website"). By using
-        the App or Website, you agree to these Terms. If you do not agree, you
-        must refrain from using the App or Website.
+        Application ("App") and the associated website ("Website"). By using the
+        App or Website, you agree to these Terms. If you do not agree, you must
+        refrain from using the App or Website.
       </p>
 
       <h2 className="text-2xl font-semibold mt-6 mb-3">
@@ -124,9 +124,7 @@ const TermsAndConditionsTextView = () => {
         </li>
       </ul>
 
-      <h2 className="text-2xl font-semibold mt-6 mb-3">
-        6. No Warranty
-      </h2>
+      <h2 className="text-2xl font-semibold mt-6 mb-3">6. No Warranty</h2>
       <p className="text-gray-700 mb-4">
         The App is provided "as is" without any warranties of any kind.
       </p>
@@ -165,15 +163,17 @@ const TermsAndConditionsTextView = () => {
           any issues arising from third-party providers such as TrueLayer.
         </li>
       </ul>
-      <p className="text-gray-700 mb-4">No professional liability is assumed.</p>
+      <p className="text-gray-700 mb-4">
+        No professional liability is assumed.
+      </p>
 
       <h2 className="text-2xl font-semibold mt-6 mb-3">
         8. Intellectual Property
       </h2>
       <p className="text-gray-700 mb-4">
         All code, text, graphics, and design elements created by the project
-        team remain the property of the developers or their respective
-        copyright holders.
+        team remain the property of the developers or their respective copyright
+        holders.
       </p>
       <p className="text-gray-700 mb-4">Users are not permitted to:</p>
       <ul className="list-disc pl-6 mb-4 text-gray-700">
