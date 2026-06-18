@@ -3,7 +3,6 @@ import { useRef } from "react";
 import Image from "next/image";
 
 export default function TeamPage() {
-  
   const members = [
     {
       name: "Lorenz Schmidt",
@@ -96,8 +95,6 @@ export default function TeamPage() {
           transition={{ duration: 0.55, ease: "easeOut", delay: 0.08 }}
           className="grid gap-4"
         >
-        
-
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {members.map((member, index) => (
               <motion.a

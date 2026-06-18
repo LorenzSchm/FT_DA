@@ -36,9 +36,7 @@ const ImprintTextView = () => {
       </p>
 
       <h2 className="text-2xl font-semibold mt-6 mb-3">Media Owner</h2>
-      <p className="text-gray-700 mb-4">
-        Project Team “Finance Tracker”
-      </p>
+      <p className="text-gray-700 mb-4">Project Team “Finance Tracker”</p>
 
       <h2 className="text-2xl font-semibold mt-6 mb-3">Editorial Line</h2>
       <p className="text-gray-700 mb-4">
