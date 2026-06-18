@@ -28,21 +28,6 @@ const ImprintTextView = () => {
         </a>
       </p>
 
-      <h2 className="text-2xl font-semibold mt-6 mb-3">School</h2>
-      <p className="text-gray-700 mb-1">HTL Rennweg</p>
-      <p className="text-gray-700 mb-1">Rennweg 89b</p>
-      <p className="text-gray-700 mb-1">1030 Vienna, Austria</p>
-      <p className="text-gray-700 mb-1">
-        Email:{" "}
-        <a
-          href="mailto:sekretariat@htl.rennweg.at"
-          className="text-blue-600 hover:underline"
-        >
-          sekretariat@htl.rennweg.at
-        </a>
-      </p>
-      <p className="text-gray-700 mb-4">Phone: +43 1 242 15-10</p>
-
       <h2 className="text-2xl font-semibold mt-6 mb-3">Type of Project</h2>
       <p className="text-gray-700 mb-4">
         This application and the associated website are part of a non-commercial
@@ -52,7 +37,7 @@ const ImprintTextView = () => {
 
       <h2 className="text-2xl font-semibold mt-6 mb-3">Media Owner</h2>
       <p className="text-gray-700 mb-4">
-        Project Team “Finance Tracker”, HTL Rennweg
+        Project Team “Finance Tracker”
       </p>
 
       <h2 className="text-2xl font-semibold mt-6 mb-3">Editorial Line</h2>

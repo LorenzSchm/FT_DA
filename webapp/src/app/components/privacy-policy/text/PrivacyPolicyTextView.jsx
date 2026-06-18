@@ -181,7 +181,6 @@ const PrivacyPolicyTextView = () => {
 
       <h2 className="text-2xl font-semibold mt-6 mb-3">12. Contact</h2>
       <p className="text-gray-700 mb-2">Lorenz Schmidt</p>
-      <p className="text-gray-700 mb-2">Rennweg 89b, 1030 Vienna</p>
       <p className="text-gray-700 mb-4">
         Email:{" "}
         <a

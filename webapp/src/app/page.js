@@ -10,7 +10,7 @@ import FeaturePage from "@/app/components/feature-page/FeaturePage";
 export default function Home() {
   const getAppButton = (
     <button className="text-white bg-black mt-4 p-3 rounded-2xl font-swiss font-bold hover:cursor-pointer hover:bg-black/80 transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50">
-      Get the App
+      Available soon
     </button>
   );
 
@@ -67,7 +67,7 @@ export default function Home() {
           title="Plans that grow with you"
           subtitle="From personal to pro—choose the features you need"
           plans={planHighlights}
-        /> 
+        />
       </section>
 
       <section id="features">

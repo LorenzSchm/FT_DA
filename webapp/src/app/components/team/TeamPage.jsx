@@ -3,26 +3,31 @@ import { useRef } from "react";
 import Image from "next/image";
 
 export default function TeamPage() {
+  
   const members = [
-    {
-      name: "Loreine Maly",
-      role: "Developer",
-      focus: "Mobile experience",
-    },
     {
       name: "Lorenz Schmidt",
       role: "Product Owner & Lead Developer",
       focus: "Product and full-stack",
+      linkedin: "https://www.linkedin.com/in/lorenz-schmidt2/",
+    },
+    {
+      name: "Loreine Maly",
+      role: "Developer",
+      focus: "Mobile experience",
+      linkedin: "https://www.linkedin.com/in/loreine-maly-a90b80254/",
     },
     {
       name: "Philipp Seytter",
       role: "Developer",
       focus: "Backend systems",
+      linkedin: "https://www.linkedin.com/in/philipp-seytter-71508a23b/",
     },
     {
       name: "Anne Mieke Vincken",
       role: "Scrum Master & Public Relations",
       focus: "Delivery and communication",
+      linkedin: "https://www.linkedin.com/in/anne-mieke-vincken-9b148b313/",
     },
   ];
 
@@ -91,32 +96,16 @@ export default function TeamPage() {
           transition={{ duration: 0.55, ease: "easeOut", delay: 0.08 }}
           className="grid gap-4"
         >
-          <div className="relative aspect-[16/10] overflow-hidden rounded-[28px] bg-black shadow-2xl shadow-black/15">
-            <Image
-              src="/tealPhoto.png"
-              alt="Finance Tracker team"
-              fill
-              sizes="(max-width: 1024px) 100vw, 720px"
-              className="object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
-            <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-4">
-              <div>
-                <p className="font-swiss text-xs font-bold uppercase text-white/60">
-                  Collaboration
-                </p>
-                <p className="font-swiss text-2xl font-bold text-white">
-                  Product, design, and engineering together
-                </p>
-              </div>
-            </div>
-          </div>
+        
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {members.map((member, index) => (
-              <motion.div
+              <motion.a
                 key={member.name}
-                className="group rounded-2xl border border-black/10 bg-white p-4 text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-black/20 hover:shadow-lg"
+                href={member.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group block rounded-2xl border border-black/10 bg-white p-4 text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-black/20 hover:shadow-lg"
                 variants={cardVariants}
                 initial="hidden"
                 animate={isInView ? "visible" : "hidden"}
@@ -135,7 +124,7 @@ export default function TeamPage() {
                     </span>
                   </span>
                 </div>
-              </motion.div>
+              </motion.a>
             ))}
           </div>
         </motion.div>
