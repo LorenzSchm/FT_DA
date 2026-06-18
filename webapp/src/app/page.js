@@ -9,7 +9,7 @@ import FeaturePage from "@/app/components/feature-page/FeaturePage";
 
 export default function Home() {
   const getAppButton = (
-    <button className="text-white bg-black mt-4 p-3 rounded-2xl font-swiss font-bold hover:cursor-pointer hover:scale-105 hover:bg-black/90 shadow-2xl transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50">
+    <button className="text-white bg-black mt-4 p-3 rounded-2xl font-swiss font-bold hover:cursor-pointer hover:bg-black/80 transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50">
       Get the App
     </button>
   );
@@ -37,17 +37,13 @@ export default function Home() {
       name: "Pro",
       price: "$12/mo",
       description: "Automate analytics and share smart reports.",
-    },
-    {
-      name: "Enterprise",
-      price: "Custom",
-      description: "Scalable solutions for large organizations.",
       features: [
-        "Everything from Pro",
+        "Everything from personal",
         "Connect unlimited bank accounts",
+        "Smart insights",
         "Priority Support",
       ],
-      button: contactButton,
+      button: getAppButton,
     },
   ];
   return (
@@ -71,7 +67,7 @@ export default function Home() {
           title="Plans that grow with you"
           subtitle="From personal to pro—choose the features you need"
           plans={planHighlights}
-        />
+        /> 
       </section>
 
       <section id="features">
